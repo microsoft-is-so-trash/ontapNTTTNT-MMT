@@ -102,7 +102,7 @@ function renderMock(r){
 }
 function renderExam(){
   const mon=EX.mon; setAcc(mon);
-  let h='<div style="position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>Thi thử '+monName(mon)+'</b><span id="exClock" class="mono" style="font-size:18px"></span><span class="small" id="exCount"></span><button class="btn pri sm" id="exSubmit">Nộp bài</button></div>';
+  let h='<div style="position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>Thi thử '+monName(mon)+'</b><span id="exClock" class="mono" style="font-size:18px"></span><span class="small" id="exCount"></span><button class="btn pri sm" id="exSubmit">Nộp bài</button></div>';
   EX.items.forEach((it,qi)=>{
     const q=it.q, multi=isMultiUI(q);
     h+='<div class="q" id="exq'+qi+'"><div class="qh"><span>Câu '+(qi+1)+'</span><span>'+(multi?'<span class="tag multi">'+(q.loai==="multi"||!S.settings.hideType?'chọn nhiều':'ô vuông')+'</span>':'')+'</span></div><div class="de">'+q.de+'</div>'+(q.code?codeBlock(q.code,q.lang):'')+(q.hoi?'<div class="de">'+q.hoi+'</div>':'')+'<div class="opts">';
@@ -113,7 +113,7 @@ function renderExam(){
   $("#app").innerHTML=h;
   $("#app").querySelectorAll(".opt").forEach(btn=>btn.onclick=()=>{ const it=EX.items[+btn.dataset.q], oi=+btn.dataset.oi; if(isMultiUI(it.q)){ const k=it.sel.indexOf(oi); if(k>=0) it.sel.splice(k,1); else it.sel.push(oi); } else it.sel=[oi];
     const card=$("#exq"+btn.dataset.q); card.querySelectorAll(".opt").forEach(b=>b.classList.toggle("sel", it.sel.includes(+b.dataset.oi))); tick(); });
-  const sub=()=>{ const un=EX.items.filter(x=>!x.sel.length).length; if(un && !confirm("Còn "+un+" câu chưa trả lời. Nộp bài?")) return; submitExam(); };
+  const sub=(ev)=>{ const un=EX.items.filter(x=>!x.sel.length).length; const bt=ev.currentTarget; if(un && !bt.dataset.armed){ ["#exSubmit","#exSubmit2"].forEach(id=>{ const x=$(id); x.dataset.armed="1"; x.textContent="Còn "+un+" câu trống — bấm lần nữa để nộp"; }); return; } submitExam(); };
   $("#exSubmit").onclick=sub; $("#exSubmit2").onclick=sub;
   const tick=()=>{ const left=Math.max(0,EX.end-Date.now()); const el=$("#exClock"); if(!el){ clearInterval(EXT); EXT=null; return; }
     el.textContent=String(Math.floor(left/60000)).padStart(2,"0")+":"+String(Math.floor(left/1000)%60).padStart(2,"0"); el.style.color = left<60000?"var(--bad)":"";

@@ -13,7 +13,8 @@
   --font:"Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-:root[data-theme="dark"]{
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#16181c; --fg:#e6e6e1; --muted:#9aa1ab; --line:#30343b; --card:#1d2025; --soft:#23272d; --code-bg:#22262c; --code-fg:#e6e6e1; color-scheme:dark; } }
+:root[data-theme="dark"]{ color-scheme:dark;
   --bg:#16181c; --fg:#e6e6e1; --muted:#9aa1ab; --line:#30343b; --card:#1d2025; --soft:#23272d;
   --code-bg:#22262c; --code-fg:#e6e6e1;
 }
@@ -48,7 +49,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
   .layout{display:block}
   .side{display:none;position:static;width:auto;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px 10px 12px}
   .side.open{display:block}
-  .topbar{display:flex;position:sticky;top:0;z-index:10;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+  .topbar{display:flex;position:sticky;top:env(safe-area-inset-top, 0px);z-index:10;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
   .topbar .t{font-weight:700;font-size:15px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
   .side .brand{display:none}
 }
@@ -60,7 +61,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;paddi
 .btn.sm{padding:3px 10px;font-size:13px}
 /* ---------- main ---------- */
 main{flex:1;min-width:0}
-.wrap{max-width:760px;margin:0 auto;padding:22px 16px 80px}
+.wrap{max-width:760px;margin:0 auto;padding-block:22px 80px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
 h1{font-size:26px;line-height:1.25;margin:4px 0 6px}
 h2{font-size:19px;margin:30px 0 10px;padding-top:6px;scroll-margin-top:70px}
 h3{font-size:16px;margin:18px 0 6px;scroll-margin-top:70px}
@@ -82,6 +83,7 @@ ul,ol{padding-left:22px} li{margin:3px 0}
 pre{background:var(--code-bg);color:var(--code-fg);padding:10px 12px;border-radius:8px;overflow-x:auto;line-height:1.45;margin:10px 0;border:1px solid var(--line)}
 pre code{font-size:13.5px}
 .tk-c{color:#6e7781;font-style:italic} .tk-s{color:#0a3069} .tk-k{color:#cf222e;font-weight:600} .tk-n{color:#0550ae} .tk-f{color:#8250df} .tk-v{color:#953800}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .tk-s{color:#a5d6ff} :root:not([data-theme="light"]) .tk-k{color:#ff7b72} :root:not([data-theme="light"]) .tk-n{color:#79c0ff} :root:not([data-theme="light"]) .tk-f{color:#d2a8ff} :root:not([data-theme="light"]) .tk-v{color:#ffa657} }
 :root[data-theme="dark"] .tk-s{color:#a5d6ff} :root[data-theme="dark"] .tk-k{color:#ff7b72} :root[data-theme="dark"] .tk-n{color:#79c0ff} :root[data-theme="dark"] .tk-f{color:#d2a8ff} :root[data-theme="dark"] .tk-v{color:#ffa657}
 .diagram{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin:10px 0;overflow-x:auto}
 .diagram svg{display:block;max-width:100%;height:auto;margin:0 auto}
@@ -153,7 +155,7 @@ details summary{cursor:pointer;font-weight:600}
 .kbdhint{font-size:12.5px;color:var(--muted)}
 .chip{display:inline-block;border:1px solid var(--line);border-radius:14px;padding:2px 10px;font-size:13px;margin:2px 4px 2px 0;background:var(--card)}
 .chip.on{border-color:var(--acc);color:var(--acc);font-weight:600}
-@media (max-width:480px){ h1{font-size:22px} .wrap{padding:16px 16px 70px} table{font-size:13.5px} th,td{padding:6px 7px} }
+@media (max-width:480px){ h1{font-size:22px} .wrap{padding-block:16px 70px} table{font-size:13.5px} th,td{padding:6px 7px} }
 </style>
 </head>
 <body>
@@ -298,7 +300,7 @@ function renderHome(){
   h += '<h2>Phím tắt</h2><p>Quiz: <kbd>1</kbd>–<kbd>4</kbd> chọn/bỏ chọn đáp án · <kbd>Enter</kbd> nộp hoặc sang câu tiếp. Flashcard: <kbd>Space</kbd> lật · <kbd>1</kbd> chưa nhớ · <kbd>2</kbd> nhớ rồi.</p>';
   h += '<details><summary>Xóa toàn bộ tiến độ</summary><p class="small">Xóa trạng thái ôn, checklist, điểm quiz, sổ lỗi trong trình duyệt này.</p><button class="btn sm" id="resetAll">Xóa tiến độ</button></details>';
   $("#app").innerHTML = h;
-  const rb=$("#resetAll"); if(rb) rb.onclick=()=>{ if(confirm("Xóa toàn bộ tiến độ?")){ S=blank(); save(); render(); } };
+  const rb=$("#resetAll"); if(rb) rb.onclick=()=>{ if(rb.dataset.armed){ S=blank(); save(); render(); } else { rb.dataset.armed="1"; rb.textContent="Bấm lần nữa để xóa hẳn"; rb.classList.add("pri"); } };
 }
 /* ---------------- review page ---------------- */
 const SECS = [["y","Ý chính"],["mohinh","Mô hình cốt lõi"],["bang","Bảng lệnh / cú pháp"],["sosanh","So sánh các cặp hay nhầm"],["bay","Bẫy hay gặp & “đổi một chỗ”"],["checklist","Checklist tự đánh dấu"],["nhanh","3 câu hỏi nhanh"]];
@@ -428,7 +430,7 @@ function renderQuizQ(){
   $("#app").querySelectorAll(".opt").forEach(b=>b.onclick=()=>toggleOpt(+b.dataset.oi));
   const sb=$("#submit"); if(sb) sb.onclick=submitQ;
   const nb=$("#next"); if(nb) nb.onclick=nextQ;
-  $("#quitQ").onclick=()=>{ if(confirm("Dừng quiz? Các câu đã làm vẫn được ghi vào sổ lỗi.")) { QZ=null; render(); } };
+  const qq=$("#quitQ"); qq.onclick=()=>{ if(qq.dataset.armed){ QZ=null; render(); } else { qq.dataset.armed="1"; qq.textContent="Bấm lần nữa để dừng (câu đã làm vẫn ghi vào sổ lỗi)"; } };
 }
 function fmtOpt(a, q){ return a; }
 function toggleOpt(oi){
