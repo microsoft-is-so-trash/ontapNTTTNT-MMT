@@ -80,6 +80,7 @@ def main(src, dst):
         if not os.path.exists(p): continue
         new = parse(p, b['id'], b['mon'])
         anchors = set(re.findall(r'id="([a-z0-9-]+)"', ''.join(v for v in b['page'].values() if isinstance(v, str))))
+        anchors |= {b['id'].lower() + '-' + x for x in ('y', 'mohinh', 'bang', 'sosanh', 'bay', 'checklist', 'nhanh', 'docthem')}
         for q in new:
             if q['muc'] and q['muc'] not in anchors:
                 print('WARN muc khong ton tai', q['id'], q['muc'])
