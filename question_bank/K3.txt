@@ -1,0 +1,918 @@
+## k3-nav | week3.pdf tr.4–12 | bash
+Q: The prompt is `me@linuxbox:~$`. Which statements are correct?
++ The user name is me.
++ The host name is linuxbox.
++ The current directory is the home directory.
+- The user is the superuser.
+= user@host:dir$; $ = user thường, # = superuser.
+
+Q: A shell prompt ends with `#` instead of `$`. What does it usually mean?
++ The shell is running with superuser (root) privileges
+- The command failed
+- The terminal is in comment mode
+- The user has no home directory
+= Kết thúc bằng # = superuser.
+
+Q: Which command prints the current working directory?
++ pwd
+- cwd
+- ls -d
+- cd .
+= pwd = print working directory.
+
+Q: You are in /usr/bin and run `cd ..`. Where are you?
++ /usr
+- /
+- /usr/bin/..bin
+- your home directory
+= .. = thư mục cha.
+
+Q: Which command returns you to your home directory?
++ cd
++ cd ~
+- cd /
+- cd ..
+= cd không đối số hoặc cd ~ về home.
+
+Q: What does `cd -` do?
++ Changes to the previous working directory
+- Goes to the root directory
+- Goes up one level
+- Deletes the current directory
+= cd - quay lại thư mục trước đó.
+
+Q: Which path is absolute?
++ /home/me/projects
+- projects/app
+- ../app
+- ./app
+= Đường dẫn tuyệt đối bắt đầu bằng /.
+
+Q: You are in /home/me. The relative path `../alice/notes.txt` refers to:
++ /home/alice/notes.txt
+- /home/me/alice/notes.txt
+- /alice/notes.txt
+- /home/me/../notes.txt only if alice exists in me
+= .. đưa về /home rồi vào alice.
+
+Q: Which command lists files including hidden ones whose names start with a dot?
++ ls -a
+- ls -l
+- ls -h
+- ls -r
+= -a = all.
+
+Q: Which command shows file details such as permissions, owner, size and date?
++ ls -l
+- ls -a
+- ls -1
+- ls -i only
+= -l = long format.
+
+Q: Which command shows inode numbers?
++ ls -li
+- ls -la
+- ls -h
+- ls --perm
+= -i in số inode.
+
+Q: In Linux, how is the file system organized?
++ As a single tree starting at /, with devices mounted into it
+- As drive letters like C: and D:
+- As a separate tree per disk
+- As a flat list
+= Một cây duy nhất; thiết bị được mount (xem df -h).
+
+Q: Which key combination searches the command history?
++ Ctrl-r
+- Ctrl-c
+- Ctrl-z
+- Ctrl-l
+= Ctrl-r tìm lịch sử; lịch sử lưu ở ~/.bash_history.
+
+Q: Which actions end a terminal session?
++ exit
++ Ctrl-d
+- Ctrl-r
+- pwd
+= exit hoặc Ctrl-d.
+
+Q: Where does bash store the command history by default?
++ ~/.bash_history
+- /etc/history
+- ~/.history_bash.log
+- /var/log/bash
+= Mặc định nhớ khoảng 1000 lệnh.
+
+Q: What does `.` mean in a path?
++ The current directory
+- The parent directory
+- The home directory
+- The root directory
+= . = hiện tại, .. = cha, ~ = home.
+
+## k3-files | week3.pdf tr.10–18
+Q: Which command creates the nested directories a/b/c in one step, even if a does not exist?
++ mkdir -p a/b/c
+- mkdir a/b/c
+- mkdir -r a/b/c
+- touch a/b/c
+= -p tạo kèm thư mục cha.
+
+Q: You run `cp dir1 dir2` where dir1 is a directory. What happens?
++ cp refuses (omitting directory) because -r is required for directories
+- dir1 is copied recursively
+- dir1 is moved
+- dir2 is deleted
+= Copy thư mục bắt buộc -r.
+
+Q: Which option makes `cp` ask before overwriting an existing file?
++ -i
+- -r
+- -u
+- -v
+= -i = interactive.
+
+Q: What does `cp -u *.html destination` do?
++ Copies only files that are newer than in the destination or missing there
+- Copies files and deletes the source
+- Copies files upside down
+- Copies only hidden files
+= -u = update.
+
+Q: dir2 already exists. What does `mv dir1 dir2` do?
++ Moves dir1 inside dir2 (dir2/dir1)
+- Renames dir1 to dir2, overwriting dir2
+- Copies dir1
+- Fails
+= Đích là thư mục có sẵn → chuyển vào trong.
+
+Q: dir2 does NOT exist. What does `mv dir1 dir2` do?
++ Renames dir1 to dir2
+- Creates dir2/dir1
+- Fails
+- Copies dir1
+= Đích chưa có → đổi tên.
+
+Q: Which command deletes the directory `build` and everything in it?
++ rm -r build
+- rm build
+- rmdir build (when not empty)
+- del build
+= -r xoá đệ quy; rmdir chỉ xoá thư mục rỗng.
+
+Q: Why is `rm * .html` (with a space) dangerous?
++ It deletes every file in the directory and then complains that .html does not exist
+- It deletes only .html files
+- It deletes the home directory
+- It is safe; rm ignores spaces
+= * khớp mọi file. Thử wildcard bằng ls trước.
+
+Q: Does Linux have an undelete command for `rm`?
++ No; deleted files are gone
+- Yes, `rm -u`
+- Yes, the files go to ~/.Trash
+- Only for root
+= Linux không có undelete.
+
+Q: Which wildcard matches exactly one character?
++ ?
+- *
+- [!]
+- **
+= ? khớp đúng một ký tự.
+
+Q: Which file names match `BACKUP.[0-9][0-9][0-9]`?
++ BACKUP.123
+- BACKUP.12
+- BACKUP.1234
+- backup.123
+= Đúng 3 chữ số sau BACKUP. (phân biệt hoa thường).
+
+Q: Which names match `[[:upper:]]*`?
++ Readme
++ Makefile
+- readme
+- 1file
+= Bắt đầu bằng chữ hoa.
+
+Q: Which names match `[!abc]*`?
++ data.txt
++ zeta
+- apple
+- cat
+= [!abc] = ký tự đầu không phải a, b, c.
+
+Q: Which pattern matches hidden files but excludes `.` and `..`?
++ .[!.]*
+- .*
+- *
+- ..*
+= .[!.]* (week3 / TLCL).
+
+Q: Which names does `*.txt` match?
++ notes.txt
++ a.txt
+- notes.txt.bak
+- txt
+= * khớp mọi chuỗi (kể cả rỗng) nhưng tên phải kết thúc bằng .txt.
+
+Q: Which command creates an empty file `f`?
++ touch f
++ > f
+- mkdir f
+- rm f
+= touch hoặc redirect rỗng.
+
+Q: Which statements about `ln file link` (hard link) are correct?
++ The link shares the same inode as the file.
++ The link count of the file increases by 1.
+- It can point to a directory.
+- It can cross file systems.
+= Hard link: cùng inode, không vượt filesystem, không link thư mục.
+
+Q: Which statements about `ln -s target link` are correct?
++ The link is a special file containing the path to the target.
++ It can point to a directory.
++ It can cross file systems.
+- It shares the same inode as the target.
+= Symlink có inode riêng.
+
+Q: How does `ls -l` show a symbolic link?
++ With an `l` file type and `link -> target`
+- With a `d` file type
+- With the same inode number as the target
+- It hides symlinks
+= lrwxrwxrwx ... link -> target.
+
+## k3-trap-link | week3.pdf tr.17–18; ex3.docx
+Q: You run the commands below. What does `cat Hi-hard` print?
+> echo "Hello" > Hi.txt
+> ln Hi.txt Hi-hard
+> ln -s Hi.txt Hi-sym
+> rm Hi.txt
+> cat Hi-hard
++ Hello
+- No such file or directory
+- An empty line
+- The path Hi.txt
+= Inode còn (link count giảm còn 1) nên hard link vẫn đọc được.
+
+Q: Same scenario: what does `cat Hi-sym` do after Hi.txt is removed?
+> rm Hi.txt
+> cat Hi-sym
++ Fails with "No such file or directory" because the link is broken
+- Prints Hello
+- Prints the inode number
+- Recreates Hi.txt
+= Symlink chỉ chứa đường dẫn; đích mất → link hỏng (ls tô đỏ).
+
+Q: After `ln Hi.txt Hi-hard`, what does `ls -li Hi.txt Hi-hard` show?
++ The same inode number and link count 2 for both
+- Different inode numbers
+- Link count 1 for both
+- Hi-hard shown as `l` type
+= Hard link = cùng inode.
+
+Q: You edit Hi-hard after creating the hard link. What happens to Hi.txt?
++ It shows the same new content, because both names refer to the same data
+- It keeps the old content
+- It becomes a symlink
+- It is deleted
+= Hai tên cho cùng một inode.
+
+## k3-pipe | week3.pdf tr.19; TLCL tr.81–89
+Q: What does the pipeline below output?
+> ls /bin | sort | uniq | wc -l
++ The number of unique names in /bin
+- The list of names in /bin
+- The number of duplicate names
+- The size of /bin
+= sort → uniq bỏ trùng → wc -l đếm dòng.
+
+Q: Why is `ls /bin /usr/bin | uniq | wc -l` likely to give a wrong count of unique names?
++ uniq only removes adjacent duplicate lines, so input must be sorted first
+- uniq does not accept pipes
+- wc -l counts words
+- ls cannot list two directories
+= Phải sort trước uniq.
+
+Q: What does `ls /bin | grep zip` show?
++ Only lines containing "zip"
+- Lines not containing zip
+- The number of zip files
+- Nothing; grep needs a file
+= grep lọc dòng khớp mẫu.
+
+Q: Which command keeps displaying new lines appended to a log file?
++ tail -f /var/log/messages
+- head -f /var/log/messages
+- cat -f /var/log/messages
+- less -n /var/log/messages
+= tail -f theo dõi liên tục.
+
+Q: What does `ls /bin | tee list.txt` do?
++ Writes the listing to list.txt and also shows it on the screen
+- Only writes to list.txt
+- Only shows it on screen
+- Appends to list.txt silently
+= tee vừa ghi file vừa chuyển tiếp ra stdout.
+
+Q: Which command prints the first 5 lines of f?
++ head -n 5 f
+- tail -n 5 f
+- wc -l 5 f
+- cut -5 f
+= head = đầu, tail = cuối.
+
+Q: Which command counts the number of lines in f?
++ wc -l f
+- wc -w f
+- wc -c f
+- head -c f
+= -l dòng, -w từ, -c byte.
+
+Q: What does `cmd > file` do if file already exists?
++ Overwrites it from the beginning
+- Appends to the end
+- Fails
+- Writes only errors
+= > ghi đè; >> nối thêm.
+
+Q: Which operator appends output to the end of a file (creating it if needed)?
++ >>
+- >
+- 2>
+- |
+= >> nối thêm.
+
+Q: You run `ls -l /does-not-exist > out.txt`. Which statements are correct?
++ The error message still appears on the screen.
++ out.txt is truncated to 0 bytes.
+- The error is written into out.txt.
+- out.txt keeps its old content.
+= > chỉ chuyển stdout; stderr vẫn ra màn hình; file bị cắt về 0 byte.
+
+Q: Which forms redirect BOTH stdout and stderr into out.txt?
++ cmd > out.txt 2>&1
++ cmd &> out.txt
+- cmd 2> out.txt
+- cmd | out.txt
+= 2>&1 hoặc &>.
+
+Q: What does `cmd 2> err.txt` do?
++ Redirects only standard error to err.txt
+- Redirects stdout to err.txt
+- Runs cmd twice
+- Appends both streams
+= 2 = file descriptor của stderr.
+
+Q: What is the purpose of the pipe operator `|`?
++ Sends the standard output of one command to the standard input of the next
+- Writes output to a file
+- Runs commands in parallel without connection
+- Comments out the rest of the line
+= Pipeline ghép lệnh.
+
+Q: Which command shows the last 20 lines of app.log?
++ tail -n 20 app.log
+- head -n 20 app.log
+- wc -l 20 app.log
+- grep 20 app.log
+= tail = cuối file.
+
+Q: Which pipeline counts how many lines of access.log contain "404"?
++ grep 404 access.log | wc -l
+- wc -l access.log | grep 404
+- tail 404 access.log
+- sort 404 | uniq
+= grep lọc → wc -l đếm.
+
+## k3-perm | week3.pdf tr.20–28
+Q: What does `-rwxr-x---` mean?
++ Owner: read, write, execute; group: read, execute; others: nothing
+- Owner: read; group: write; others: execute
+- Everyone can read and write
+- It is a directory
+= Ký tự đầu - = file; 3 nhóm u/g/o.
+
+Q: What is the octal value of `rwxr-x---`?
++ 750
+- 760
+- 570
+- 755
+= 4+2+1, 4+0+1, 0 → 750.
+
+Q: What permissions result from `chmod 644 notes.txt`?
++ rw-r--r--
+- rw-rw-r--
+- rwxr--r--
+- r--r--r--
+= 6 = rw-, 4 = r--.
+
+Q: What permissions result from `chmod 600 key.pem`?
++ rw-------
+- rw-r--r--
+- r--------
+- rwx------
+= Chỉ owner đọc/ghi (thường dùng cho private key).
+
+Q: What permissions result from `chmod 755 script.sh`?
++ rwxr-xr-x
+- rwxrwxr-x
+- rw-r-xr-x
+- rwxr--r--
+= 7 = rwx, 5 = r-x.
+
+Q: What permissions result from `chmod 664 f`?
++ rw-rw-r--
+- rw-r--r--
+- rwxrwxr--
+- r--rw-rw-
+= 6, 6, 4.
+
+Q: Which octal value equals `rwx------`?
++ 700
+- 600
+- 770
+- 007
+= Chỉ owner có rwx.
+
+Q: The file has `rw-r--r--`. You run `chmod u+x f`. What is the result?
++ rwxr--r--
+- rw-r--r-x
+- rwxr-xr-x
+- rw-r--r--
+= u+x chỉ thêm x cho owner.
+
+Q: The file has `rwxrwxrwx`. You run `chmod o-rw f`. What is the result?
++ rwxrwx--x
+- rwxrwx---
+- rwx--xrwx
+- ---rwxrwx
+= Bỏ r và w của others, còn x.
+
+Q: The file has `rw-------`. You run `chmod go+rx,u+x f`. What is the result?
++ rwxr-xr-x
+- rw-r-xr-x
+- rwxrwxrwx
+- rwx---r-x
+= go+rx thêm r,x cho group và others; u+x thêm x cho owner.
+
+Q: Which statements about `chmod 640 f` vs `chmod g+w f` are correct?
++ `chmod 640` sets all permission bits at once.
++ `chmod g+w` only adds write for the group and leaves the rest unchanged.
+- `chmod g+w` sets the file to 020.
+- Both always produce the same result.
+= Octal đặt toàn bộ; ký hiệu chỉ thêm/bớt phần được nêu.
+
+Q: For a directory, what does the `x` permission allow?
++ Entering the directory (cd) and accessing metadata of entries
+- Executing the directory as a program
+- Listing file names only
+- Deleting the directory
+= x với thư mục = được vào.
+
+Q: For a directory, what does the `r` permission allow?
++ Listing its contents (file names)
+- Entering it
+- Creating files inside
+- Nothing
+= r = liệt kê nội dung.
+
+Q: A directory has `w` but not `x` for you. Can you create a file inside it?
++ No; creating/deleting/renaming entries needs w AND x
+- Yes, w is enough
+- Only hidden files
+- Only with ls -a
+= Có w mà thiếu x thì vẫn không tạo/xoá được.
+
+Q: A directory has `r--` for you. What can you do?
++ List the file names, but not cd into it
+- cd into it and read files
+- Create files
+- Nothing at all
+= Có r thiếu x: liệt kê tên nhưng không vào được.
+
+Q: With umask 0002, what permissions does a newly created file get?
++ rw-rw-r--
+- rw-r--r--
+- rwxrwxr-x
+- rw-rw-rw-
+= Gốc 666, tắt bit write của others → 664.
+
+Q: With umask 0022, what permissions does a newly created file get?
++ rw-r--r--
+- rw-rw-r--
+- rwxr-xr-x
+- rw-------
+= 666 tắt w của group/others → 644.
+
+Q: With umask 0002, what permissions does a newly created directory get?
++ rwxrwxr-x
+- rw-rw-r--
+- rwxr-xr-x
+- rwxrwxrwx
+= Gốc thư mục 777 → 775.
+
+Q: With umask 0000, a new file gets:
++ rw-rw-rw-
+- rwxrwxrwx
+- rw-r--r--
+- ---------
+= File mới không bao giờ có x mặc định (gốc 666).
+
+Q: Why is "666 − umask" not always correct?
++ umask is a bit mask; e.g. umask 003 gives 664, not 663
+- umask is a decimal number
+- 666 is not the base for files
+- It is always correct
+= Bit = 1 trong mask thì tắt quyền tương ứng; không phải phép trừ.
+
+Q: With umask 0077, a new file gets:
++ rw-------
+- rwx------
+- rw-r--r--
+- ---------
+= 666 tắt toàn bộ group/others → 600.
+
+Q: Which command changes the owner of f to bob and the group to users?
++ chown bob:users f
+- chmod bob:users f
+- chgrp bob users f
+- usermod bob f
+= chown user:group file (cần superuser).
+
+Q: Which commands change only the group of f to admins?
++ chown :admins f
++ chgrp admins f
+- chmod g=admins f
+- chown admins f
+= chown :group hoặc chgrp.
+
+Q: Which command shows your uid, gid and the groups you belong to?
++ id
+- whoami -a
+- groups -u
+- ls -l ~
+= id.
+
+Q: Which statements about su and sudo are correct?
++ `su -` opens a login shell as another user (root by default) and asks for that user's password.
++ `sudo cmd` runs one command with elevated privileges and asks for your own password.
+- `sudo` always opens a new root shell.
+- `su` asks for your own password.
+= Ubuntu tắt đăng nhập root trực tiếp, dựa vào sudo.
+
+Q: Which command shows which commands you are allowed to run with sudo?
++ sudo -l
+- sudo -a
+- su -l
+- id -s
+= sudo -l.
+
+Q: Which command restarts the nginx service with administrator privileges?
++ sudo systemctl restart nginx
+- systemctl sudo restart nginx
+- su systemctl restart nginx
+- chmod +x nginx
+= sudo + lệnh cần quyền cao.
+
+Q: What does `chmod g+s /usr/local/share/Music` achieve?
++ New files created inside inherit the directory's group (useful for shared folders)
+- Makes the directory secret
+- Removes group write
+- Makes the directory executable by others
+= setgid trên thư mục.
+
+Q: Which symbols are valid "who" letters in symbolic chmod?
++ u
++ g
++ o
++ a
+= u owner, g group, o others, a all.
+
+Q: Which file type character in `ls -l` indicates a directory?
++ d
+- -
+- l
+- f
+= - file, d thư mục, l symlink.
+
+Q: Which permission is needed to run `./script.sh` directly?
++ Execute (x) for you on the file
+- Only read
+- Only write
+- Directory write
+= x với file = chạy như chương trình.
+
+Q: Which numeric values correspond to r, w and x?
++ r = 4, w = 2, x = 1
+- r = 1, w = 2, x = 4
+- r = 2, w = 4, x = 1
+- r = 4, w = 1, x = 2
+= Cộng lại cho mỗi nhóm.
+
+Q: `chmod 777 f` gives:
++ rwxrwxrwx — everyone has full access (usually a bad idea)
+- rw-rw-rw-
+- rwx------
+- r-xr-xr-x
+= 777 toàn quyền cho mọi người.
+
+Q: Which permissions does an SSH private key file typically need so that ssh accepts it?
++ 600 or 400 (only the owner can read)
+- 644
+- 777
+- 755
+= ssh từ chối key quá "mở" (thực hành EC2: chmod 400 key.pem).
+
+## k3-ssh | week3.pdf tr.29–33; cloudcomputing.pdf tr.13
+Q: On which machine should you run `ssh-keygen` to create your key pair?
++ Your local machine
+- The remote server
+- GitHub
+- Docker Hub
+= Tạo cặp khoá ở máy local, đưa public key lên server.
+
+Q: Where must the public key be placed so the server can authenticate you?
++ ~/.ssh/authorized_keys of the user account on the server
+- ~/.ssh/known_hosts on your laptop
+- /etc/passwd
+- In the private key file
+= Server dùng public key trong authorized_keys để kiểm tra.
+
+Q: Which statements about SSH key authentication are correct?
++ The private key stays secret on the client.
++ The server only needs the public key.
+- The server must store your private key.
+- The public key must be kept secret like a password.
+= Private ở client; public ở server.
+
+Q: Which command logs into an EC2 Ubuntu instance with a .pem key?
++ ssh -i my-key.pem ubuntu@<public-ip>
+- ssh ubuntu@my-key.pem
+- scp -i my-key.pem ubuntu
+- ssh -k ubuntu <public-ip>
+= -i chỉ định private key; user ubuntu của AMI Ubuntu.
+
+Q: Which command copies one file to a remote server over an encrypted connection?
++ scp file.txt user@host:/path/
+- cp file.txt user@host:/path/
+- ssh file.txt user@host
+- rsync -n file.txt
+= scp copy file qua SSH.
+
+Q: You need to sync a whole folder to a server many times, sending only changed files. Which tool fits best?
++ rsync -av folder/ user@host:/path/
+- scp folder user@host
+- cp -r folder host:/path
+- ssh -r folder
+= rsync đồng bộ thư mục, cập nhật lặp lại.
+
+Q: Which two things does SSH provide?
++ Authentication of the server before exchanging data
++ Encryption of the entire session
+- Automatic backup of files
+- A graphical desktop
+= SSH xác thực server và mã hoá phiên.
+
+Q: Which tool is a secure, interactive replacement for ftp?
++ sftp
+- telnet
+- ftpd
+- curl -f
+= sftp chạy qua SSH.
+
+Q: SSH to your server fails. Which commands help check the network first?
++ ping host
++ traceroute host
+- chmod 777 ~/.ssh
+- rm ~/.ssh/id_rsa
+= Kiểm tra mạng trước khi nghi key/firewall.
+
+Q: You see "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED". Which file stores the remembered host keys?
++ ~/.ssh/known_hosts
+- ~/.ssh/authorized_keys
+- /etc/hosts
+- ~/.bashrc
+= Xoá dòng cũ bằng ssh-keygen -R host (TLCL tr.251).
+
+Q: In `ssh -i my-key.pem ubuntu@203.0.113.10`, what is `my-key.pem`?
++ The private key
+- The public key
+- The server certificate
+- The password file
+= -i = identity file (private key).
+
+## k3-trap-key | week3.pdf tr.30; CD.pdf tr.17
+Q: A teammate asks you to email your private key so they can add it to the server. What is correct?
++ Never share the private key; give them your public key instead
+- Send it, the server needs it
+- Upload it to GitHub
+- Put it in authorized_keys of your laptop
+= Server chỉ cần public key.
+
+Q: Which file content belongs in `authorized_keys` on the server?
++ The content of id_rsa.pub (public key)
+- The content of id_rsa (private key)
+- The server's password
+- The known_hosts file
+= authorized_keys chứa public key.
+
+## k3-trap-octal | week3.pdf tr.22–25
+Q: Match: which octal mode is `rw-r-----`?
++ 640
+- 604
+- 460
+- 644
+= 6 = rw-, 4 = r--, 0 = ---.
+
+Q: Which octal is `r-xr-xr-x`?
++ 555
+- 444
+- 777
+- 511
+= 4+1 = 5 cho mỗi nhóm.
+
+Q: Which mode lets only the owner read, write and execute a directory, and blocks everyone else?
++ 700
+- 755
+- 600
+- 711
+= rwx------.
+
+## k3-trap-umask | week3.pdf tr.25
+Q: Your umask is 0022. You run `mkdir data`. What are the permissions of data?
++ rwxr-xr-x
+- rw-r--r--
+- rwxrwxr-x
+- rwx------
+= 777 tắt w của group/others → 755.
+
+Q: Which statements about umask are correct?
++ It removes permission bits from newly created files and directories.
++ Files start from 666 and directories from 777 before the mask is applied.
+- It adds execute permission to new files.
+- It changes the permissions of existing files.
+= umask chỉ ảnh hưởng file mới.
+
+## k3-trap-uniq | week3.pdf tr.19
+Q: Input lines are: a, b, a, a, c. What does `uniq` output (without sort)?
++ a, b, a, c
+- a, b, c
+- a, a, a
+- b, c
+= Chỉ gộp dòng trùng liền kề.
+
+Q: Same input a, b, a, a, c. What does `sort | uniq` output?
++ a, b, c
+- a, b, a, c
+- a, a, a, b, c
+- c, b, a
+= Sort đưa dòng trùng sát nhau rồi uniq gộp.
+
+## k3-trap-dir | week3.pdf tr.21
+Q: You have `r-x` on a directory but not `w`. Which can you do?
++ cd into it
++ list its files
+- create a new file in it
+- delete a file in it
+= Tạo/xoá cần w + x.
+
+## k3-files | TLCL tr.71
+Q: Which `cp` option preserves attributes such as ownership and permissions?
++ -a
+- -i
+- -u
+- -n
+= -a = archive.
+
+Q: Which option makes `cp` or `mv` print what it is doing?
++ -v
+- -i
+- -r
+- -u
+= -v = verbose.
+
+Q: Which command copies file1 and file2 into the existing directory dir1?
++ cp file1 file2 dir1
+- cp dir1 file1 file2
+- mv dir1 file1 file2
+- ln file1 file2 dir1
+= Nhiều nguồn, đích cuối là thư mục.
+
+Q: Which command removes an empty directory?
++ rmdir dir
+- rm dir (without -r)
+- del dir
+- mkdir -d dir
+= rmdir chỉ xoá thư mục rỗng.
+
+Q: Which statements about hard links are correct?
++ A file is only really deleted when its link count reaches 0.
++ You cannot create a hard link to a directory.
+- A hard link breaks when the original name is removed.
+- Hard links show as `l` in ls -l.
+= Hard link không bị hỏng khi xoá tên gốc.
+
+Q: Which is a reason to use a symbolic link instead of a hard link?
++ You need to link to a directory or a file on another file system
+- You want the link to survive deleting the target
+- You want the same inode
+- You want to save disk blocks for data copies
+= Symlink vượt filesystem, link thư mục.
+
+Q: Which command shows disk usage of mounted file systems in human-readable form?
++ df -h
+- du -s /
+- ls -h /
+- mount -h
+= df -h.
+
+Q: Which command shows the type of a file (e.g. ASCII text, ELF executable)?
++ file name
+- type name
+- ls -t name
+- cat -t name
+= file xác định loại file.
+
+Q: Which command lets you page through a long text file?
++ less file
+- tee file
+- touch file
+- wc file
+= less (q để thoát).
+
+## k3-pipe | week3.pdf tr.19
+Q: What does the command below print?
+> echo -e "b\na\nb\nc" | sort | uniq -c
++ 1 a, 2 b, 1 c (each with its count)
+- b a b c
+- 4
+- a b c without counts
+= uniq -c đếm số lần xuất hiện (sau sort).
+
+Q: Which pipeline shows the 3 largest files in the current directory (by size, from `ls -l`)?
++ ls -l | sort -k5 -n -r | head -n 3
+- ls -l | head -n 3 | sort
+- ls -l | uniq | tail -3
+- head -3 | ls -l
+= Sort theo cột 5 (size) giảm dần, lấy 3 dòng đầu.
+
+Q: What does `/dev/null` do as a redirect target?
++ Discards whatever is written to it
+- Stores output permanently
+- Sends output to the printer
+- Creates an error
+= cmd 2> /dev/null bỏ thông báo lỗi.
+
+Q: Which command searches for lines NOT containing "DEBUG" in app.log?
++ grep -v DEBUG app.log
+- grep DEBUG app.log
+- grep -c DEBUG app.log
+- tail -v DEBUG app.log
+= -v đảo điều kiện.
+
+Q: Which command searches case-insensitively for "error"?
++ grep -i error app.log
+- grep -v error app.log
+- grep -n error app.log only
+- grep error -r
+= -i ignore case.
+
+## k3-perm | week3.pdf tr.26–28
+Q: A file shows `-rw-r--r-- 1 root root ... /etc/hosts`. You are a normal user. What can you do?
++ Read it, but not modify it without sudo
+- Modify it freely
+- Execute it
+- Nothing, not even read
+= others chỉ có r.
+
+Q: Which command lets a normal user edit `/etc/caddy/Caddyfile` owned by root?
++ sudo nano /etc/caddy/Caddyfile
+- nano /etc/caddy/Caddyfile
+- chmod 777 /etc and then edit
+- su nano
+= Dùng sudo cho một lệnh.
+
+Q: Which user account normally can change the owner of any file?
++ root (superuser)
+- any user
+- the group owner
+- only the file's owner
+= chown cần superuser.
+
+Q: `su -c "ls -l /root"` does what?
++ Runs one command as root (asking for root's password) without staying in a root shell
+- Runs ls as your user
+- Changes the owner of /root
+- Opens a permanent root shell
+= su -c chạy một lệnh với user khác.
+
+Q: Why does Ubuntu rely on sudo instead of logging in as root?
++ Direct root login is disabled; sudo gives privileges per command and logs them
+- root does not exist on Ubuntu
+- sudo is faster than root
+- su is not installed
+= Ubuntu tắt đăng nhập root trực tiếp.

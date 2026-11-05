@@ -1,0 +1,799 @@
+## k6-pipeline | CI.pdf tr.4–7 | yaml
+Q: What is Continuous Integration (CI) in the course?
++ Automatically testing and building every time code changes (push / pull request)
+- Automatically deploying to EC2 without tests
+- Manually running tests before release
+- Merging all branches daily by hand
+= CI: tự động test + build khi mã thay đổi.
+
+Q: Which benefits of CI are mentioned in the slides?
++ You never forget to run the tests.
++ Everyone who pushes runs exactly the same steps.
++ Errors are detected early.
+- Failed builds are fixed automatically.
+= CI không tự sửa lỗi.
+
+Q: Where do GitHub Actions jobs run?
++ On a runner provided by GitHub (e.g. ubuntu-latest)
+- On your laptop
+- On Docker Hub
+- On the EC2 instance always
+= Runner = máy/môi trường thực thi job.
+
+Q: What is the hierarchy in GitHub Actions?
++ workflow → job → step
+- step → job → workflow
+- job → workflow → step
+- workflow → step → job
+= Workflow chứa job; job chứa step.
+
+Q: In what order do steps inside one job run?
++ Sequentially, one after another
+- All in parallel
+- In random order
+- Alphabetically by name
+= Step chạy lần lượt.
+
+Q: Which flow matches the CI workflow in the slides?
++ push → checkout → setup python → pip install → pytest → docker build
+- pytest → push → checkout → docker build
+- docker build → push → pytest
+- checkout → push → deploy → pytest
+= CI.pdf tr.14.
+
+## k6-file | CI.pdf tr.10–15 | yaml
+Q: In which folder must workflow files be placed?
++ .github/workflows/
+- .git/workflows/
+- .github/steps/
+- app/actions/
+= Chỉ .github/workflows/ được nhận.
+
+Q: Which file names would GitHub Actions recognize as workflows?
++ .github/workflows/ci.yml
++ .github/workflows/deploy.yaml
+- .github/ci.yml
+- workflows/ci.yml
+= Phải nằm trong .github/workflows/.
+
+Q: Read the workflow. What does `runs-on: ubuntu-latest` specify?
+> jobs:
+>   test:
+>     runs-on: ubuntu-latest
++ The type of runner machine that runs the job
+- The Docker base image of the app
+- The EC2 AMI
+- The branch to run on
+= runs-on = loại runner.
+
+Q: In the workflow below, what is `test`?
+> jobs:
+>   test:
+>     runs-on: ubuntu-latest
+>     steps:
+>       - run: pytest
++ The name (id) of a job
+- A step
+- A trigger
+- A secret
+= jobs: → test: là tên job.
+
+Q: What does `uses: actions/checkout@v4` do?
++ Uses a ready-made action to check out the repository code onto the runner
+- Runs `git push`
+- Checks out a Docker image
+- Deploys the code
+= Runner bắt đầu trống; cần checkout code.
+
+Q: What is the difference between `uses:` and `run:`?
++ uses: calls an existing action; run: executes a shell command
+- uses: runs shell; run: calls an action
+- They are identical
+- uses: is only for secrets
+= uses gọi action; run chạy lệnh shell.
+
+Q: In the step below, what does `with:` provide?
+> - uses: actions/setup-python@v5
+>   with:
+>     python-version: "3.12"
++ Input parameters for the action
+- Environment secrets
+- The runner type
+- The trigger
+= with: truyền tham số cho action.
+
+Q: Which step installs dependencies in the CI workflow?
++ - run: pip install -r requirements.txt
+- - uses: actions/checkout@v4
+- - run: pytest
+- - run: docker build -t chat-app .
+= pip install.
+
+Q: Which step builds the Docker image in the CI workflow?
++ - run: docker build -t chat-app .
+- - run: pytest
+- - uses: actions/setup-python@v5
+- - run: docker run chat-app
+= docker build ở cuối workflow CI.
+
+Q: Without `actions/checkout`, what happens when `pytest` runs?
++ It finds no tests because the repository code is not on the runner
+- It works normally
+- GitHub checks out automatically for run steps
+- It runs tests from Docker Hub
+= Runner mới, chưa có code.
+
+Q: What does `name: CI` at the top of the workflow do?
++ Sets the display name of the workflow in the Actions tab
+- Selects the runner
+- Defines a trigger
+- Creates a job
+= name hiển thị.
+
+Q: Which statements about one workflow file are correct?
++ One file defines one automated process.
++ It is written in YAML.
+- It must be named main.yml.
+- It must be in the repository root.
+= Một file = một quy trình.
+
+Q: Which YAML mistake breaks the workflow?
++ Wrong indentation, e.g. steps not nested under the job
+- Using a comment line starting with #
+- Using double quotes for python-version
+- Naming the job test
+= YAML phụ thuộc thụt lề.
+
+## k6-trigger | CI.pdf tr.11; đề mẫu Q7, Q15 | yaml
+Q: With the trigger below, which events start the workflow?
+> on:
+>   push:
+>   pull_request:
++ Pushing commits to GitHub
++ Opening a pull request
+- Committing locally without pushing
+- Editing a file locally
+= GitHub chỉ biết sự kiện xảy ra trên GitHub.
+
+Q: With the trigger below, which events start the workflow?
+> on:
+>   push:
+>     branches: [main]
++ Pushing to main
+- Pushing to experiment
+- Opening a PR without pushing to main
+- A local commit on main not yet pushed
+= Lọc nhánh main.
+
+Q: You add `pull_request:` to the trigger above. What changes?
+> on:
+>   push:
+>     branches: [main]
+>   pull_request:
++ Opening a pull request also runs the workflow
+- Nothing
+- Pushes to main no longer run it
+- Only PRs to experiment run it
+= Thêm trigger pull_request.
+
+Q: You remove `branches: [main]` from `on: push:`. What changes?
++ A push to any branch now runs the workflow
+- Only main runs it
+- No push runs it
+- Only tags run it
+= Bỏ lọc nhánh.
+
+Q: Which key defines the events that trigger a workflow?
++ on:
+- jobs:
+- runs-on:
+- steps:
+= on: = trigger.
+
+Q: Why does running the `pull_request` trigger matter?
++ It tests the change before it is merged
+- It deploys to production
+- It deletes the branch
+- It skips tests
+= Kiểm thử trước khi gộp.
+
+Q: Which actions NEVER trigger a GitHub workflow?
++ Saving a file in your editor
++ `git commit` on your laptop without push
+- `git push` to a branch matching the trigger
+- Opening a pull request when `pull_request` is a trigger
+= Việc chỉ xảy ra ở local thì GitHub không biết.
+
+Q: With `on: pull_request:` only, which event triggers the workflow?
++ Opening or updating a pull request
+- Pushing to main without a PR
+- Creating a tag
+- Starring the repository
+= Chỉ PR.
+
+Q: With `on: push: branches: [main, dev]`, which pushes run the workflow?
++ push to main
++ push to dev
+- push to feature
+- push to experiment
+= Danh sách nhánh.
+
+## k6-pytest | CI.pdf tr.17–19 | python
+Q: What turns a workflow run red?
++ A failing step, e.g. a test assertion fails in pytest
+- A step with a long name
+- Too many steps
+- A comment in YAML
+= Step lỗi → job lỗi → run đỏ.
+
+Q: The `pytest` step fails. What happens to the following `docker build` step in the same job?
++ It does not run; the job fails
+- It runs anyway
+- It runs on another runner
+- It retries pytest
+= Đỏ ở step nào thì dừng ở đó.
+
+Q: Which naming conventions does pytest use to discover tests?
++ Files named test_*.py
++ Functions named test_...
+- Files named *.test
+- Classes named Spec
+= Quy ước pytest.
+
+Q: Which test is recommended to start CI with?
++ A simple /health test that does not call the LLM
+- A test that calls Gemini with a real key
+- A load test with 1000 users
+- No test at all
+= Nhanh, ổn định.
+
+Q: Read the test. When does it fail?
+> def test_health():
+>     response = client.get("/health")
+>     assert response.status_code == 200
++ When /health returns any status other than 200
+- When /health returns 200
+- Never
+- Only when the body is empty
+= Assert status code.
+
+Q: Which assertion checks the entire JSON body equals {"status": "ok"}?
++ assert response.json() == {"status": "ok"}
+- assert {"status": "ok"}
+- assert response.json
+- assert response.json() is not None
+= Đề mẫu Q17.
+
+Q: Why does `assert {"status": "ok"}` always pass?
++ A non-empty dict is truthy
+- It compares with the response
+- pytest skips it
+- It raises SyntaxError
+= Không so sánh gì.
+
+Q: What can you configure on GitHub regarding red pull requests?
++ Block merging a pull request whose checks are red
+- Automatically fix red tests
+- Delete the PR automatically
+- Merge red PRs faster
+= Chặn gộp PR đỏ.
+
+Q: Which object sends requests to the app in a pytest test without running Uvicorn?
++ TestClient(app)
+- requests.Session("prod")
+- curl
+- docker exec
+= fastapi.testclient.
+
+Q: Which of the following makes the CI run green?
++ All steps succeed, including all tests
+- At least one test passes
+- The workflow file exists
+- The code compiles locally
+= Tất cả đạt → xanh.
+
+## k6-log | CI.pdf tr.23
+Q: Your workflow run is red. How do you find the cause?
++ Actions tab → the red run → the failed job → the failed step → read the error
+- Delete the workflow and push again
+- Check Docker Hub
+- SSH into the runner
+= Đọc log từng step.
+
+Q: In the log of a red run, where is the most useful information usually?
++ The first error line of the failed step
+- The last line of the successful steps
+- The workflow name
+- The commit message
+= Tìm dòng lỗi đầu tiên.
+
+## k6-trap-trigger | đề mẫu Q7
+Q: The workflow uses `on: push: branches: [main]`. A teammate pushes to `experiment` and asks why CI did not run. What is the reason?
++ The trigger only runs for pushes to main
+- GitHub Actions is broken
+- The runner is offline
+- experiment has no Dockerfile
+= Lọc nhánh.
+
+## k6-trap-q15 | đề mẫu Q15
+Q: A workflow has both `push:` and `pull_request:` triggers. Which actions trigger it?
++ Pushing to the repository
++ Opening a pull request
+- Running pytest locally
+- Committing locally without pushing
+= Q15.
+
+## k6-trap-runner | đề mẫu Q14
+Q: What is a GitHub Actions runner?
++ The machine/environment that executes a job and provides the environment for its steps
+- The registry that stores images
+- The YAML file
+- A Python test runner only
+= Runner ≠ registry ≠ YAML.
+
+Q: Which statements are correct?
++ A runner executes jobs.
++ A registry stores and distributes images.
+- The workflow YAML file executes jobs by itself.
+- Docker Hub is a runner.
+= Không nhầm runner và registry.
+
+Q: A fresh runner starts each job. Which statements are correct?
++ It does not contain your code until you check it out.
++ Python dependencies must be installed in a step.
+- It already has your .env file.
+- It keeps files from yesterday's run.
+= Môi trường sạch mỗi lần chạy.
+
+## k6-trap-q12 | đề mẫu Q12
+Q: Which are benefits of CI in the slides?
++ Early feedback when a change breaks tests
++ A consistent sequence of checks for matching events
+- Developers no longer need to write tests
+- Production servers are updated by hand
+= Phản hồi sớm, nhất quán.
+
+## k6-trap-red | CI.pdf tr.17–19
+Q: The workflow order is checkout → pip install → docker build → pytest. The Dockerfile has a typo. What happens?
++ The run turns red at docker build, before pytest runs
+- pytest runs first anyway
+- The run is green
+- Only a warning is shown
+= Đổi thứ tự step thì điểm dừng đổi theo.
+
+Q: `pip install -r requirements.txt` fails because a package name is misspelled. What happens?
++ The job fails at that step; pytest and docker build do not run
+- pytest runs with missing packages
+- The workflow skips the step
+- The run is green
+= Step lỗi dừng job.
+
+## k6-trap-json | đề mẫu Q17 | python
+Q: The /health endpoint returns `{"status": "ok"}`. Which assertions pass?
++ assert response.json() == {"status": "ok"}
++ assert response.json()["status"] == "ok"
+- assert response.json() == {"status": "OK"}
+- assert response.json() == {"status": "ok", "model": "x"}
+= So sánh phân biệt chữ hoa thường và đầy đủ key.
+
+Q: Which assertion does NOT check the response content?
++ assert response.json is not None
+- assert response.json() == {"status": "ok"}
+- assert response.status_code == 200
+- assert response.json()["status"] == "ok"
+= Thiếu () là method object.
+
+## k6-file | CI.pdf tr.10–15 | yaml
+Q: Read the workflow. How many jobs and steps are there?
+> jobs:
+>   test:
+>     runs-on: ubuntu-latest
+>     steps:
+>       - uses: actions/checkout@v4
+>       - uses: actions/setup-python@v5
+>         with:
+>           python-version: "3.12"
+>       - run: pip install -r requirements.txt
+>       - run: pytest
++ 1 job, 4 steps
+- 4 jobs, 1 step
+- 1 job, 5 steps
+- 2 jobs, 4 steps
+= Mỗi dấu - là một step; with thuộc step setup-python.
+
+Q: Which line makes Python 3.12 available on the runner?
++ uses: actions/setup-python@v5 with python-version: "3.12"
+- runs-on: python-3.12
+- run: python3.12 install
+- on: python
+= setup-python.
+
+Q: What does `@v4` in `actions/checkout@v4` mean?
++ The version of the action to use
+- The Python version
+- The runner version
+- The 4th step
+= Ghim phiên bản action.
+
+Q: Which statements about `run: pytest` are correct?
++ It runs a shell command on the runner.
++ If any test fails, pytest exits non-zero and the step fails.
+- It runs on the EC2 server.
+- It always succeeds.
+= Exit code ≠ 0 → step đỏ.
+
+Q: Which trigger configuration runs CI for every push on every branch and for every PR?
++ on: [push, pull_request]
+- on: push: branches: [main]
+- on: workflow_dispatch only
+- on: schedule
+= Dạng danh sách rút gọn.
+
+Q: Where do you see the history of workflow runs on GitHub?
++ The Actions tab of the repository
+- The Settings tab only
+- Docker Hub
+- The Issues tab
+= Tab Actions.
+
+Q: The workflow is in `.github/workflow/ci.yml` (missing s). What happens?
++ GitHub does not detect it; no workflow runs
+- It runs normally
+- It runs twice
+- GitHub renames the folder
+= Đường dẫn phải đúng .github/workflows/.
+
+Q: Which CI step order is logical?
++ checkout → setup-python → pip install → pytest
+- pytest → checkout → pip install
+- pip install → checkout → pytest
+- setup-python → pytest → checkout
+= Phải có code và thư viện trước khi test.
+
+## k6-pipeline | CI.pdf tr.4–7
+Q: What is the difference between CI and CD?
++ CI tests and builds automatically on changes; CD deploys automatically after tests/build pass
+- CI deploys; CD tests
+- They are identical
+- CD runs only on laptops
+= CD học ở K8.
+
+Q: Compared with manual testing, which statements about CI are correct?
++ CI runs the same checks for every matching event.
++ Manual testing is easy to forget and differs per person.
+- CI requires each developer to run tests locally first.
+- CI fixes bugs automatically.
+= Lợi ích của CI.
+
+Q: A developer forgets to run tests before pushing to main. With CI on push to main, what happens?
++ CI runs the tests anyway and turns red if they fail
+- Nothing is tested
+- The push is blocked locally
+- The code is deployed without tests
+= CI tự chạy test.
+
+Q: Which part of a GitHub Actions workflow defines WHAT to do?
++ jobs and steps
+- on
+- name
+- runs-on only
+= on = khi nào; jobs/steps = làm gì.
+
+Q: Which part of a workflow defines WHEN it runs?
++ on
+- jobs
+- steps
+- with
+= Trigger.
+
+Q: Which part defines WHERE a job runs?
++ runs-on
+- on
+- uses
+- name
+= Runner.
+
+Q: In CI, why is `docker build -t chat-app .` useful even without pushing the image?
++ It verifies that the Dockerfile builds correctly on a clean machine
+- It deploys to EC2
+- It uploads to Docker Hub
+- It runs pytest
+= Phát hiện Dockerfile hỏng sớm.
+
+Q: A step uses `run: |` with several lines. What happens?
+> - run: |
+>     pip install -r requirements.txt
+>     pytest
++ The lines run as a multi-line shell script in one step
+- Only the first line runs
+- They run on two different runners
+- YAML error
+= | = chuỗi nhiều dòng.
+
+Q: Which events are typical CI triggers in the course?
++ push
++ pull_request
+- local commit
+- file save
+= Hai trigger trong slide.
+
+Q: What does a green check mark next to a commit on GitHub mean?
++ All workflow runs for that commit succeeded
+- The commit is deployed
+- The commit is signed
+- The branch is protected
+= Xanh = tất cả step đạt.
+
+Q: Which file is the input that a runner reads to know which steps to execute?
++ The workflow YAML in .github/workflows/
+- requirements.txt
+- Dockerfile only
+- README.md
+= Runner thực thi theo file workflow.
+
+Q: Two jobs `test` and `lint` are defined without dependencies. How do they run by default?
++ In parallel, each on its own runner
+- Sequentially, test first
+- Only the first one runs
+- They share one runner and run steps alternately
+= Job mặc định chạy song song (step trong job thì tuần tự).
+
+Q: Which keyword makes job `build` wait for job `test` to finish successfully?
++ needs: test
+- after: test
+- depends: test
+- wait: test
+= needs (dùng trong CD: build-push sau test).
+
+Q: In `docker/build-push-action` within CI/CD, what is built?
++ A Docker image from the repository's Dockerfile
+- A Python wheel
+- A GitHub release
+- An EC2 instance
+= Dùng ở K8 để build và push.
+
+Q: Which statements about workflow logs are correct?
++ Each step has its own log section.
++ The failed step is marked with a red cross.
+- Logs are only visible on the runner machine.
+- Logs are deleted when the run turns red.
+= Đọc log trên tab Actions.
+
+Q: You fix a failing test and push again to main. What happens?
++ A new workflow run starts; if tests pass it turns green
+- The old red run turns green automatically
+- Nothing; you must recreate the workflow
+- GitHub deletes the red run
+= Mỗi push là một lần chạy mới.
+
+Q: Which of these is a correct minimal CI workflow?
+> name: CI
+> on: push
+> jobs:
+>   test:
+>     runs-on: ubuntu-latest
+>     steps:
+>       - uses: actions/checkout@v4
+>       - run: pytest
++ It is valid: on push, one job checks out and runs pytest
+- It is invalid because name is missing a job
+- It is invalid because on must be pull_request
+- It runs on the EC2 server
+= Cấu trúc tối thiểu hợp lệ (cần pytest có sẵn trên runner).
+
+Q: Which key is misplaced in the snippet below?
+> on:
+>   push:
+> runs-on: ubuntu-latest
+> jobs:
+>   test:
+>     steps:
+>       - run: pytest
++ runs-on must be inside the job (test), not at the top level
+- on must be inside jobs
+- steps must be at top level
+- Nothing is wrong
+= runs-on thuộc từng job.
+
+Q: Which tool in the CI workflow actually executes the Python test files?
++ pytest
+- uvicorn
+- docker
+- pip
+= pytest chạy test.
+
+Q: Which file lists the Python packages installed in CI?
++ requirements.txt
+- .env
+- Dockerfile
+- .gitignore
+= pip install -r requirements.txt.
+
+Q: Why should CI tests not call the real Gemini API?
++ They become slow, flaky and require secrets/costs
+- Gemini blocks GitHub
+- pytest cannot do HTTP
+- It is forbidden by YAML
+= Bắt đầu bằng /health không gọi LLM.
+
+Q: Which statements describe pytest's behaviour on assertion failure?
++ The test is reported as failed.
++ pytest exits with a non-zero code.
+- pytest continues and reports success.
+- The runner retries the test forever.
+= Exit ≠ 0 → step đỏ.
+
+Q: CI is red on a pull request. What is the right action?
++ Read the log, fix the code or test, push a new commit to the PR branch
+- Merge anyway
+- Delete the workflow
+- Force-push to main
+= Sửa rồi push lại.
+
+Q: A workflow file defines `on: push` but nothing happens after pushing. Which causes are possible?
++ The file is not in .github/workflows/
++ The YAML is invalid
+- The repository has a README
+- The commit message is too short
+= Kiểm tra đường dẫn và cú pháp.
+
+Q: Which GitHub Actions concept is equivalent to "a single command or action inside a job"?
++ Step
+- Workflow
+- Runner
+- Trigger
+= step.
+
+Q: What is `ubuntu-latest`?
++ A GitHub-hosted runner label for the latest Ubuntu image
+- A Docker image tag for the app
+- An EC2 AMI name
+- A branch name
+= Nhãn runner.
+
+Q: What does a GitHub workflow do with the `docker build` output in the CI.pdf example?
++ Only builds the image to verify; pushing happens in the CD workflow
+- Pushes it to EC2
+- Runs it in production
+- Deletes the Dockerfile
+= CI build; CD (K8) push + deploy.
+
+Q: You want CI to run only on PRs targeting main. Which config?
++ on: pull_request: branches: [main]
+- on: push: branches: [main]
+- on: pull_request: tags: [main]
+- on: main
+= Lọc nhánh cho pull_request.
+
+Q: Which is the difference between a workflow run and a workflow file?
++ The file is the definition; a run is one execution triggered by an event
+- They are the same
+- A run is a YAML file
+- A file is created per push
+= Mỗi sự kiện → một run.
+
+Q: Which statements about step names are correct?
++ `name:` on a step only labels it in the log.
++ Steps without name show the command or action as label.
+- Steps must have unique names to run.
+- The name decides the execution order.
+= name chỉ là nhãn.
+
+Q: What does `pip install -r requirements.txt` do on the runner?
++ Installs the project's Python dependencies so tests can import them
+- Deploys the app
+- Builds the Docker image
+- Creates the virtual machine
+= Cài thư viện.
+
+Q: The test imports `from main import app`. On the runner, which step must run before for this to work?
++ actions/checkout (to get main.py) and pip install (for fastapi)
+- docker push
+- ssh-action
+- curl -f
+= Cần code và thư viện.
+
+Q: Which output indicates pytest found and passed 3 tests?
++ 3 passed
+- 3 failed
+- 0 collected
+- 3 errors
+= Kết quả pytest.
+
+Q: pytest prints `collected 0 items`. What is a likely cause?
++ Test files/functions do not follow the test_ naming convention or code was not checked out
+- All tests passed
+- The runner is Windows
+- requirements.txt is too long
+= Không tìm thấy test.
+
+Q: Which statement about CI and branch protection is correct?
++ A PR can be required to have passing checks before merge
+- CI automatically merges PRs
+- CI deletes branches
+- Branch protection disables CI
+= Chặn gộp PR đỏ.
+
+Q: Which is a valid way to install packages and run tests in a single step?
++ run: pip install -r requirements.txt && pytest
+- uses: pip install && pytest
+- with: pytest
+- on: pytest
+= && chạy lệnh sau nếu lệnh trước thành công.
+
+Q: What is the purpose of `actions/setup-python`?
++ Installs and configures the requested Python version on the runner
+- Runs Python tests
+- Creates a virtualenv on EC2
+- Builds the Docker image
+= Cài Python.
+
+Q: Which part of the pipeline is NOT done by CI in the course?
++ SSH into EC2 and restart containers
+- Checkout
+- Run pytest
+- Build the Docker image
+= Deploy là CD.
+
+## k6-file | CI.pdf tr.10–15 | yaml
+Q: Which statements about `on:` in the workflow below are correct?
+> on:
+>   push:
+>     branches: [main]
+>   pull_request:
+>     branches: [main]
++ A push to main triggers it.
++ A pull request targeting main triggers it.
+- A push to dev triggers it.
+- A local commit on main triggers it.
+= Cả hai trigger đều lọc main.
+
+Q: Which line runs the tests in the workflow?
+> steps:
+>   - uses: actions/checkout@v4
+>   - run: pip install -r requirements.txt
+>   - run: pytest
+>   - run: docker build -t chat-app .
++ - run: pytest
+- - uses: actions/checkout@v4
+- - run: pip install -r requirements.txt
+- - run: docker build -t chat-app .
+= pytest chạy test.
+
+Q: Which statement about the runner after a job finishes is correct?
++ The GitHub-hosted runner is discarded; the next run starts clean
+- It keeps installed packages for next time
+- It becomes your EC2 server
+- It keeps your secrets on disk
+= Runner tạm thời.
+
+Q: In the workflow below, what is wrong?
+> jobs:
+>   test:
+>     runs-on: ubuntu-latest
+>     steps:
+>       - run: pytest
+>       - uses: actions/checkout@v4
++ pytest runs before the code is checked out
+- Nothing
+- runs-on is invalid
+- checkout must be outside steps
+= Thứ tự step sai.
+
+## k6-pytest | CI.pdf tr.19 | python
+Q: Which test fails if /health returns status 500?
+> def test_health():
+>     r = client.get("/health")
+>     assert r.status_code == 200
++ test_health fails
+- test_health passes
+- It is skipped
+- It errors at import
+= 500 ≠ 200.
+
+Q: Which pytest result makes the CI step green?
++ All collected tests pass
+- 1 passed, 1 failed
+- 0 passed, 1 error
+- Interrupted
+= Một test fail là đỏ.

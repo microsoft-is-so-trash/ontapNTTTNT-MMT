@@ -1,0 +1,817 @@
+## k8-trap-arch | CD.pdf tr.2–6, 12
+Q: What does CD automate in the course?
++ Shipping the app to the server after CI passes: push image to a registry, then EC2 pulls and runs it
+- Writing unit tests
+- Creating EC2 instances
+- Issuing TLS certificates
+= CD = triển khai tự động.
+
+Q: Which is the correct CD architecture with a registry?
++ Push code → test/build on runner → publish image to registry → EC2 pulls and runs it
+- Push code → SSH to EC2 → build on EC2
+- Push code → copy source files to EC2 → run python
+- Build on laptop → email image to EC2
+= Đề mẫu Q6.
+
+Q: Where is the Docker image built in the course's CD pipeline?
++ On the GitHub Actions runner
+- On the EC2 instance
+- On Docker Hub
+- On the developer's laptop only
+= Build trên runner, EC2 chỉ pull.
+
+Q: Why is building on EC2 discouraged?
++ It overloads the server's CPU/RAM and environments may differ
+- EC2 cannot run Docker
+- It is faster
+- Docker Hub forbids it
+= EC2 nhẹ, image đồng nhất.
+
+Q: Which services can act as the registry in the course?
++ Docker Hub
++ AWS ECR
+- GitHub Actions runner
+- Caddy
+= Registry lưu và phát hành image.
+
+Q: Which statements about Continuous Delivery vs Continuous Deployment are correct?
++ Delivery automates build/test/package, but going to production needs a manual approval.
++ Deployment automatically releases every commit that passes tests to production.
+- Delivery never builds artifacts.
+- Deployment always needs a human click.
+= CD.pdf tr.4–5.
+
+Q: Manual deployment vs CD: which are CD advantages in the slides?
++ Push and it runs, in less than about 3 minutes
++ Standardized steps, less human error
++ Easy rollback
+- Requires SSH and typing commands by hand each time
+= Thủ công 30–40 phút, dễ sai.
+
+Q: Which is the core question of the CD block?
++ What lives where and which command runs where (laptop, runner, registry, EC2)
+- Which CSS framework to use
+- How to write SQL joins
+- How DNS caching works
+= Câu hỏi cốt lõi.
+
+## k8-secrets | CD.pdf tr.7–11, 24 | yaml
+Q: Where do you create repository secrets on GitHub?
++ Settings › Secrets and variables › Actions › New repository secret
+- Actions tab › Run workflow
+- Code tab › Add file › .env
+- Insights › Secrets
+= Đường dẫn tạo secret.
+
+Q: How do you reference the secret EC2_HOST in a workflow?
++ ${{ secrets.EC2_HOST }}
+- $EC2_HOST
+- {{ EC2_HOST }}
+- secrets(EC2_HOST)
+= Cú pháp ${{ secrets.TEN }}.
+
+Q: Which secret holds the private SSH key used by the runner?
++ EC2_SSH_KEY
+- EC2_HOST
+- DOCKERHUB_USERNAME
+- EC2_USERNAME
+= Toàn bộ nội dung .pem.
+
+Q: What must EC2_SSH_KEY contain?
++ The whole content of the .pem file, including the -----BEGIN ... PRIVATE KEY----- and END lines
+- Only the public key
+- The file path to the .pem
+- The password of the ubuntu user
+= Thiếu dòng BEGIN/END → Permission denied.
+
+Q: Why use DOCKERHUB_TOKEN instead of your real Docker Hub password?
++ An access token is safer and can be revoked immediately if leaked
+- Tokens are shorter
+- Passwords cannot be stored in secrets
+- Docker Hub does not have passwords
+= Dùng mật khẩu thật dễ gây login failed.
+
+Q: How does GitHub protect secrets?
++ Encrypts them when stored and decrypts only during a run
++ Loads them as environment variables in the runner's RAM, not on disk
++ Masks them as *** if printed in logs
+- Publishes them in the workflow file
+= Cơ chế secrets.
+
+Q: Which are the three levels of secrets?
++ Organization
++ Repository
++ Environment
+- Commit
+= Bài dùng cấp Repository.
+
+Q: Which secret level can require reviewers to approve before use (e.g. production)?
++ Environment
+- Repository
+- Organization
+- Branch
+= Environment secret có thể cần Reviewers duyệt.
+
+Q: Which practices leak secrets?
++ Hardcoding a token in a .yml file committed to Git
++ Printing a secret with echo in a step
+- Using ${{ secrets.X }} as an action input
+- Storing it in Repository secrets
+= Hardcode lộ vĩnh viễn trong lịch sử commit.
+
+Q: A step runs `echo ${{ secrets.DOCKERHUB_TOKEN }}`. What appears in the log?
++ *** (masked)
+- The token in clear text
+- An error
+- Nothing because echo is blocked
+= GitHub che secret, nhưng vẫn không nên in.
+
+Q: Which secret stores the EC2 login user name (e.g. ubuntu)?
++ EC2_USERNAME
+- EC2_HOST
+- EC2_SSH_KEY
+- DOCKERHUB_USERNAME
+= Bảng Secrets.
+
+Q: Which secrets are needed by docker/login-action in the course?
++ DOCKERHUB_USERNAME
++ DOCKERHUB_TOKEN
+- EC2_SSH_KEY
+- EC2_HOST
+= Đăng nhập Docker Hub.
+
+Q: Which secrets are needed by appleboy/ssh-action in the course?
++ EC2_HOST
++ EC2_USERNAME
++ EC2_SSH_KEY
+- DOCKERHUB_TOKEN
+= host/username/key.
+
+Q: The repository is public. Can people see the values of your repository secrets?
++ No; secret values are never shown, only their names to collaborators
+- Yes, in the Settings tab
+- Yes, in the Actions logs
+- Yes, in the .git folder
+= Secret được mã hoá.
+
+## k8-push | CD.pdf tr.13–16 | yaml
+Q: Read the workflow. When does it run?
+> name: Build and Push
+> on:
+>   push:
+>     branches: [main]
++ On every push to main
+- On every pull request
+- Every night
+- On push to any branch
+= Lọc nhánh main.
+
+Q: What does `docker/login-action@v3` do in push-image.yml?
++ Logs in to Docker Hub using the secrets
+- Builds the image
+- SSHes into EC2
+- Runs pytest
+= login-action đăng nhập registry.
+
+Q: What does `docker/build-push-action@v5` do?
++ Builds the image and pushes it to the registry in one step
+- Only pulls images
+- Deploys to EC2
+- Creates Docker Hub accounts
+= build-push.
+
+Q: Which statements about the `:latest` tag are correct?
++ It always points to the newest build in the pipeline.
++ It makes rollback harder because you do not know which version is running.
+- It is unique for every build.
+- It cannot be overwritten.
+= latest tiện nhưng khó truy vết.
+
+Q: Why tag images with the git commit SHA (github.sha)?
++ Each build gets a unique tag for traceability and exact rollback
+- SHA tags are shorter
+- Docker Hub requires it
+- It makes the image smaller
+= Tag duy nhất.
+
+Q: What is the best practice for tagging in the slides?
++ Push both latest and the commit SHA tag
+- Push only latest
+- Push only the SHA
+- Do not tag
+= Gán cả hai.
+
+Q: The Build and Push job is green. How do you verify the image was published?
++ Open Docker Hub/ECR and check the new Tags and Image Digest
+- Run git log
+- Check the Security Group
+- Open the Caddyfile
+= Kiểm tra trên registry.
+
+Q: Which expression gives the commit SHA inside a workflow?
++ ${{ github.sha }}
+- ${{ secrets.sha }}
+- $GIT_SHA always
+- ${{ commit.id }}
+= Ngữ cảnh github.
+
+Q: You want to roll back to the previous version. Which tagging makes this easiest?
++ Images tagged with the commit SHA of each build
+- Only latest
+- No tags
+- Tags named "new"
+= Pull lại tag SHA cũ.
+
+## k8-ssh | CD.pdf tr.18–21, 23 | yaml
+Q: Read the step. Where do the commands under `script: |` run?
+> - name: Deploy to EC2 via SSH
+>   uses: appleboy/ssh-action@v1.0.3
+>   with:
+>     host: ${{ secrets.EC2_HOST }}
+>     username: ${{ secrets.EC2_USERNAME }}
+>     key: ${{ secrets.EC2_SSH_KEY }}
+>     script: |
+>       cd /home/ubuntu/app
+>       docker compose pull
+>       docker compose up -d
+>       docker image prune -f
++ On the EC2 server, over the SSH connection
+- On the GitHub runner
+- On your laptop
+- On Docker Hub
+= Đề mẫu Q9.
+
+Q: In the step above, what does `docker compose pull` do?
++ Downloads the newest images from the registry onto EC2
+- Pushes images to Docker Hub
+- Builds the image on EC2
+- Pulls the Git repository
+= Kéo image mới.
+
+Q: In the step above, what does `docker compose up -d` do?
++ (Re)starts the containers in the background with the new images
+- Stops all containers
+- Builds images
+- Opens port 22
+= Khởi động lại ở nền.
+
+Q: Why does the deploy script run `docker image prune -f`?
++ To remove old dangling images so the disk does not fill up after many deploys
+- To delete running containers
+- To remove .env
+- To push images
+= Tránh đầy ổ đĩa.
+
+Q: In the ssh-action step, what is `key:`?
++ The private key used by the runner to authenticate to EC2
+- The public key of EC2
+- The Docker Hub token
+- The TLS certificate
+= key = private key (EC2_SSH_KEY).
+
+Q: The same four commands are moved into a normal `run:` step. Where do they now run?
++ On the GitHub runner, which is the wrong place
+- Still on EC2
+- On Docker Hub
+- Nowhere
+= run: chạy trên runner.
+
+Q: Read the healthcheck. What happens if the app returns 503?
+> - name: Healthcheck
+>   run: curl -f http://${{ secrets.EC2_HOST }}:8080/health || exit 1
++ curl fails because of -f, the step exits 1 and turns red
+- The step passes because a response was received
+- It retries automatically until 200
+- It rolls back automatically
+= Đề mẫu Q10.
+
+Q: In the healthcheck above, where does curl run?
++ On the runner, calling EC2 over HTTP
+- On EC2
+- On Docker Hub
+- On your laptop
+= Step run: chạy trên runner.
+
+Q: You remove `-f` from the healthcheck command. What happens with a 503 response?
++ curl treats it as success, so the step stays green although the app is broken
+- The step turns red
+- curl crashes
+- The deploy is rolled back
+= Không có -f, curl chỉ lỗi khi không kết nối được.
+
+Q: Which preparation on EC2 is needed so the deploy script can run docker without sudo?
++ Add the ubuntu user to the docker group: `usermod -aG docker ubuntu`
+- Open port 8000
+- Install Python 3.12
+- Copy the private key to EC2
+= Chuẩn bị buổi 8.
+
+Q: Where is docker-compose.yml located for the deploy script?
++ In the project directory on EC2, e.g. /home/ubuntu/app
+- In the Docker image
+- On the runner only
+- On Docker Hub
+= cd /home/ubuntu/app.
+
+Q: Which statements about `appleboy/ssh-action` are correct?
++ It opens an SSH connection from the runner to the host.
++ It executes the `script` on the remote host.
+- It builds Docker images on the runner.
+- It requires the public key in the key input.
+= ssh-action.
+
+## k8-env | CD.pdf tr.22; week5.pdf tr.15 | bash
+Q: Where does the production .env live in the CD setup?
++ On EC2 (created manually or written from Secrets), not in Git and not in the image
+- In the repository
+- In the Docker image
+- In the runner cache
+= .env trên server.
+
+Q: Which are the two ways to provide .env on the server?
++ Create it once manually on EC2
++ Write it dynamically from GitHub Secrets in the SSH script before docker compose up
+- Commit it to Git
+- Bake it into the image with COPY
+= CD.pdf tr.22.
+
+Q: What is the advantage of writing .env from Secrets in the deploy script?
++ The server config is always in sync with the secrets
+- It is required by Docker
+- It avoids SSH
+- It makes the image smaller
+= Luôn đồng bộ.
+
+Q: Why should you never push .env to Git, even in a private repo?
++ The secrets stay forever in the commit history and spread to every clone
+- Git cannot store dotfiles
+- It breaks Docker builds
+- It disables CI
+= Lịch sử Git giữ vĩnh viễn.
+
+## k8-debug | CD.pdf tr.24–26
+Q: The deploy step fails with "Permission denied (publickey)". Which causes are possible?
++ The private key in EC2_SSH_KEY is wrong or missing lines (BEGIN/END)
++ The username does not match the authorized account on the server
+- The Docker image tag is latest
+- The app returns JSON
+= Đề mẫu Q11.
+
+Q: What should you check first for "Permission denied (publickey)"?
++ That the username and key match the account authorized on the server
+- The container port
+- The image tag
+- The /health JSON body
+= Server đã phản hồi và từ chối xác thực.
+
+Q: The deploy job times out connecting to EC2 on port 22. Which causes are likely?
++ Security Group blocks port 22 for the runner
++ EC2_HOST holds an old IP after a restart
+- The private key has wrong lines
+- The Docker Hub token is wrong
+= Timeout = không tới được.
+
+Q: "Docker login failed" in the Build and Push job. What is a common cause?
++ Wrong username or using the real password instead of the access token
+- Port 22 closed
+- Wrong EC2_HOST
+- Caddy not installed
+= Dùng DOCKERHUB_TOKEN.
+
+Q: The container on EC2 crashes with Exit Code 1 or 137. Which are typical causes?
++ Missing environment variables in .env
++ Port conflict on EC2
+- Wrong GitHub username
+- A long commit message
+= Xem docker logs <container_id> trên EC2.
+
+Q: Where do you run `docker logs <container_id>` to debug a crashing container?
++ On EC2
+- On the runner
+- On Docker Hub
+- In the Actions tab
+= Container chạy trên EC2.
+
+Q: The Healthcheck step is red. What should you do?
++ Read the logs of each step and find the first error line
+- Delete the workflow
+- Disable the healthcheck forever
+- Rebuild the AMI
+= Đọc log.
+
+Q: After restarting the EC2 instance, CD fails to connect. Why might updating EC2_HOST help?
++ Without an Elastic IP, the public IP can change after restart
+- EC2_HOST expires every day
+- Docker Hub changed
+- GitHub rotates secrets
+= Cập nhật địa chỉ.
+
+## k8-trap-key | CD.pdf tr.17; đề mẫu Q8
+Q: Which statements about key placement in CD are correct?
++ The private key is given to the runner via the EC2_SSH_KEY secret.
++ The public key is authorized in ~/.ssh/authorized_keys on EC2.
+- The private key is stored on EC2.
+- The public key is stored in EC2_SSH_KEY.
+= Private = chìa (runner); public = ổ khoá (EC2).
+
+Q: Which locations must NEVER contain the private key?
++ The Docker image
++ Workflow logs
++ The Git repository
+- An encrypted GitHub secret
+= Chỉ đặt trong secret.
+
+Q: Which metaphor matches the slides?
++ Private key = the key (held by the runner); public key = the lock (on EC2)
+- Private key = the lock
+- Both are locks
+- Public key = the key held by the runner
+= Chìa và ổ khoá.
+
+## k8-trap-script | đề mẫu Q9
+Q: Which commands in the workflow below run on EC2?
+> - uses: appleboy/ssh-action@v1.0.3
+>   with:
+>     script: |
+>       docker compose pull
+>       docker compose up -d
+> - run: curl -f http://${{ secrets.EC2_HOST }}:8080/health || exit 1
++ docker compose pull
++ docker compose up -d
+- curl -f ... /health
+- None
+= script → EC2; run → runner.
+
+## k8-trap-health | đề mẫu Q10
+Q: Which statements about `curl -f URL || exit 1` are correct?
++ HTTP status ≥ 400 makes curl fail.
++ `|| exit 1` makes the step fail when curl fails.
+- It retries until success.
+- It rolls back the deployment.
+= -f = fail on HTTP error.
+
+Q: The healthcheck returns 200 OK. What is the result of the step?
++ Green
+- Red
+- Skipped
+- Retried
+= 200 → xanh.
+
+## k8-trap-perm | đề mẫu Q11
+Q: Which items are UNRELATED to the error "Permission denied (publickey)"?
++ The container port mapping
++ The image tag latest
++ The JSON returned by the endpoint
+- The private key and username
+= Lỗi xác thực SSH.
+
+## k8-push | CD.pdf tr.13–16 | yaml
+Q: Which job order makes sense for a CD pipeline in one workflow?
++ test → build-push → deploy
+- deploy → test → build-push
+- build-push → deploy → test
+- deploy only
+= Chỉ deploy khi test/build đạt.
+
+Q: What makes job `deploy` run only after `build-push` succeeds?
++ needs: build-push
+- after: build-push
+- runs-on: build-push
+- on: build-push
+= needs tạo phụ thuộc.
+
+Q: Read the step. Which statements are correct?
+> - name: Build and push
+>   uses: docker/build-push-action@v5
+>   with:
+>     push: true
+>     tags: user/chat-app:latest,user/chat-app:${{ github.sha }}
++ The image is pushed to the registry.
++ It gets two tags: latest and the commit SHA.
+- It is deployed to EC2 by this step.
+- It is built on EC2.
+= Best practice gán cả hai tag.
+
+Q: Docker Hub shows the same Image Digest for tags `latest` and `a1b2c3`. What does it mean?
++ Both tags point to the same image content
+- The image is corrupted
+- Two different images exist
+- The push failed
+= Digest = hash nội dung.
+
+## k8-ssh | CD.pdf tr.18–21
+Q: Which user should EC2_USERNAME contain for an Ubuntu AMI?
++ ubuntu
+- root
+- admin
+- ec2
+= User mặc định.
+
+Q: Which is the correct mapping of ssh-action inputs?
++ host = EC2_HOST, username = EC2_USERNAME, key = EC2_SSH_KEY
+- host = EC2_SSH_KEY, key = EC2_HOST
+- username = DOCKERHUB_TOKEN
+- key = DOCKERHUB_USERNAME
+= Bảng Secrets.
+
+Q: The deploy script contains `docker compose up -d` but no `docker compose pull`. What may happen?
++ The containers keep running the old image already on EC2
+- The new image is pulled automatically always
+- The deploy fails
+- Docker Hub deletes old images
+= Phải pull trước.
+
+Q: Why does EC2 need access to the registry in the CD architecture?
++ To pull the newly pushed image
+- To build images
+- To run GitHub Actions
+- To store secrets
+= EC2 pull image.
+
+Q: The repository on Docker Hub is private. What must EC2 do before `docker compose pull`?
++ docker login with credentials/token
+- Nothing
+- Open port 443
+- Rebuild the image
+= Repo private cần login.
+
+## k8-trap-arch | CD.pdf tr.6
+Q: Which items flow from the runner to the registry?
++ The built Docker image
+- The .env file
+- The private key
+- The Security Group
+= Runner push image.
+
+Q: Which items flow from the registry to EC2?
++ The image layers when EC2 pulls
+- The source code
+- The workflow YAML
+- The pytest report
+= EC2 kéo image.
+
+Q: Which statements about the CD architecture are correct?
++ EC2 does not need the source code to run the app.
++ EC2 needs docker-compose.yml and .env.
+- EC2 must have Python and pip to build the image.
+- The runner keeps running the app after the job.
+= EC2 chỉ pull và chạy.
+
+## k8-secrets | CD.pdf tr.7–11
+Q: You must rotate a leaked Docker Hub token. What is the advantage of tokens here?
++ You can revoke that token immediately without changing your account password
+- Tokens cannot leak
+- Tokens never expire
+- Tokens are stored in Git
+= Revoke được ngay.
+
+Q: Which is the safest place for an API key used by the deploy workflow?
++ A GitHub repository secret
+- The README
+- The workflow YAML
+- A commit message
+= Secrets.
+
+Q: In which memory are secrets exposed during a run?
++ As environment variables in the runner's RAM
+- Written to the repository
+- Saved to Docker Hub
+- Stored on EC2 permanently by GitHub
+= Không lưu đĩa.
+
+## k8-env | CD.pdf tr.22
+Q: Which statements about `.env` in the CD flow are correct?
++ The image does not contain it.
++ It is in the project directory on EC2 next to docker-compose.yml.
+- It is pulled from Docker Hub.
+- It is part of the Git repository.
+= .env production trên EC2.
+
+## k8-debug | CD.pdf tr.24–26
+Q: You see the error below in the deploy step. What does it mean?
+> ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain
+L: text
++ SSH authentication failed: wrong key or user
+- Port 22 is closed
+- The image tag is wrong
+- The healthcheck failed
+= Tương đương Permission denied (publickey).
+
+Q: You see `dial tcp 203.0.113.10:22: i/o timeout` in the deploy step. What is the likely cause?
++ The runner cannot reach port 22 (Security Group / wrong IP)
+- The private key is wrong
+- Docker login failed
+- .env missing
+= Timeout = mạng.
+
+Q: The container exits with code 137. What is a common meaning?
++ It was killed (e.g. out of memory or SIGKILL)
+- Successful exit
+- Missing Python
+- Wrong tag
+= Exit 137 = 128 + 9 (SIGKILL).
+
+## k8-push | CD.pdf tr.14–15
+Q: Two developers deploy in a row with only `latest`. Production breaks. Why is rollback hard?
++ latest now points to the broken build and the previous version has no unique tag
+- latest is immutable
+- Docker Hub deletes old images every hour
+- EC2 cannot pull images twice
+= Gắn thêm tag SHA.
+
+Q: With SHA tags, how do you roll back?
++ Update the compose file/tag on EC2 to the previous SHA and run docker compose up -d
+- Re-create the EC2 instance
+- Force-push to main
+- Delete Docker Hub
+= Rollback chính xác.
+
+## k8-ssh | CD.pdf tr.20
+Q: Why does the healthcheck use port 8080 in the slide example?
++ The app container is published on host port 8080 in that compose setup
+- Port 8080 is mandatory for curl
+- 8080 is the SSH port
+- Let's Encrypt uses 8080
+= Phụ thuộc cấu hình -p/ports.
+
+Q: Which statement about the order "deploy then healthcheck" is correct?
++ The healthcheck verifies the new version is actually responding after deploy
+- It deploys the app
+- It builds the image
+- It is not needed with Docker
+= Kiểm tra sau triển khai.
+
+## k8-trap-arch | CD.pdf tr.12
+Q: A student builds the image on EC2 with `git pull && docker build`. Which problems does the slide mention?
++ Overloads the server's CPU/RAM
++ Environment differs from the tested build
+- It is the recommended architecture
+- It makes rollback trivial
+= Sai mô hình registry.
+
+Q: Which component publishes the image in the correct architecture?
++ The runner
+- EC2
+- The browser
+- Caddy
+= Runner build & push.
+
+## k8-secrets | CD.pdf tr.24
+Q: Which statement about hardcoding secrets in YAML is correct?
++ Even if removed later, the value remains in the commit history
+- Removing the line removes it from history
+- GitHub masks hardcoded values in the file
+- It is safe in private repositories forever
+= Lịch sử commit giữ vĩnh viễn.
+
+## k8-ssh | CD.pdf tr.18–21 | bash
+Q: Which commands, in which order, does the slide's deploy script run?
++ cd /home/ubuntu/app → docker compose pull → docker compose up -d → docker image prune -f
+- docker image prune -f → docker compose up -d → docker compose pull
+- docker build → docker push → docker run
+- git pull → pip install → uvicorn
+= Theo deploy.yml.
+
+Q: The deploy script fails at `cd /home/ubuntu/app` with "No such file or directory". What is the fix?
++ Create the project directory on EC2 with docker-compose.yml (and .env) first
+- Open port 80
+- Change the image tag
+- Regenerate the Docker Hub token
+= Chuẩn bị EC2.
+
+Q: `docker compose pull` on EC2 fails with "pull access denied". What are likely causes?
++ The image name/tag is wrong
++ The repository is private and EC2 is not logged in
+- The Security Group blocks port 22
+- The healthcheck failed
+= Kiểm tra tên image và đăng nhập.
+
+## k8-trap-arch | CD.pdf tr.2–6
+Q: Which part of the pipeline belongs to CI and which to CD?
++ CI: test and build; CD: push image and deploy to EC2
+- CI: deploy; CD: test
+- Both are only tests
+- CD is writing Dockerfiles
+= Ranh giới CI/CD.
+
+Q: Which statements about the end-to-end flow are correct?
++ A developer pushes to main.
++ The runner tests and builds the image.
++ The image goes to Docker Hub.
++ EC2 pulls and runs the new image.
+= Toàn bộ chuỗi.
+
+Q: Which component must have network access to EC2 port 22 during deploy?
++ The GitHub runner
+- Docker Hub
+- Let's Encrypt
+- The end user's browser
+= ssh-action chạy từ runner.
+
+Q: Which component must reach EC2 over HTTP for the healthcheck?
++ The GitHub runner
+- Docker Hub
+- The developer's laptop
+- Caddy on the runner
+= curl chạy trên runner.
+
+## k8-secrets | CD.pdf tr.7–9
+Q: Which is the correct expression to pass a secret as an environment variable to a step?
+> - run: ./deploy.sh
+>   env:
+>     TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
++ The step gets TOKEN as an environment variable holding the secret value
+- TOKEN is printed in clear text
+- The secret is written to the repository
+- This syntax is invalid
+= env: nạp secret làm biến môi trường.
+
+Q: A fork opens a pull request to your repository. Which statement about secrets is generally true?
++ Secrets are not passed to workflows triggered from forks by default
+- Forks always receive all secrets
+- Secrets are printed in the PR
+- Secrets are deleted
+= Bảo vệ secret khỏi PR từ fork (bổ sung).
+
+## k8-debug | CD.pdf tr.26
+Q: Which order is a good debugging approach when a CD run fails?
++ Open the failed job → find the failed step → read the first error line → check the related secret/config
+- Rerun until green
+- Delete all secrets
+- Create a new repository
+= Đọc log từng step.
+
+Q: Docker login succeeded but `build-push-action` fails at "COPY requirements.txt". What is the likely cause?
++ The file is missing from the repository / build context (or excluded by .dockerignore)
+- Wrong EC2_HOST
+- Port 22 closed
+- Wrong SSH key
+= Lỗi build image.
+
+## k8-ssh | CD.pdf tr.17
+Q: Why is the public key added to `~/.ssh/authorized_keys` of the ubuntu user on EC2?
++ So the SSH server accepts connections from whoever has the matching private key (the runner)
+- So Docker can pull images
+- So Caddy can get certificates
+- So GitHub can read the repository
+= Ổ khoá trên EC2.
+
+Q: You generated a new key pair for CD. Which steps are needed?
++ Add the new public key to authorized_keys on EC2
++ Put the new private key into the EC2_SSH_KEY secret
+- Put the public key into EC2_SSH_KEY
+- Copy the private key into the Docker image
+= Đúng chỗ của từng khoá.
+
+## k8-push | CD.pdf tr.13
+Q: Which action is responsible for authenticating to Docker Hub before pushing?
++ docker/login-action
+- docker/build-push-action
+- actions/checkout
+- appleboy/ssh-action
+= login-action.
+
+Q: Which action checks out the code so the Dockerfile is available for the build?
++ actions/checkout
+- docker/login-action
+- appleboy/ssh-action
+- actions/setup-python
+= checkout trước khi build.
+
+## k8-trap-script | CD.pdf tr.19
+Q: Which statement about the `|` in `script: |` is correct?
++ It starts a multi-line string; each line is a shell command run on the host
+- It pipes output to Docker Hub
+- It is a comment
+- It runs commands in parallel on the runner
+= YAML block scalar.
+
+## k8-trap-health | CD.pdf tr.23
+Q: Which healthcheck command fails the step on HTTP 404?
++ curl -f http://host/health || exit 1
+- curl http://host/health
+- curl -s http://host/health
+- echo ok
+= Chỉ -f coi 4xx/5xx là lỗi.
+
+Q: A healthcheck runs immediately after `docker compose up -d` and sometimes fails because the app is still starting. What is a reasonable fix?
++ Wait/retry a few seconds before declaring failure
+- Remove -f
+- Remove the healthcheck
+- Open all ports
+= App cần thời gian khởi động (gợi ý thực hành).
+
+## k8-env | CD.pdf tr.22
+Q: A container on EC2 fails with `KeyError: 'GEMINI_API_KEY'`. What is the likely cause?
++ The .env on EC2 is missing the variable (or not loaded by compose)
+- Wrong Docker Hub token
+- Port 22 closed
+- Wrong image tag
+= Thiếu biến môi trường → crash.
+
+Q: Which statement about environment-specific config is correct?
++ Staging and production can use different Environment secrets
+- All environments must share one .env in Git
+- Secrets cannot differ between environments
+- Environment secrets are public
+= 3 cấp secrets.

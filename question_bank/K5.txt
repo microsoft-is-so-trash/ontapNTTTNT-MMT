@@ -1,0 +1,774 @@
+## k5-run-steps | week5.pdf tr.2–7 | bash
+Q: Which problem does Docker mainly solve in the course?
++ "It works on my machine but not on the server" caused by missing libraries, versions or configuration
+- Slow Git pushes
+- Weak SSH keys
+- DNS caching
+= Đóng gói app + mọi thứ nó cần thành image.
+
+Q: Which are the three Docker verbs from the slides?
++ Build
++ Share
++ Run
+- Compile
+= Build (Dockerfile → image) · Share (registry) · Run (image → container).
+
+Q: You run `docker run --rm hello-world` for the first time. Which steps happen?
++ Docker checks whether the image exists locally
++ The image is pulled from the registry because it is missing
++ A new container is created and runs its default process
++ After it exits, the container is removed because of --rm
+= Image vẫn còn sau khi container bị xoá.
+
+Q: After `docker run --rm hello-world` finishes, what remains?
++ The hello-world image in the local image cache
+- The container in `docker ps -a`
+- Nothing at all
+- A running container
+= --rm chỉ xoá container.
+
+Q: You run `docker run hello-world` (without --rm) and it exits. Where can you see the container?
++ docker ps -a
+- docker ps
+- docker images
+- docker logs only
+= Container đã dừng vẫn còn; ps chỉ hiện đang chạy.
+
+Q: What is the relationship between Dockerfile, image and container?
++ Dockerfile builds an image; an image runs as one or more containers
+- A container builds a Dockerfile
+- An image builds a Dockerfile
+- They are the same thing
+= Dockerfile → image → container.
+
+## k5-cmd | week5.pdf tr.7–15
+Q: What does `-d` do in `docker run -d --name web -p 8080:80 nginx:alpine`?
++ Runs the container in the background (detached)
+- Deletes the container afterwards
+- Enables debug mode
+- Downloads the image only
+= -d chạy nền.
+
+Q: In `docker run -d --name web -p 8080:80 nginx:alpine`, how do you reach nginx from the host's browser?
++ http://localhost:8080
+- http://localhost:80
+- http://web:8080
+- http://localhost:8000
+= host 8080 → container 80.
+
+Q: What does `docker run -it --name ubuntu-lab ubuntu:24.04 bash` do?
++ Starts an interactive container with a terminal and runs bash, named ubuntu-lab
+- Runs Ubuntu in the background
+- Builds an image named ubuntu-lab
+- Pushes ubuntu:24.04
+= -it tương tác, gắn terminal.
+
+Q: Which command lists only running containers?
++ docker ps
+- docker ps -a
+- docker images
+- docker container ls --all
+= -a liệt kê cả container đã dừng.
+
+Q: Which command restarts the stopped container ubuntu-lab and attaches to it?
++ docker start -ai ubuntu-lab
+- docker run ubuntu-lab
+- docker exec ubuntu-lab
+- docker restart --new ubuntu-lab
+= start khởi động lại container đã có.
+
+Q: Which statements about `docker stop web` and `docker rm web` are correct?
++ stop stops the container; it still exists.
++ rm removes the container.
+- rm also removes the nginx image.
+- stop deletes the container's writable layer.
+= Không lệnh nào xoá image.
+
+Q: Which command shows the output (log) of container web?
++ docker logs web
+- docker inspect logs web
+- docker ps web
+- docker exec logs
+= docker logs.
+
+Q: Which command opens a shell inside the running container web?
++ docker exec -it web bash
+- docker run -it web bash
+- docker start web bash
+- docker attach --new web
+= exec chạy thêm process trong container đang chạy.
+
+Q: Which commands download an image and list local images?
++ docker pull nginx:alpine
++ docker images
+- docker ps -a
+- docker push nginx:alpine
+= pull tải; images liệt kê.
+
+Q: Which command shows the layers/build history of an image?
++ docker image history nginx:alpine
+- docker logs nginx:alpine
+- docker ps --history
+- docker image prune
+= history liệt kê layer.
+
+Q: Which command shows detailed metadata of an image in JSON?
++ docker image inspect nginx:alpine
+- docker image ls -q
+- docker logs
+- docker stats
+= inspect.
+
+Q: In `docker build -t chatbot-api:1.0 .`, what is the final dot?
++ The build context (current directory) sent to the daemon
+- The Dockerfile name
+- The image name
+- A placeholder for latest
+= . = build context.
+
+Q: Which sequence publishes an image to Docker Hub under your account?
++ docker tag chatbot-api:1.0 yourusername/chatbot-api:1.0; docker login; docker push yourusername/chatbot-api:1.0
+- docker push chatbot-api:1.0 without login
+- docker commit chatbot-api; docker pull
+- docker build --push-hub
+= Gắn namespace → login → push.
+
+Q: Why do we run `docker tag chatbot-api:1.0 yourusername/chatbot-api:1.0` before pushing?
++ The image name must include your Docker Hub namespace (username)
+- To shrink the image
+- To run tests
+- To remove the old image
+= Repository trên Docker Hub thuộc namespace của bạn.
+
+Q: On another machine, how do you get the image if the repository is private?
++ docker login, then docker pull yourusername/chatbot-api:1.0
+- docker pull without login always works
+- git clone the image
+- scp from Docker Hub
+= Repo private cần đăng nhập.
+
+Q: Which option passes environment variables from a file when running a container?
++ --env-file .env
+- --dotenv
+- -v .env
+- --secrets .env
+= docker run --env-file .env chatbot-api:1.0.
+
+Q: Why must the image NOT contain .env?
++ Secrets would be shipped to everyone who pulls the image
+- Docker cannot copy hidden files
+- .env makes the image too big
+- .env is required only at build time
+= Tạo .env trên máy chạy container.
+
+## k5-naming | week5.pdf tr.8; Docker Deep Dive tr.69–71
+Q: In `nginx:alpine`, what are `nginx` and `alpine`?
++ repository and tag
+- tag and repository
+- registry and image id
+- user and password
+= repo:tag.
+
+Q: What tag is used if you run `docker pull redis` without a tag?
++ latest
+- stable
+- main
+- none; an error occurs
+= Mặc định :latest.
+
+Q: Which statements about registry, repository and tag are correct?
++ A registry stores many repositories.
++ A repository groups related images.
++ A tag identifies a variant/version within a repository.
+- A tag is always the newest version.
+= latest không đảm bảo mới nhất.
+
+Q: Which is the difference between a tag and a digest?
++ A tag can be moved to another image; a digest is a content hash that never changes
+- A digest can be moved; a tag cannot
+- They are the same
+- Digest is only for Docker Hub
+= Pull theo digest: alpine@sha256:... (Deep Dive tr.78–80).
+
+Q: In `yourusername/chatbot-api:1.0`, what is yourusername?
++ The Docker Hub namespace (account)
+- The tag
+- The registry host
+- The container name
+= namespace/repo:tag.
+
+## k5-dockerfile | materials/llm_app/completed/Dockerfile | dockerfile
+Q: What is the role of `FROM python:3.12-slim`?
++ Sets the base image (the first layer)
+- Copies Python into the host
+- Runs Python
+- Installs pip packages
+= FROM = image nền.
+
+Q: What does `WORKDIR /app` do?
++ Sets the working directory inside the image for the following instructions
+- Copies the app folder
+- Creates a volume
+- Exposes the app port
+= Thư mục làm việc trong image.
+
+Q: What does `COPY requirements.txt .` do?
++ Copies requirements.txt from the build context into the current WORKDIR in the image
+- Copies the file from the image to the host
+- Downloads requirements from the Internet
+- Runs pip install
+= COPY từ build context vào image.
+
+Q: When does `RUN pip install -r requirements.txt` execute?
++ At build time, creating a new layer
+- Every time a container starts
+- Only when the container stops
+- When pushing to the registry
+= RUN chạy lúc build.
+
+Q: When does `CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]` execute?
++ When a container starts, as the default command
+- During docker build
+- During docker push
+- Never, it is a comment
+= CMD = lệnh mặc định khi chạy.
+
+Q: Which statements about `EXPOSE 8000` are correct?
++ It documents the port the app uses (metadata).
++ You still need `-p` to publish the port to the host.
+- It opens port 8000 on the host automatically.
+- It changes the port Uvicorn listens on.
+= EXPOSE không tự mở cổng ra host.
+
+Q: The Dockerfile has `EXPOSE 8000` and you run `docker run chatbot-api:1.0` without -p. Can you reach http://localhost:8000 from the host?
++ No, the port is not published
+- Yes, EXPOSE publishes it
+- Yes, but only over HTTPS
+- Only from Docker Hub
+= Cần -p 8000:8000.
+
+Q: Why does the llm_app Dockerfile copy requirements.txt and run pip install BEFORE `COPY . .`?
++ So changing only the code reuses the cached dependency layer
+- Because COPY . . is not allowed first
+- To make the image larger
+- Because pip needs the code first
+= Layer cache.
+
+Q: You change only main.py and rebuild. With the llm_app Dockerfile order, which steps are reused from cache?
+> FROM python:3.12-slim
+> WORKDIR /app
+> COPY requirements.txt .
+> RUN pip install -r requirements.txt
+> COPY . .
+> CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
++ FROM, WORKDIR, COPY requirements.txt and RUN pip install
+- Only FROM
+- None; everything is rebuilt
+- Everything including COPY . .
+= Từ layer đầu tiên thay đổi (COPY . .) trở đi mới build lại.
+
+Q: In the bad order below, what happens when you change only main.py?
+> FROM python:3.12-slim
+> WORKDIR /app
+> COPY . .
+> RUN pip install -r requirements.txt
++ pip install runs again because the COPY . . layer changed before it
+- pip install is cached
+- The build fails
+- Only CMD runs again
+= Layer sau layer thay đổi phải build lại.
+
+Q: What does `.dockerignore` do in llm_app?
++ Excludes files like .env, .git, __pycache__/, .venv/ from the build context
+- Ignores Dockerfile instructions
+- Hides containers from docker ps
+- Lists images to delete
+= .env không lọt vào image.
+
+Q: What does `USER appuser` achieve in the llm_app Dockerfile?
++ The container process runs as a non-root user
+- Logs in to Docker Hub
+- Creates a Linux group
+- Exposes a port
+= Chạy app không bằng root (useradd + chown trước đó).
+
+Q: What does `ENV PYTHONUNBUFFERED=1` do in the llm_app Dockerfile?
++ Sets an environment variable so Python output is not buffered (logs appear immediately)
+- Installs Python
+- Disables pip
+- Exposes a port
+= ENV đặt biến môi trường (metadata, không phải layer dữ liệu).
+
+Q: Which Dockerfile instructions create filesystem layers (Docker Deep Dive)?
++ FROM
++ RUN
++ COPY
+- EXPOSE
+= EXPOSE, WORKDIR, ENV, ENTRYPOINT, CMD chỉ thêm metadata.
+
+Q: You run `docker run chatbot-api:1.0 python -c "print(1)"`. What happens to the CMD?
++ It is overridden by the command given on the command line
+- It runs first, then the new command
+- docker refuses
+- The image is rebuilt
+= CMD ghi đè được khi docker run.
+
+Q: What does a multi-stage build achieve?
++ A smaller production image by copying only what is needed with COPY --from
+- Faster git clone
+- Multiple containers from one run
+- Automatic pushes
+= Deep Dive tr.118–123.
+
+Q: Which instruction should come first in a Dockerfile?
++ FROM
+- CMD
+- RUN
+- EXPOSE
+= FROM là lớp đầu tiên.
+
+Q: In `COPY . .`, what do the two dots mean?
++ Source: the build context; destination: the current WORKDIR in the image
+- Source: the image; destination: host
+- Both refer to the host
+- It copies only hidden files
+= COPY <src trong context> <dest trong image>.
+
+## k5-cache | Docker Deep Dive tr.112–116
+Q: Which statements about images are correct?
++ An image is made of read-only layers.
++ An image is a template to create containers.
+- An image runs processes by itself.
+- An image can only create one container.
+= Image bất biến; một image → nhiều container.
+
+Q: Which statements about containers are correct?
++ A container is a running instance of an image.
++ A container has a thin writable layer.
++ Each container has its own identity and state.
+- Stopping a container turns it into an image.
+= Dừng thì vẫn là container.
+
+Q: Which analogy for image vs container is used in the slides?
++ Image = class / install package; container = object / running app
+- Image = object; container = class
+- Image = process; container = file
+- Image = network; container = volume
+= Ví von class/object.
+
+Q: Where are images stored?
++ In the local image cache or in a registry
+- Only inside containers
+- In Git
+- In .env
+= Image ở cache local hoặc registry.
+
+Q: Which lifecycle actions belong to images?
++ pull
++ build
++ tag
++ push
+= create/start/stop/restart thuộc container.
+
+Q: Which lifecycle actions belong to containers?
++ create
++ start
++ stop
+- push
+= push dành cho image.
+
+## k5-trap-q18 | đề mẫu Q18; week5.pdf tr.2–3
+Q: The app works on your laptop but fails on the server because a library is missing. What is the Docker solution?
++ Package the app and its required libraries into an image and run that image on the server
+- Replace the server's kernel
+- Rely on libraries pre-installed on the server
+- Copy logs into the registry
+= Đóng gói app + thư viện vào image.
+
+## k5-trap-q19 | đề mẫu Q19; week5.pdf tr.6
+Q: Which statements about the Docker platform are correct?
++ The client sends requests to the daemon.
++ The daemon manages local images and containers.
++ A registry distributes images so hosts can pull them.
+- The registry runs the container processes.
+= Registry không chạy container.
+
+Q: Which component actually builds images and runs containers?
++ The Docker daemon (dockerd)
+- The Docker client CLI
+- Docker Hub
+- The Dockerfile
+= Client gửi lệnh, daemon thực thi.
+
+Q: When you type `docker ps`, what is the role of the `docker` CLI?
++ It is the client that sends the request to the daemon
+- It is the daemon itself
+- It is the registry
+- It is the container runtime of the remote host
+= Client → daemon.
+
+## k5-trap-q20 | đề mẫu Q20; week5.pdf tr.12
+Q: Which statement about images and containers is FALSE?
++ Each image can create only one container.
+- A container has a writable layer for runtime changes.
+- An image is a template used to create containers.
+- A container can be stopped and started again.
+= Một image → nhiều container.
+
+Q: You start three containers from `nginx:alpine`. How many copies of the image layers are stored?
++ One; containers share the read-only image layers and each has its own writable layer
+- Three
+- Zero
+- Six
+= Lớp read-only dùng chung.
+
+## k5-trap-rm | week5.pdf tr.10–14
+Q: Which command(s) remove the image nginx:alpine from the local cache?
++ docker rmi nginx:alpine (or docker image rm nginx:alpine)
+- docker rm nginx:alpine
+- docker stop nginx:alpine
+- docker run --rm nginx:alpine
+= rm xoá container; rmi xoá image.
+
+Q: You try `docker rmi nginx:alpine` while a stopped container still uses it. What happens?
++ Docker reports a conflict and refuses (unless forced)
+- The image is removed and the container keeps running
+- Both are deleted silently
+- Nothing happens
+= Deep Dive tr.66, 84.
+
+Q: What does `docker image prune -f` remove?
++ Dangling (unused, untagged) images, without asking for confirmation
+- All running containers
+- All volumes
+- The Docker daemon
+= Dùng trong script deploy (K8) để tránh đầy ổ đĩa.
+
+## k5-trap-port | week5.pdf tr.10
+Q: `docker run -d -p 80:8080 myapp`. Which statements are correct?
++ Clients connect to port 80 on the host.
++ The app inside the container must listen on port 8080.
+- The app inside must listen on port 80.
+- Clients connect to port 8080 on the host.
+= -p host:container.
+
+Q: Two containers both run `-p 8080:80`. What happens with the second one?
++ It fails because host port 8080 is already in use
+- Both share port 8080
+- Docker picks 8081 automatically
+- The first container stops
+= Một port trên host chỉ map cho một container.
+
+Q: Which mapping lets you open http://localhost:3000 to reach an app listening on 8000 in the container?
++ -p 3000:8000
+- -p 8000:3000
+- -p 3000
+- --expose 3000
+= host:container.
+
+## k5-trap-life | week5.pdf tr.11; Docker Deep Dive tr.95–101
+Q: You run `docker run -it ubuntu bash` and then type `exit`. What happens?
++ bash ends, so the container stops; it is still visible in `docker ps -a`
+- The container keeps running in the background
+- The container and image are deleted
+- The image is rebuilt
+= Container sống khi process chính còn chạy.
+
+Q: You open a shell with `docker exec -it web bash` and type exit. What happens to container web?
++ It keeps running because its main process is still running
+- It stops
+- It is deleted
+- It restarts
+= Thoát shell exec không dừng container.
+
+Q: Which key sequence detaches from an interactive container without stopping it?
++ Ctrl-P Ctrl-Q
+- Ctrl-C
+- Ctrl-D
+- Ctrl-Z
+= Ctrl-PQ (Deep Dive tr.95–96).
+
+Q: What does `docker stop` do to the main process?
++ Sends SIGTERM, waits about 10 seconds, then SIGKILL
+- Sends SIGKILL immediately
+- Pauses it forever
+- Deletes it
+= rm -f thì SIGKILL ngay.
+
+Q: How long does a container run?
++ As long as its main process runs
+- Forever until the image is deleted
+- Exactly 10 minutes
+- Until the host reboots only
+= PID 1 kết thúc → container dừng.
+
+## k5-cmd | week5.pdf tr.5–6
+Q: Which statements about containers vs virtual machines are correct?
++ Containers share the host OS kernel.
++ Containers are lighter and start faster.
+- Each container includes its own full OS kernel.
+- VMs share the host kernel.
+= VM có hệ điều hành riêng.
+
+Q: Which command runs a short-lived container that is deleted after it exits?
++ docker run --rm IMAGE
+- docker run -d IMAGE
+- docker start IMAGE
+- docker create IMAGE
+= --rm.
+
+Q: Which statements about `docker run` vs `docker start` are correct?
++ `docker run` creates a new container from an image.
++ `docker start` starts an existing stopped container.
+- `docker start` pulls a new image.
+- `docker run` restarts the old container.
+= run = create + start.
+
+Q: You run `docker run --name web nginx` twice. What happens the second time?
++ It fails because the container name web is already in use
+- It creates web2 automatically
+- It restarts web
+- It deletes the first web
+= Tên container phải duy nhất.
+
+Q: Which command shows both running and stopped containers with their status?
++ docker ps -a
+- docker images -a
+- docker logs -a
+- docker stats
+= -a = all.
+
+Q: Which file does `docker build .` look for by default?
++ Dockerfile in the build context
+- docker-compose.yml
+- requirements.txt
+- .dockerignore only
+= Mặc định file tên Dockerfile.
+
+Q: What does `docker compose up -d` do (seen when deploying to EC2)?
++ Starts the services defined in docker-compose.yml in the background
+- Builds only one image
+- Pushes images
+- Deletes containers
+= Compose quản lý nhiều container.
+
+Q: Where does Docker Hub fit in the Build–Share–Run flow?
++ Share: it is a registry that stores and distributes images
+- Build: it compiles Dockerfiles
+- Run: it runs your containers
+- It replaces GitHub
+= Registry.
+
+Q: A teammate pulls `yourusername/chatbot-api:1.0` and runs it. Which statements are correct?
++ They get the same libraries and runtime as you.
++ They must provide their own .env at run time.
+- The container includes your laptop's .env.
+- They must install Python first on the host.
+= Image có thư viện, không có .env.
+
+Q: Which command builds an image named `web` with tag `2.0` from the current directory?
++ docker build -t web:2.0 .
+- docker build web:2.0
+- docker run -t web:2.0 .
+- docker tag . web:2.0
+= -t name:tag + context.
+
+Q: Which output is expected from `docker images` after pulling nginx:alpine?
++ A row with REPOSITORY nginx, TAG alpine and an IMAGE ID
+- A row with CONTAINER ID and STATUS
+- The nginx log
+- Nothing
+= docker images liệt kê image.
+
+Q: Which column appears in `docker ps` but not in `docker images`?
++ STATUS / PORTS / NAMES
+- REPOSITORY
+- TAG
+- SIZE only
+= ps liệt kê container.
+
+Q: Where do changes made inside a running container (e.g. new files) live?
++ In the container's writable layer
+- In the image layers
+- In the registry
+- In the Dockerfile
+= Image không đổi.
+
+Q: You delete a container with `docker rm`. What happens to files created inside it (no volume)?
++ They are lost with the writable layer
+- They are saved into the image
+- They are pushed to Docker Hub
+- They move to the host home folder
+= Lớp ghi bị xoá cùng container.
+
+Q: Which is the correct Docker Hub login command from the slide?
++ docker login --username yourusername
+- docker hub login yourusername
+- docker auth yourusername
+- docker push --login
+= Rồi nhập password/token.
+
+Q: The image is 1 GB because it includes .git and .venv. What is the simplest fix?
++ Add them to .dockerignore
+- Use EXPOSE
+- Use docker stop
+- Use --rm
+= .dockerignore giảm build context.
+
+Q: Which order of docker commands deploys a new version manually on a server that only runs images?
++ docker pull user/app:2.0 → docker stop/rm old container → docker run -d ... user/app:2.0
+- docker build on the server → git push
+- docker push on the server → docker logs
+- docker rmi user/app:2.0 → docker run
+= Server kéo image mới rồi chạy.
+
+Q: Which statement about the `latest` tag is correct?
++ It is just a default tag name; it does not guarantee the newest image
+- It always points to the newest build
+- It cannot be overwritten
+- It is a digest
+= Deep Dive tr.71–73.
+
+Q: `docker run -d -p 8080:80 --name web nginx:alpine` then `curl localhost:8080` prints the nginx welcome page. Then `docker stop web`. What does curl print now?
++ Connection refused (nothing listens on 8080)
+- The welcome page from cache
+- 404
+- 500
+= Container dừng → port không còn được map.
+
+Q: Which flag gives a container a name instead of a random one?
++ --name
+- -n
+- --tag
+- -t
+= --name web.
+
+Q: Which statements about `-it` are correct?
++ `-i` keeps STDIN open.
++ `-t` allocates a terminal (TTY).
+- `-t` sets the image tag.
+- `-i` runs in the background.
+= -it = interactive + tty.
+
+Q: Which command removes all stopped containers?
++ docker container prune
+- docker image prune
+- docker rm --images
+- docker stop -a
+= prune xoá container đã dừng.
+
+## k5-dockerfile | materials/llm_app/completed/Dockerfile; week5.pdf tr.13–14 | dockerfile
+Q: Read the Dockerfile. Which statements are correct?
+> FROM python:3.12-slim
+> WORKDIR /app
+> COPY requirements.txt .
+> RUN pip install -r requirements.txt
+> COPY . .
+> EXPOSE 8000
+> CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
++ The app module is main.py at /app in the image.
++ pip install runs at build time.
++ Uvicorn starts when the container starts.
+- Port 8000 is automatically reachable from the host.
+= EXPOSE chỉ là metadata; cần -p.
+
+Q: In the Dockerfile above, the CMD is changed to `["uvicorn", "app.main:app", ...]` but main.py is at /app/main.py. What happens when the container starts?
++ Uvicorn fails to import the module app.main and the container exits
+- It works the same
+- The build fails
+- Docker renames the file
+= Module path phải khớp vị trí file trong image.
+
+Q: Which command runs the chatbot image with its secrets and publishes port 8000?
++ docker run -d -p 8000:8000 --env-file .env chatbot-api:1.0
+- docker run chatbot-api:1.0 .env
+- docker build --env-file .env -p 8000
+- docker push --env-file .env chatbot-api:1.0
+= --env-file lúc chạy; -p publish cổng.
+
+Q: Which Dockerfile instruction should you use to run `apt-get install curl` while building?
++ RUN apt-get install -y curl
+- CMD apt-get install -y curl
+- EXPOSE curl
+- FROM curl
+= RUN chạy lúc build; CMD chạy lúc khởi động container.
+
+Q: You put `CMD pip install -r requirements.txt` instead of RUN. What happens?
++ Dependencies are installed every time a container starts (and then it exits), not baked into the image
+- It is identical to RUN
+- The build fails
+- The image becomes smaller and faster
+= CMD = lệnh khi container chạy.
+
+Q: Which statements about CMD and ENTRYPOINT (Docker Deep Dive) are correct?
++ Both set the default program a container runs.
++ The default command (CMD) is overridden when you pass a command to docker run.
+- Both create filesystem layers.
+- ENTRYPOINT runs only at build time.
+= Deep Dive tr.103, 116.
+
+## k5-cmd | week5.pdf tr.7–15
+Q: Which command follows the logs of container web continuously?
++ docker logs -f web
+- docker logs --rm web
+- docker ps -f web
+- docker exec -f web
+= -f follow (giống tail -f).
+
+Q: Which commands are executed by the daemon on the host (not by the registry)?
++ docker build
++ docker run
++ docker exec
+- Storing images for other hosts to pull
+= Registry chỉ lưu/phân phối image.
+
+Q: You run `docker run -d nginx:alpine` without `--name`. What name does the container get?
++ A random generated name (e.g. "eager_turing")
+- nginx
+- alpine
+- No name; it cannot be referenced
+= Docker tự sinh tên ngẫu nhiên.
+
+Q: Which flag removes a running container in one command?
++ docker rm -f web
+- docker rm web (always)
+- docker stop -rm web
+- docker rmi web
+= rm -f gửi SIGKILL rồi xoá.
+
+Q: Which command shows the IP address and configuration of a container in JSON?
++ docker inspect web
+- docker logs web
+- docker ps -q
+- docker images web
+= inspect xem chi tiết.
+
+## k5-cache | week5.pdf tr.12
+Q: You build the same Dockerfile twice without changes. What does the second build show?
++ Every step uses the cache (CACHED), finishing quickly
+- Every step runs again
+- It fails because the image exists
+- It deletes the old image first
+= Không có thay đổi → dùng lại cache.
+
+Q: Why should frequently changing instructions be placed near the end of a Dockerfile?
++ A change invalidates the cache for that layer and all layers after it
+- Docker reads the file backwards
+- Early layers are never cached
+- It is required by the syntax
+= Tối ưu layer cache.
+
+## k5-naming | week5.pdf tr.8
+Q: Which image reference pins an exact image content so it never changes?
++ alpine@sha256:<digest>
+- alpine:latest
+- alpine
+- alpine:3
+= Digest là hash nội dung.
+
+Q: `docker pull ubuntu:24.04` — what is 24.04?
++ The tag
+- The repository
+- The registry
+- The digest
+= repo:tag.

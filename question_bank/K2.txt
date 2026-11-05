@@ -1,0 +1,884 @@
+## k2-ff | week02.pdf tr.4–15
+Q: What is a branch in Git?
++ A lightweight movable pointer to a commit
+- A full copy of the project directory
+- A separate repository on the server
+- A list of diffs
+= Branch chỉ là con trỏ di động tới một commit (file 41 byte chứa hash).
+
+Q: What does HEAD normally point to?
+- The newest commit on the remote
++ The local branch you are currently on
+- The first commit of the repository
+- The staging area
+= HEAD trỏ tới branch đang checkout.
+
+Q: Why is creating a branch in Git so fast?
++ Git only writes a small file containing the commit hash
+- Git copies only the changed files
+- Git compresses the whole repository
+- Git creates the branch on the server
+= Tạo nhánh = tạo con trỏ mới, gần như tức thì.
+
+Q: main is at C2. hotfix was created from C2 and has C3 and C4. You run the commands below. What happens?
+> git checkout main
+> git merge hotfix
+L: bash
++ Fast-forward: main moves to C4, no new commit
+- A merge commit C5 with two parents is created
+- A conflict is reported
+- hotfix is rebased onto main
+= C4 là hậu duệ trực tiếp của C2 → chỉ dời con trỏ.
+
+Q: Which word appears in Git's output when a merge only moves the branch pointer?
++ Fast-forward
+- Recursive
+- Octopus
+- Conflict
+= Không có công việc rẽ nhánh → "Fast-forward".
+
+Q: After a successful fast-forward merge of `hotfix` into `main`, which command deletes `hotfix` safely?
++ git branch -d hotfix
+- git branch -D main
+- git push origin --delete main
+- git reset hotfix
+= hotfix đã được merge nên -d xoá được an toàn.
+
+Q: Which statements about a fast-forward merge are correct?
++ It does not create a new commit.
++ It happens when the current branch has no commits that the other branch lacks.
+- It always creates a commit with two parents.
+- It requires resolving conflicts.
+= FF chỉ dời con trỏ; không thể có conflict.
+
+## k2-switch | week02.pdf tr.5–9; Pro Git tr.74, 78–80
+Q: You are on master and run the commands below. Which branch points to the new commit?
+> git branch testing
+> echo "x" >> a.txt
+> git commit -a -m "change"
+L: bash
+- testing
++ master
+- both
+- neither
+= git branch chỉ tạo con trỏ, không chuyển; HEAD vẫn ở master.
+
+Q: Which command creates the branch `iss53` and switches to it immediately?
++ git checkout -b iss53
+- git branch iss53
+- git merge iss53
+- git checkout iss53 --new
+= checkout -b = branch + checkout. Tương đương: git switch -c iss53.
+
+Q: Which commands create AND switch to a new branch `feature`?
++ git checkout -b feature
++ git switch -c feature
+- git branch feature
+- git switch feature (if feature does not exist)
+= -b / -c tạo và chuyển; git switch feature chỉ chuyển sang nhánh đã có.
+
+Q: What does `git switch -` do?
++ Switches back to the previously checked-out branch
+- Deletes the current branch
+- Creates a branch named "-"
+- Shows all branches
+= Giống cd - trong shell.
+
+Q: What happens to your working directory when you run `git checkout testing`?
++ Files are updated to match the snapshot that testing points to
+- Nothing; only HEAD moves
+- All files are deleted
+- Uncommitted changes are always committed automatically
+= Đổi nhánh: HEAD dời và working dir đổi theo snapshot.
+
+Q: On branch week2 you add a line to week2.md and commit, then run `git switch master`. What do you see in week2.md?
++ The content on master; the new line is not visible but is safe in branch week2
+- The new line, because files are shared between branches
+- An empty file
+- Git refuses to switch
+= Nội dung nằm ở commit của week2, không mất.
+
+Q: When can Git refuse to switch branches?
++ When uncommitted changes would conflict with the branch you are switching to
+- Whenever there are any untracked files
+- When the target branch has more commits
+- When the remote is offline
+= Không đổi nhánh sạch được thì Git chặn.
+
+Q: After `git checkout testing` and a new commit, which statements are correct?
++ testing moves forward to the new commit.
++ master stays where it was.
+- Both branches move forward.
+- HEAD now points to master.
+= Nhánh HEAD đang trỏ mới tiến lên.
+
+Q: Which command shows where branch pointers and HEAD are in the history?
++ git log --oneline --decorate
+- git status -s
+- git remote -v
+- git diff
+= --decorate in tên nhánh/HEAD cạnh commit.
+
+Q: By default, `git log` shows the history of:
++ the branch you have checked out
+- all branches
+- only the remote
+- only tags
+= Thêm --all để xem mọi nhánh (Pro Git tr.74).
+
+## k2-cmd | week02.pdf tr.4–35
+Q: Which command lists local branches and marks the current one with `*`?
++ git branch
+- git branch -a --remote
+- git status
+- git log
+= git branch liệt kê nhánh local; * = nhánh đang checkout.
+
+Q: Which command shows the last commit on each branch?
++ git branch -v
+- git branch -d
+- git log -1
+- git tag -v
+= -v (verbose) in commit mới nhất của từng nhánh.
+
+Q: `git branch --merged` lists:
++ branches already merged into the current branch
+- branches merged into origin
+- every branch in the repository
+- branches with conflicts
+= So với nhánh hiện tại; thường xoá được bằng -d.
+
+Q: `git branch --no-merged` lists:
++ branches containing work not yet merged into the current branch
+- branches that were deleted
+- remote branches only
+- branches without commits
+= Còn công việc chưa gộp; -d sẽ báo lỗi.
+
+Q: You run `git branch -d testing` but testing has unmerged work. What happens?
++ Git refuses with an error "not fully merged"
+- testing is deleted and the work is lost
+- testing is merged automatically
+- testing is renamed
+= -d an toàn; muốn xoá cưỡng bức dùng -D.
+
+Q: What does `git branch -D testing` do?
++ Force-deletes testing even if it is not merged; unmerged work becomes unreachable
+- Deletes testing on the remote
+- Deletes only merged branches
+- Renames testing
+= -D = xoá cưỡng bức.
+
+Q: Which commands are needed to rename branch `bad-name` to `good-name` both locally and on the remote?
++ git branch --move bad-name good-name
++ git push --set-upstream origin good-name
++ git push origin --delete bad-name
+- git remote rename bad-name good-name
+= Đổi tên local, đẩy tên mới, xoá tên cũ trên remote.
+
+Q: After `git branch --move bad good` and `git push --set-upstream origin good`, which branches exist on the remote?
++ Both bad and good
+- Only good
+- Only bad
+- None
+= Phải xoá bad trên remote bằng git push origin --delete bad.
+
+Q: Why should you be careful renaming the default branch master to main?
++ It can break CI/CD, build scripts and integrations; the team must agree
+- Git forbids it
+- It deletes the history
+- It removes all tags
+= Đổi tên nhánh mặc định ảnh hưởng tích hợp, cần bàn với nhóm.
+
+Q: Which command shows commits from all branches as a graph?
++ git log --oneline --decorate --graph --all
+- git branch -vv
+- git log -p
+- git show --all
+= --all + --graph cho đồ thị toàn bộ nhánh.
+
+Q: Which statements about `git branch` are correct?
++ `git branch name` creates a branch at the current commit.
++ `git branch` alone lists branches.
+- `git branch name` switches to the new branch.
+- `git branch name` creates a commit.
+= Tạo nhánh không chuyển nhánh, không tạo commit.
+
+## k2-conflict | Pro Git tr.83–84
+Q: Git reports the output below. What state is the repository in?
+> $ git merge iss53
+> Auto-merging index.html
+> CONFLICT (content): Merge conflict in index.html
+> Automatic merge failed; fix conflicts and then commit the result.
+L: text
++ The merge is paused: no merge commit yet, index.html is unmerged
+- The merge commit was created with conflict markers
+- The merge was aborted automatically
+- iss53 was deleted
+= Git chưa tạo merge commit; phải sửa, add, commit.
+
+Q: In the conflict block below, which version is the one from HEAD?
+> <<<<<<< HEAD:index.html
+> <div id="footer">contact : email.support@github.com</div>
+> =======
+> <div id="footer">please contact us at support@github.com</div>
+> >>>>>>> iss53:index.html
+L: text
++ The line between `<<<<<<< HEAD` and `=======`
+- The line between `=======` and `>>>>>>> iss53`
+- Both lines
+- Neither; HEAD content is not shown
+= Phần trên ======= là bản của nhánh đang đứng (HEAD).
+
+Q: After editing a conflicted file and removing the markers, how do you mark it resolved?
++ git add index.html
+- git commit --amend
+- git merge --continue-file
+- git rm index.html
+= git add đánh dấu đã giải quyết; sau đó git commit.
+
+Q: What does `git status` show for a file in conflict?
++ Unmerged paths … both modified
+- Untracked files
+- Changes to be committed: new file
+- nothing to commit
+= Unmerged paths, both modified.
+
+Q: Which steps correctly finish a merge with a conflict?
++ Edit the file and keep the desired content
++ Delete all `<<<<<<<`, `=======` and `>>>>>>>` lines
++ Run `git add` on the file and then `git commit`
+- Run `git push` before committing to share the conflict
+= Sửa → bỏ marker → add → commit.
+
+Q: Which kind of merge does Git perform when both branches have new commits since their common ancestor?
++ A three-way merge using the two tips and the common ancestor
+- A fast-forward
+- A rebase
+- A cherry-pick
+= Hai nhánh đã rẽ → 3-way merge, tạo merge commit.
+
+Q: In a three-way merge of experiment (C4) into main (C5) whose common ancestor is C2, what are the parents of the new merge commit C6?
++ C5 and C4
+- C2 and C4
+- C2 only
+- C4 only
+= Merge commit có hai cha: đầu hai nhánh.
+
+Q: Can a fast-forward merge produce a conflict?
++ No, because there is no divergent work to combine
+- Yes, always
+- Only when files are binary
+- Only on remote branches
+= FF chỉ dời con trỏ.
+
+## k2-trap-dir | week02.pdf tr.14
+Q: You want the hotfix changes to end up in main. Which sequence is correct?
++ git checkout main; git merge hotfix
+- git checkout hotfix; git merge main
+- git merge main hotfix --reverse
+- git checkout hotfix; git rebase hotfix
+= Đứng ở nhánh nhận thay đổi rồi merge nhánh kia vào.
+
+Q: You are on `feature` and run `git merge main`. Which branch changes?
++ feature
+- main
+- both
+- neither
+= Merge luôn cập nhật nhánh hiện tại.
+
+## k2-remote | week02.pdf tr.38–56
+Q: What is `origin/master`?
++ A remote-tracking branch recording where master was on origin at the last sync
+- A local branch you can commit to directly
+- The master branch on GitHub itself
+- A tag
+= Remote-tracking branch = bookmark, đổi khi fetch/push.
+
+Q: You commit twice on local master without fetching. Meanwhile someone pushes to origin. What happens to `origin/master` in your repo?
++ It stays where it was until you fetch
+- It moves to your new commits
+- It moves to their commits automatically
+- It is deleted
+= origin/master chỉ di chuyển khi giao tiếp với remote.
+
+Q: Which command updates your remote-tracking branches from origin?
++ git fetch origin
+- git commit
+- git branch -u
+- git log origin
+= fetch tải dữ liệu mới và di chuyển origin/*.
+
+Q: Which command pushes your local branch serverfix to the remote branch serverfix?
++ git push origin serverfix
+- git push serverfix origin
+- git fetch origin serverfix
+- git branch -u origin serverfix
+= git push <remote> <branch>.
+
+Q: After fetching a new remote branch origin/serverfix, which commands give you a local branch you can work on that tracks it?
++ git checkout -b serverfix origin/serverfix
++ git checkout --track origin/serverfix
+- git branch -d serverfix
+- git fetch --track serverfix
+= Hai cách tạo tracking branch; git checkout serverfix cũng được nếu tên không trùng.
+
+Q: Which command creates a local branch named `sf` that tracks `origin/serverfix`?
++ git checkout -b sf origin/serverfix
+- git checkout --track sf
+- git branch -u sf
+- git push origin sf
+= Tên local có thể khác tên remote.
+
+Q: Which command sets the upstream of the current branch to origin/serverfix?
++ git branch -u origin/serverfix
+- git push --delete origin/serverfix
+- git remote add origin/serverfix
+- git merge -u origin/serverfix
+= -u = --set-upstream-to.
+
+Q: `git branch -vv` prints `iss53 7e424c3 [origin/iss53: ahead 2, behind 1] forgot the brackets`. What does it mean?
++ 2 local commits not pushed; 1 commit on the server not yet merged locally
+- 2 commits on the server not merged; 1 local commit not pushed
+- The branch has 3 conflicts
+- The branch was deleted
+= ahead = local có mà server chưa có; behind = server có mà local chưa merge.
+
+Q: Why can `git branch -vv` show outdated ahead/behind numbers?
++ It compares with the last fetched state; it does not contact the server
+- It only counts merge commits
+- It ignores local commits
+- It is always accurate
+= Muốn số mới: git fetch --all; git branch -vv.
+
+Q: Which command deletes the branch serverfix on the remote?
++ git push origin --delete serverfix
+- git branch -d serverfix
+- git fetch --delete serverfix
+- git remote remove serverfix
+= Xoá nhánh trên server.
+
+Q: Which command merges the fetched remote branch serverfix into your current branch?
++ git merge origin/serverfix
+- git push origin serverfix
+- git branch origin/serverfix
+- git fetch --merge
+= Sau fetch, merge origin/serverfix.
+
+Q: Which statements about remote-tracking branches are correct?
++ You cannot commit directly to them.
++ Git moves them when you fetch or push.
+- They are updated in real time when someone pushes.
+- They are stored on GitHub only.
+= origin/x là tham chiếu local, chỉ cập nhật khi đồng bộ.
+
+Q: Which commands list references on a remote?
++ git ls-remote origin
++ git remote show origin
+- git branch -d origin
+- git log --remote-only
+= Liệt kê tham chiếu trên remote.
+
+Q: `git pull` on a tracking branch is roughly equivalent to:
++ git fetch followed by git merge of the upstream branch
+- git push followed by git fetch
+- git rebase followed by git push
+- git clone
+= pull = fetch + merge (hoặc --rebase).
+
+Q: What does `git pull --rebase` do?
++ Fetches, then rebases your local commits onto the upstream branch instead of merging
+- Pushes and then rebases
+- Rebases the server
+- Deletes local commits
+= Pro Git tr.109.
+
+## k2-rebase | week02.pdf tr.58–67
+Q: experiment (C3, C4) diverged from main at C2; main has C5. You run the commands below. What is the result?
+> git checkout experiment
+> git rebase main
+L: bash
++ New commits C3' and C4' are created on top of C5; experiment points to C4'
+- A merge commit with two parents is created on experiment
+- main moves to C4
+- C3 and C4 keep their hashes and simply move
+= Rebase phát lại patch thành commit mới.
+
+Q: After rebasing experiment onto main, you run `git checkout main; git merge experiment`. What kind of merge happens?
++ Fast-forward
+- Three-way merge
+- Octopus merge
+- Conflict always
+= Lịch sử thẳng nên merge là FF.
+
+Q: Compared with merge, what is the main benefit of rebase?
++ A cleaner, linear history
+- A different final snapshot
+- It never creates new commits
+- It preserves the exact timeline of parallel work
+= Snapshot cuối giống nhau; rebase cho lịch sử thẳng.
+
+Q: Which statements about merge and rebase are correct?
++ The final snapshot is the same in both approaches.
++ Merge keeps the real parallel history with a merge commit.
++ Rebase rewrites commits, giving them new hashes.
+- Rebase is always safe on shared public branches.
+= Không rebase commit đã public.
+
+Q: What is the golden rule of rebasing?
++ Do not rebase commits that exist outside your repository and that people may have based work on
+- Always rebase before every commit
+- Only rebase main
+- Never rebase local commits
+= Rebase local chưa push để dọn lịch sử; không rebase thứ đã public.
+
+Q: How does `git rebase main` work internally (while on experiment)?
++ Find the common ancestor, save the diffs of experiment's commits, reset experiment to main, apply the diffs one by one
+- Merge main into experiment and delete the merge commit
+- Copy files from main into experiment
+- Push experiment to main
+= Đúng quy trình 4 bước của slide.
+
+Q: What does `git rebase main server` do?
++ Rebases server onto main without checking out server first
+- Rebases main onto server
+- Merges server into main
+- Deletes server
+= git rebase <base> <topic>.
+
+Q: History: master ← server ← client (client branched from server). What does the command below do?
+> git rebase --onto master server client
+L: bash
++ Replays the commits of client since it diverged from server onto master
+- Replays server onto client
+- Merges client and server into master
+- Deletes server
+= --onto: lấy phần riêng của client, bỏ qua phần của server, phát lại lên master.
+
+Q: Someone rebased commits you had already pulled and force-pushed them. What problem can occur?
++ You get duplicate commits with the same content but different hashes when you merge again
+- Your repository is deleted
+- Nothing, rebase is safe for others
+- The remote rejects all pushes forever
+= The Perils of Rebasing (Pro Git tr.106).
+
+Q: Why does rebase create new commits instead of moving the old ones?
++ Each commit's hash depends on its parent; a new parent means a new hash
+- Git cannot move pointers
+- Rebase deletes the old files
+- Rebase uses a different hash algorithm
+= Commit mới có cha khác → hash khác.
+
+Q: Which command would you use to integrate upstream changes and keep your local unpublished commits on top?
++ git pull --rebase
+- git push --force
+- git branch -D
+- git merge --squash-all
+= pull --rebase phát lại commit local lên trên.
+
+## k2-trap-branch | week02.pdf tr.5–9
+Q: Starting on master at C1, you run the commands below. Where are master and testing?
+> git branch testing
+> git checkout testing
+> git commit -a -m "t1"
+> git checkout master
+> git commit -a -m "m1"
+L: bash
++ The history has diverged: testing at t1, master at m1, both children of C1
+- Both at m1
+- Both at t1
+- master at t1, testing at m1
+= Mỗi nhánh tiến lên khi HEAD trỏ vào nó.
+
+Q: In the previous scenario, merging testing into master would be:
++ A three-way merge creating a merge commit
+- A fast-forward
+- Impossible
+- A rebase
+= Hai nhánh đã rẽ → 3-way.
+
+## k2-trap-rebase | week02.pdf tr.58–62
+Q: You rebase a branch that only exists on your laptop. Is this OK?
++ Yes, rebasing local unpublished commits is fine
+- No, rebase is never allowed
+- Only if the branch is main
+- Only with --force
+= Quy tắc chỉ cấm rebase thứ đã push công khai.
+
+Q: After a rebase, the commit hashes:
++ change for the replayed commits
+- remain identical
+- become shorter
+- are removed from the log
+= C3 → C3', C4 → C4'.
+
+## k2-trap-vv | week02.pdf tr.44–48
+Q: `git branch -vv` shows `[origin/master: behind 3]`. What should you do to bring your branch up to date?
++ git pull (or git fetch then git merge origin/master)
+- git push
+- git branch -D master
+- git commit --amend
+= behind 3 = server có 3 commit chưa merge vào local.
+
+Q: `git branch -vv` shows `[origin/feature: ahead 4]`. What does it mean?
++ You have 4 local commits that are not pushed yet
+- The server has 4 commits you do not have
+- 4 conflicts exist
+- The branch is 4 days old
+= ahead = commit local chưa push.
+
+## k2-trap-rename | week02.pdf tr.22–27
+Q: Which statements about renaming branches are correct?
++ `git branch --move` keeps the history.
++ The old name remains on the remote until deleted.
+- Renaming a branch rewrites all commit hashes.
+- Renaming locally also renames the remote branch automatically.
+= Lịch sử giữ nguyên; phải tự push tên mới và xoá tên cũ.
+
+## k2-cmd | week02.pdf tr.4–35
+Q: Which is the feature-branch workflow taught in the course?
++ Create a branch for each feature, commit there, open a pull request, merge into main after review
+- Commit everything directly on main
+- Create one branch per file
+- Rebase main onto every feature
+= Feature branch + pull request.
+
+Q: A critical bug appears in production while you are working on iss53. What is the recommended flow?
++ Commit or stash iss53 work, switch to main, create hotfix, fix, merge hotfix into main, then return to iss53
+- Fix the bug directly on iss53 and push iss53 to production
+- Delete iss53 and start over
+- Rebase main onto iss53
+= Quy trình hotfix trong slide/Pro Git.
+
+Q: What is a pull request?
++ A request on the hosting platform (e.g. GitHub) to review and merge a branch into another
+- A Git command that pulls code
+- A way to force-push
+- A tag type
+= PR là tính năng của GitHub, dùng để review rồi merge.
+
+Q: Which commands only move HEAD (and working files) without creating commits?
++ git checkout main
++ git switch feature
+- git merge feature (non fast-forward)
+- git commit
+= checkout/switch không tạo commit.
+
+Q: You are in the middle of a merge conflict and want to cancel the merge. Which command?
++ git merge --abort
+- git branch -D
+- git push --abort
+- git rebase --onto
+= merge --abort đưa về trạng thái trước khi merge.
+
+Q: During a rebase there is a conflict. After fixing and `git add`, which command continues?
++ git rebase --continue
+- git commit --amend
+- git merge --continue-rebase
+- git push
+= Rebase dừng ở từng commit có conflict; sửa → add → --continue.
+
+Q: Which output line indicates a merge created a merge commit using the default strategy?
++ Merge made by the 'recursive' strategy (or 'ort')
+- Fast-forward
+- Already up to date
+- CONFLICT (content)
+= Merge 3-way thành công in "Merge made by the ... strategy".
+
+Q: You run `git merge feature` but feature has no commits that are not already in your branch. What does Git print?
++ Already up to date.
+- Fast-forward
+- CONFLICT
+- fatal: no branch
+= Không có gì mới để gộp.
+
+Q: Which statements about HEAD are correct?
++ It tells Git which branch will move on the next commit.
++ `git checkout` changes what HEAD points to.
+- HEAD always points to origin/main.
+- HEAD is a remote-tracking branch.
+= HEAD trỏ branch hiện tại.
+
+Q: You create `feature` from `main`, make 3 commits on feature, nobody commits on main. You run `git checkout main; git merge feature`. How many new commits appear on main?
++ None are created; main fast-forwards to the 3 existing feature commits
+- 1 merge commit
+- 3 new copies
+- 4 commits
+= FF: không tạo commit mới.
+
+Q: Which statements describe a typical conflict cause?
++ Both branches changed the same part of the same file differently
+- Both branches added different files
+- One branch renamed a branch
+- The remote is offline
+= Conflict khi cùng một phần của cùng file bị sửa khác nhau.
+
+Q: Which command shows which branches have been merged into main, so they can be deleted?
++ git checkout main; git branch --merged
+- git branch --no-merged
+- git log --merged
+- git remote prune
+= --merged so với nhánh hiện tại.
+
+Q: In `git log --oneline --decorate`, you see `f30ab (HEAD -> master, testing)`. What does it mean?
++ Both master and testing point to f30ab, and HEAD points to master
+- HEAD points to testing
+- testing is ahead of master
+- f30ab is a merge commit
+= Hai nhánh cùng trỏ một commit; HEAD -> master.
+
+Q: Which is TRUE about deleting a branch with `git branch -d` after merging?
++ The commits remain in history; only the pointer is removed
+- All commits of that branch are deleted
+- The merge commit is deleted
+- The remote branch is deleted too
+= Xoá nhánh = xoá con trỏ.
+
+Q: Which command switches to an existing branch named `dev`?
++ git switch dev
++ git checkout dev
+- git switch -c dev (if dev already exists)
+- git branch dev
+= -c sẽ lỗi vì dev đã tồn tại.
+
+Q: Which statements about `git fetch` and remote branches are correct?
++ Fetching a new remote branch does not create an editable local branch automatically.
++ You get only an unmodifiable origin/branch pointer until you create a local branch.
+- Fetch automatically checks out every new branch.
+- Fetch merges every remote branch into main.
+= Phải checkout -b / --track để có nhánh local.
+
+Q: When you push a branch for the first time, which option sets up tracking?
++ git push -u origin feature
+- git push --track
+- git push --delete origin feature
+- git push --all-tags
+= -u = --set-upstream.
+
+Q: Which statement about `git merge` with no conflicts in a three-way merge is correct?
++ Git automatically creates the merge commit
+- You must always edit files manually
+- Git creates a fast-forward instead
+- Git deletes the merged branch
+= Không có conflict → tự tạo merge commit.
+
+Q: Which history results from merging, compared to rebasing, the same divergent branches?
++ Merge: non-linear history with a merge commit; Rebase: linear history
+- Merge: linear; Rebase: non-linear
+- Both linear
+- Both produce a merge commit
+= Hai cách gộp khác nhau về hình dạng lịch sử.
+
+Q: Your teammate says: "I rebased main after pushing it and force-pushed." Which is the best response?
++ This violates the golden rule; teammates' histories will diverge
+- That's the recommended workflow
+- Rebase cannot be force-pushed
+- That only affects tags
+= Không rebase nhánh công khai.
+
+Q: Which command shows the branch graph after a merge to verify the merge commit?
++ git log --graph --oneline
+- git status -s
+- git diff --staged
+- git tag -l
+= --graph thấy merge commit có hai cha.
+
+Q: What happens to the conflict markers if you run `git add` without removing them?
++ They are staged as normal file content and committed into the file
+- Git refuses to add
+- Git removes them automatically
+- Git aborts the merge
+= Git không kiểm tra marker; phải tự xoá.
+
+Q: Which command creates a branch at a specific commit `a1b2c3` without switching?
++ git branch fix a1b2c3
+- git checkout a1b2c3 -m fix
+- git switch fix a1b2c3 --no
+- git tag fix a1b2c3
+= git branch <name> <commit>.
+
+Q: Which statements about `git switch` are correct?
++ It was introduced as a clearer alternative to `git checkout` for changing branches.
++ `git switch -c x` creates and switches to x.
+- `git switch` can only be used for remote branches.
+- `git switch` merges branches.
+= switch chuyên dùng để đổi nhánh.
+
+Q: You are on `main` and run `git checkout -b feat` then `git commit`. Then you run `git checkout main`. Which branch contains the new commit?
++ feat only
+- main only
+- both
+- none
+= Commit được tạo khi HEAD trỏ feat.
+
+Q: What does `git checkout serverfix` do if there is no local serverfix but origin/serverfix exists (and only one remote has it)?
++ Creates a local serverfix tracking origin/serverfix and switches to it
+- Fails always
+- Deletes origin/serverfix
+- Creates a detached HEAD without branch always
+= Lối tắt của --track (Pro Git).
+
+Q: In the merge-vs-rebase figure, what is C2?
++ The common ancestor (merge base) of main and experiment
+- The merge commit
+- The newest commit
+- A tag
+= C2 là tổ tiên chung dùng cho 3-way merge.
+
+Q: Why is branching cheap in Git compared to older VCSs?
++ Git branches are just pointers, not copies of the directory
+- Git deletes old branches automatically
+- Git uses less network
+- Git branches cannot contain commits
+= Hệ VCS cũ thường copy cả thư mục.
+
+Q: Which statement is TRUE after `git rebase main` on experiment if there are no conflicts?
++ experiment now contains all of main's commits followed by its own replayed commits
+- main contains experiment's commits
+- experiment loses its commits
+- a merge commit exists on experiment
+= main chỉ thay đổi khi merge FF sau đó.
+
+Q: Which is the safest way to delete a feature branch after merging its PR on GitHub?
++ git branch -d feature locally and git push origin --delete feature for the remote
+- git branch -D main
+- git reset --hard
+- git remote remove origin
+= Xoá local và remote.
+
+Q: When should you prefer merge over rebase?
++ When the branch is shared and you want to preserve the real history
+- When you want to rewrite public history
+- Never
+- Only for the first commit
+= Merge không viết lại lịch sử.
+
+Q: Which commands change commit history (create replacement commits)?
++ git rebase
++ git commit --amend
+- git fetch
+- git branch -v
+= Rebase và amend tạo commit thay thế.
+
+Q: What does `git branch -a` show?
++ Local and remote-tracking branches
+- Only the current branch
+- Only tags
+- Only merged branches
+= -a = all.
+
+Q: After `git fetch`, `git status` on master says "Your branch is behind 'origin/master' by 2 commits, and can be fast-forwarded." What does `git merge origin/master` do?
++ Fast-forwards master by 2 commits
+- Creates a merge commit
+- Pushes 2 commits
+- Reports a conflict
+= Không có commit local mới → FF.
+
+Q: Which is the effect of `git merge --no-ff feature` (Pro Git)?
++ Always creates a merge commit even if a fast-forward is possible
+- Prevents the merge
+- Rebases feature
+- Deletes feature
+= --no-ff ép tạo merge commit.
+
+Q: A branch file in `.git/refs/heads/` contains:
++ The 40-character SHA-1 of the commit it points to
+- All files of the branch
+- The commit message
+- The list of parents
+= Branch = file chứa hash.
+
+Q: Which statement about HEAD after `git checkout main` is correct?
++ HEAD → main → latest commit of main
+- HEAD → latest commit of origin
+- HEAD → first commit
+- HEAD → stash
+= HEAD trỏ tới branch, branch trỏ tới commit.
+
+Q: You are on feature and want to update it with the newest main without a merge commit. Which commands?
++ git fetch origin; git rebase origin/main
+- git push origin main
+- git branch -d main
+- git checkout main; git commit
+= Rebase feature lên main mới (nếu feature chưa public).
+
+Q: Which statements describe `git branch -vv` output?
++ It shows the upstream branch of each local branch.
++ It shows ahead/behind counts.
+- It contacts the server every time.
+- It lists stashes.
+= Số liệu tính theo lần fetch cuối.
+
+Q: Which command shows details about which local branches track which remote branches on origin?
++ git remote show origin
+- git branch -d origin
+- git fetch --prune
+- git log --oneline
+= remote show in thông tin tracking.
+
+Q: A conflict appears in README.md during merge. You decide to keep both versions. What must the final file contain?
++ The combined content you want, with no conflict markers
+- Both versions with the markers kept
+- Only the HEAD version, always
+- Nothing; delete the file
+= Bạn tự quyết nội dung cuối, xoá marker.
+
+Q: Which statement about `git rebase` and conflicts is correct?
++ Conflicts may appear for each replayed commit
+- Rebase never has conflicts
+- Rebase conflicts are resolved automatically
+- Conflicts appear only on the server
+= Mỗi patch áp lại có thể conflict.
+
+Q: Which order of commands publishes a brand-new local branch `feat` and links it to the remote?
++ git push -u origin feat
+- git fetch origin feat
+- git remote add feat
+- git branch -u feat
+= Push lần đầu với -u.
+
+Q: You deleted a remote branch with `git push origin --delete serverfix`. What happens on the server?
++ The branch pointer is removed; the data stays until garbage collection
+- All commits are wiped instantly from every clone
+- The local branch is deleted too
+- The remote repository is deleted
+= Pro Git tr.100.
+
+Q: Which statements about "diverged" branches are correct?
++ Each branch has commits the other does not have.
++ Merging them requires a three-way merge or a rebase.
+- They can be fast-forwarded.
+- They share no common ancestor.
+= Đã rẽ nhánh vẫn có tổ tiên chung.
+
+Q: Which description of `git checkout -b iss53` followed by `git commit -a -m 'Create new footer [issue 53]'` is correct?
++ iss53 moves forward; master stays
+- master moves forward
+- both move
+- no branch moves
+= HEAD trỏ iss53.
+
+Q: What is the result of running `git branch` when the output is the following?
+> iss53
+> * master
+> testing
+L: text
++ You are on master; iss53 and testing are other local branches
+- You are on iss53
+- master is deleted
+- testing is a remote branch
+= * đánh dấu nhánh hiện tại.
+
+Q: Which command lists branches that contain work not yet merged into `main`, while you are on `main`?
++ git branch --no-merged
+- git branch --merged
+- git branch -m
+- git branch -u
+= --no-merged.
+
+Q: Which actions are typical of the pull request workflow?
++ Push a feature branch to GitHub
++ Open a PR to request review
++ Merge the PR into main after approval
+- Commit directly to main without review
+= Quy trình feature branch.

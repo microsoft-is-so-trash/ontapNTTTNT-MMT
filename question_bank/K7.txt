@@ -1,0 +1,747 @@
+## k7-terms | cloudcomputing.pdf tr.3–9
+Q: Why is a laptop not suitable for hosting the chatbot as a real service?
++ It only runs while switched on and has no stable public address
+- It cannot run Python
+- It cannot run Docker
+- It has no network card
+= Cần máy chạy liên tục, có Public IP.
+
+Q: What is cloud computing as defined in the course?
++ Renting computing resources over the Internet instead of buying and operating physical servers
+- Storing files only on USB drives
+- Running everything in a browser
+- A Git hosting service
+= Tạo máy vài phút, tăng/giảm khi cần, trả theo mức dùng.
+
+Q: Which benefits of cloud computing are mentioned?
++ Create a machine in a few minutes
++ Scale up or down when needed
++ Pay for what you use and delete when not needed
+- Hardware is free forever
+= Đặc điểm điện toán đám mây.
+
+Q: AWS EC2 belongs to which service model?
++ IaaS
+- SaaS
+- PaaS
+- FaaS
+= Thuê hạ tầng (máy chủ ảo), tự cài phần mềm.
+
+Q: In IaaS, who installs and manages Docker and the app on the instance?
++ You (the user)
+- AWS automatically
+- GitHub
+- Docker Hub
+= IaaS: người dùng tự cài và quản lý phần mềm.
+
+Q: What is an EC2 instance?
++ One virtual server created with the EC2 service
+- A Docker image
+- A Security Group rule
+- A key pair
+= EC2 = dịch vụ; instance = mỗi máy ảo.
+
+Q: What is an AMI?
++ The operating system image used to create an instance
+- A key file
+- An instance size
+- A firewall rule
+= Chọn AMI nào thì instance chạy HĐH đó.
+
+Q: What does the instance type determine?
++ The machine's resources such as CPU and RAM
+- The operating system
+- The public IP
+- The firewall rules
+= Chọn loại trong Free Tier.
+
+Q: Which instance type should students choose in the lab?
++ A type eligible for the Free Tier
+- The largest type available
+- A GPU type
+- Any type; cost does not matter
+= Free Tier có giới hạn loại máy và thời lượng.
+
+Q: What is a key pair in EC2?
++ A public key + private key used for SSH; AWS keeps the public key on the instance and you keep the private .pem
+- Two passwords
+- A pair of Security Groups
+- Two AMIs
+= Bảo quản .pem an toàn.
+
+Q: What is the public IP used for?
++ SSH from your machine and access by users over the Internet
+- Only internal communication between containers
+- Docker Hub login
+- Git push
+= Địa chỉ công khai.
+
+Q: What may happen to the public IP after you stop and start (restart) the instance without an Elastic IP?
++ It may change
+- It never changes
+- It becomes private
+- It is deleted with the instance's data
+= CD.pdf tr.25: cập nhật EC2_HOST.
+
+Q: What is a Security Group?
++ A set of firewall rules controlling inbound and outbound traffic of the instance
+- A group of IAM users
+- A Docker network
+- A GitHub team
+= Mặc định phần lớn lưu lượng vào bị chặn.
+
+Q: By default, what happens to most inbound traffic to a new instance?
++ It is blocked unless a rule allows it
+- It is all allowed
+- It is redirected to port 80
+- It is logged and allowed
+= Phải mở rule cho port cần dùng.
+
+Q: What is the Free Tier?
++ A free plan limited by instance types and hours of use
+- Unlimited free servers
+- A GitHub plan
+- A Docker Hub repository
+= Tắt/xoá instance khi không dùng.
+
+Q: Which statements about IaaS are correct?
++ The provider supplies virtual hardware (servers, network, storage).
++ The customer manages OS-level software such as Docker and the app.
+- The provider writes your application code.
+- The customer must buy physical servers.
+= EC2 là IaaS.
+
+## k7-steps | cloudcomputing.pdf tr.10–13 | bash
+Q: Which is the correct order of steps to create an instance?
++ Choose AMI → choose instance type → create key pair → launch → SSH in
+- Launch → choose AMI → SSH → create key pair
+- Create key pair → SSH → choose AMI → launch
+- Choose instance type → SSH → choose AMI
+= Theo slide tr.10–13.
+
+Q: Which command connects to an Ubuntu EC2 instance?
++ ssh -i my-key.pem ubuntu@<Public IP>
+- ssh my-key.pem@<Public IP>
+- ssh -p my-key.pem root@<Public IP>
+- scp ubuntu@<Public IP>
+= -i private key; user ubuntu.
+
+Q: In `ssh -i my-key.pem ubuntu@203.0.113.10`, which statements are correct?
++ my-key.pem is the private key on your machine.
++ ubuntu is the default user of the Ubuntu AMI.
++ 203.0.113.10 is the public IP of the instance.
+- my-key.pem is uploaded to the instance during login.
+= Private key không bao giờ rời máy bạn.
+
+Q: When do you download the .pem file?
++ When creating the key pair (you cannot download it again later)
+- Every time you SSH
+- After terminating the instance
+- From Docker Hub
+= Giữ .pem cẩn thận.
+
+Q: ssh refuses your key with "UNPROTECTED PRIVATE KEY FILE". What should you do?
++ Restrict permissions, e.g. chmod 400 my-key.pem
+- chmod 777 my-key.pem
+- Rename it to .pub
+- Upload it to GitHub
+= Private key phải chỉ owner đọc được.
+
+Q: After launching, which state should the instance reach before you SSH?
++ Running (and status checks passed)
+- Stopped
+- Terminated
+- Pending forever
+= Chờ sẵn sàng rồi SSH.
+
+## k7-ports | cloudcomputing.pdf tr.14–17; reverse_proxy_https.pdf tr.19–21
+Q: Which inbound rule source is recommended for port 22 (SSH)?
++ My IP
+- 0.0.0.0/0
+- Any IPv6
+- The Docker Hub IP range
+= Port 22 là cửa quản trị.
+
+Q: Which ports must be open to everyone (0.0.0.0/0) for a public HTTPS website with Caddy?
++ 80
++ 443
+- 22
+- 8000
+= 80 cho Let's Encrypt/HTTP; 443 cho HTTPS.
+
+Q: Should port 8000 be opened in the Security Group when Caddy is used as reverse proxy?
++ No; Caddy reaches the app via localhost:8000 on the instance
+- Yes, always
+- Yes, for SSH
+- Only for Let's Encrypt
+= Không mở port app khi đã có reverse proxy.
+
+Q: What does `0.0.0.0/0` mean as a rule source?
++ Any IPv4 address on the Internet
+- Only localhost
+- No address
+- Only the AWS network
+= Mọi nơi.
+
+Q: What is the principle used for Security Group rules?
++ Least privilege: open only the ports you need, to the sources that need them
+- Open all ports to be safe
+- Open SSH to anywhere for convenience
+- Keep every old rule
+= Quyền tối thiểu.
+
+Q: Which practices follow least privilege?
++ Open only the required ports
++ Restrict SSH to My IP
++ Delete rules you no longer need
+- Allow all traffic on all ports
+= Nên vs không nên.
+
+Q: What is the difference between inbound and outbound rules?
++ Inbound controls traffic into the instance; outbound controls traffic leaving it
+- Inbound is for IPv6 only
+- Outbound is for SSH only
+- They are identical
+= Vào vs ra.
+
+Q: Which port is used for plain HTTP?
++ 80
+- 443
+- 22
+- 5432
+= 80 HTTP, 443 HTTPS.
+
+Q: Which port is used for HTTPS?
++ 443
+- 80
+- 8080
+- 21
+= 443.
+
+Q: Which port does SSH use?
++ 22
+- 21
+- 25
+- 80
+= 22.
+
+Q: Which Security Group configuration is the safest for a public web app with SSH administration?
++ 22 from My IP; 80 and 443 from 0.0.0.0/0
+- All ports from 0.0.0.0/0
+- 22 from 0.0.0.0/0; 8000 from 0.0.0.0/0
+- No inbound rules at all
+= Đúng quyền tối thiểu.
+
+Q: Why is "All traffic from 0.0.0.0/0" a bad rule?
++ It exposes every service on the instance to the whole Internet
+- It blocks SSH
+- It costs more money automatically
+- It disables HTTPS
+= Vi phạm quyền tối thiểu.
+
+## k7-deploy | cloudcomputing.pdf tr.18–19 | bash
+Q: Which steps deploy the Docker stack to EC2 in the course?
++ SSH into the instance
++ Install Docker and Docker Compose
++ Bring the code and docker-compose.yml, create .env on the instance
++ Run `docker compose up -d` and open the needed port
+= Theo slide tr.18–19.
+
+Q: Where should the production .env file be created?
++ On the EC2 instance (not committed to Git, not in the image)
+- In the GitHub repository
+- Inside the Docker image
+- On Docker Hub
+= Bí mật trên máy chạy.
+
+Q: Which command starts the stack in the background on EC2?
++ docker compose up -d
+- docker compose down
+- docker build --push
+- docker logs -f
+= -d chạy nền.
+
+Q: After `docker compose up -d`, the app listens on port 80. What do you type in the browser?
++ http://<public-ip>
+- http://localhost
+- https://<private-ip>:22
+- ssh://<public-ip>
+= Truy cập qua Public IP.
+
+Q: Which command checks that containers are running on the instance?
++ docker ps
+- docker images only
+- git status
+- ssh-keygen
+= docker ps.
+
+## k7-trap-timeout | cloudcomputing.pdf tr.14–17
+Q: The container runs and `curl localhost` on the instance works, but the browser on your laptop times out. What is the most likely cause?
++ The Security Group has no inbound rule for that port
+- The Docker image is broken
+- The .env file is missing
+- Your browser cache
+= Mặc định chặn lưu lượng vào.
+
+Q: You add an inbound rule for port 80 from 0.0.0.0/0 in the scenario above. What happens?
++ The site becomes reachable from the Internet
+- Nothing changes
+- SSH stops working
+- The instance restarts
+= Mở đúng port.
+
+Q: Which symptom typically indicates a Security Group problem rather than an authentication problem?
++ Connection timed out
+- Permission denied (publickey)
+- 422 Unprocessable Entity
+- 401 Unauthorized
+= Timeout = không tới được.
+
+## k7-trap-ssh | cloudcomputing.pdf tr.15; CD.pdf tr.25
+Q: ssh prints "Permission denied (publickey)". What does it tell you?
++ The server responded but rejected authentication (wrong key or user)
+- The Security Group blocks port 22
+- The instance is stopped
+- DNS is wrong
+= Server đã trả lời; kiểm tra key/user.
+
+Q: You use `ssh -i my-key.pem root@<ip>` on an Ubuntu AMI and get Permission denied. What is the fix?
++ Use the user ubuntu
+- Open port 22 to 0.0.0.0/0
+- Reboot the instance
+- Use port 80
+= User mặc định của Ubuntu AMI là ubuntu.
+
+Q: SSH to your instance times out after your home IP changed. What is the likely cause?
++ The port 22 rule only allows your old IP ("My IP")
+- The key pair expired
+- Docker is not installed
+- The AMI changed
+= Cập nhật rule My IP.
+
+Q: For CD with GitHub Actions, why may port 22 need a wider source than My IP?
++ The GitHub runner must SSH into EC2, and its IP is not your IP
+- Because Caddy uses port 22
+- Because Docker Hub needs SSH
+- Because Let's Encrypt uses port 22
+= CD.pdf tr.25: mở cho IP runner hoặc 0.0.0.0/0.
+
+## k7-trap-iaas | cloudcomputing.pdf tr.7
+Q: Which statement about EC2 is FALSE?
++ EC2 is a SaaS product where AWS runs your app for you.
+- EC2 provides virtual servers.
+- You choose the OS via an AMI.
+- You install Docker yourself.
+= EC2 = IaaS.
+
+Q: Which layers do YOU manage on an EC2 instance in the course?
++ Operating system configuration
++ Docker and Docker Compose
++ Your application and its .env
+- The physical data center hardware
+= AWS quản lý phần cứng.
+
+## k7-trap-key | cloudcomputing.pdf tr.12
+Q: Who keeps which key in the EC2 key pair?
++ AWS places the public key on the instance; you keep the private key (.pem)
+- AWS keeps the private key; you keep the public key
+- Both keys are stored on the instance
+- Both keys are stored on GitHub
+= Private key ở máy bạn.
+
+Q: You lost the .pem file. Which statement is correct?
++ AWS cannot give it to you again; you need a new key pair / another access method
+- Download it again from the console
+- Use the public key instead to log in
+- Ask Docker Hub
+= .pem chỉ tải một lần.
+
+## k7-trap-cost | cloudcomputing.pdf tr.9
+Q: You finished the lab. What should you do with the instance to avoid charges?
++ Stop or terminate it, and remove unused rules/resources
+- Leave it running; Free Tier is unlimited
+- Delete only the key pair
+- Close the browser tab
+= Tránh phát sinh phí.
+
+Q: Which statements about Free Tier are correct?
++ It limits instance types and running hours.
++ Usage beyond the limits is billed.
+- It covers any instance type.
+- It never expires.
+= Tắt/xoá khi không dùng.
+
+## k7-terms | cloudcomputing.pdf tr.3–9
+Q: Which is NOT a characteristic of cloud computing in the slides?
++ You must buy the hardware upfront
+- Resources over the Internet
+- Scale when needed
+- Pay as you go
+= Đám mây là thuê, không mua.
+
+Q: What is the role of AWS in the course project?
++ Provide the virtual server (EC2) that runs the Docker stack 24/7
+- Host the Git repository
+- Run pytest
+- Issue Let's Encrypt certificates
+= EC2 chạy stack.
+
+Q: Which item determines the OS of the instance?
++ AMI
+- Instance type
+- Security Group
+- Key pair
+= AMI = ảnh HĐH.
+
+Q: Which item determines how much RAM the instance has?
++ Instance type
+- AMI
+- Key pair
+- Security Group
+= Instance type = CPU/RAM.
+
+Q: Which item determines which ports are reachable?
++ Security Group
+- AMI
+- Instance type
+- Key pair
+= Tường lửa.
+
+Q: Which item lets you authenticate via SSH?
++ Key pair
+- AMI
+- Security Group
+- Free Tier
+= Public + private key.
+
+Q: Match: "Elastic IP" solves which problem?
++ The public IP changing after a restart
+- Slow SSH
+- Missing Docker
+- Expired certificates
+= Elastic IP giữ địa chỉ cố định.
+
+## k7-ports | cloudcomputing.pdf tr.16–17
+Q: Your FastAPI container is published with `-p 8000:8000` and no reverse proxy. Which rule lets users reach it?
++ Inbound TCP 8000 from 0.0.0.0/0
+- Inbound TCP 22 from My IP
+- Outbound TCP 8000
+- Inbound TCP 443 only
+= Không có proxy thì phải mở port app.
+
+Q: Which rule is needed so Let's Encrypt can validate your domain for Caddy?
++ Inbound TCP 80 from 0.0.0.0/0
+- Inbound TCP 22 from My IP
+- Inbound TCP 8000
+- Inbound UDP 53
+= Let's Encrypt kiểm tra qua port 80.
+
+Q: You opened port 443 but not 80. What happens when Caddy tries to get a certificate?
++ It fails because Let's Encrypt cannot reach port 80 for validation
+- It succeeds
+- SSH breaks
+- The instance stops
+= Đừng đóng port 80.
+
+Q: Which rule is unnecessary and risky once Caddy proxies to the app?
++ Inbound 8000 from 0.0.0.0/0
+- Inbound 443 from 0.0.0.0/0
+- Inbound 80 from 0.0.0.0/0
+- Inbound 22 from My IP
+= App chỉ nhận qua Caddy.
+
+## k7-deploy | cloudcomputing.pdf tr.18–19
+Q: You run `docker compose up -d` on EC2 and get "permission denied while trying to connect to the Docker daemon socket". What is a common fix?
++ Add the user to the docker group (e.g. `sudo usermod -aG docker ubuntu`) and re-login, or use sudo
+- Open port 22
+- Delete the .pem file
+- Use a larger instance
+= User chạy docker không cần sudo sau khi vào nhóm docker (CD.pdf).
+
+Q: Which file describes the services of the stack started on EC2?
++ docker-compose.yml
+- Caddyfile only
+- requirements.txt
+- .gitignore
+= docker compose đọc docker-compose.yml.
+
+Q: Which command stops and removes the stack's containers?
++ docker compose down
+- docker compose up -d
+- docker image prune
+- docker ps
+= down.
+
+Q: Where should you run `docker compose up -d` in the course flow?
++ On the EC2 instance in the project directory
+- On Docker Hub
+- On GitHub
+- In your browser
+= Sau khi SSH vào instance.
+
+Q: The app on EC2 crashes immediately after start. Which command helps to see why?
++ docker logs <container>
+- ssh-keygen
+- git log
+- chmod 600
+= Đọc log container.
+
+## k7-terms | cloudcomputing.pdf tr.6–9
+Q: Which statements about Laptop vs EC2 are correct?
++ EC2 runs continuously.
++ EC2 has a public IP for Internet access.
+- A laptop has a stable public address by default.
+- EC2 stops when you close your laptop.
+= Laptop chỉ chạy khi bật.
+
+Q: The project needs users anywhere to access the chatbot. Which component provides the always-on public machine?
++ AWS EC2
+- GitHub Actions runner
+- Docker Hub
+- pytest
+= EC2.
+
+Q: Which cloud provider service is used in the course for virtual servers?
++ Amazon EC2
+- Google Docs
+- GitHub Pages
+- Docker Desktop
+= AWS EC2.
+
+Q: An instance is "stopped". Which statements are correct?
++ It is not running, so the app is unreachable.
++ It can be started again later.
+- It is permanently deleted.
+- Its key pair is deleted.
+= Stop ≠ terminate.
+
+Q: An instance is "terminated". What does it mean?
++ It is deleted and cannot be started again
+- It is paused
+- It is being rebooted
+- It is in the Free Tier
+= Terminate = xoá.
+
+## k7-ports | cloudcomputing.pdf tr.14
+Q: A rule "SSH, TCP, 22, Source: 0.0.0.0/0" exists after the lab. What should you do?
++ Restrict it to My IP or remove it
+- Keep it; it is required for HTTPS
+- Duplicate it for safety
+- Change it to UDP
+= Không để SSH Anywhere.
+
+Q: Which protocol is used by inbound rules for ports 22, 80 and 443?
++ TCP
+- UDP
+- ICMP
+- ARP
+= SSH/HTTP/HTTPS chạy trên TCP.
+
+Q: You want to allow `ping` to the instance. Which kind of rule is needed?
++ An inbound ICMP rule
+- An inbound TCP 80 rule
+- An outbound TCP 22 rule
+- Nothing; ping is always allowed
+= Mặc định phần lớn lưu lượng vào bị chặn, kể cả ICMP.
+
+## k7-trap-timeout | cloudcomputing.pdf tr.17
+Q: Which checklist should you follow when the app on EC2 is unreachable?
++ Container running (docker ps)?
++ App responds locally on the instance (curl localhost)?
++ Security Group allows the port?
+- Re-create the Git repository
+= Kiểm tra từ trong ra ngoài.
+
+Q: `curl localhost:8000` on the instance fails with "connection refused". What does it suggest?
++ Nothing listens on port 8000 on the instance (container not running or wrong port)
+- The Security Group blocks it
+- The certificate expired
+- The DNS record is missing
+= Lỗi trong instance, không phải SG.
+
+## k7-steps | cloudcomputing.pdf tr.10–13
+Q: Which choice in the launch wizard decides which Linux user you SSH with (e.g. ubuntu, ec2-user)?
++ The AMI
+- The instance type
+- The Security Group
+- The region
+= User mặc định phụ thuộc AMI.
+
+Q: You created the instance without a key pair. What is the consequence for SSH with a .pem?
++ You cannot log in with a key because no public key was installed
+- SSH works with any key
+- You can download the key later
+- Port 22 is closed automatically
+= Phải tạo key pair khi launch.
+
+Q: In the EC2 console, where do you find the public IP of an instance?
++ In the instance details (Public IPv4 address)
+- In the Security Group name
+- In the .pem file
+- In Docker Hub
+= Thông tin instance.
+
+## k7-deploy | cloudcomputing.pdf tr.18
+Q: Which tools must be installed on the instance to run the course stack?
++ Docker
++ Docker Compose (plugin)
+- Visual Studio
+- GitHub Desktop
+= Instance chạy container.
+
+Q: Why is running the app inside Docker on EC2 convenient?
++ The same image that worked locally/CI runs on the server with the same dependencies
+- EC2 cannot run Python otherwise
+- Docker opens Security Group ports
+- Docker issues certificates
+= Đồng nhất môi trường.
+
+## k7-terms | cloudcomputing.pdf tr.12
+Q: Which statement about Security Group rules being "stateful" is commonly true in AWS?
++ If inbound traffic is allowed, the response traffic is allowed back out automatically
+- You must open outbound rules for every reply
+- Inbound rules apply to outbound too
+- Stateful means rules are deleted after reboot
+= Kiến thức AWS bổ sung (slide chỉ nêu inbound/outbound).
+
+Q: Which statements describe the Security Group default for outbound traffic?
++ Outbound traffic is usually allowed by default
+- All outbound is blocked
+- Only port 22 outbound is allowed
+- Outbound rules do not exist
+= Mặc định cho phép ra; chặn phần lớn vào.
+
+## k7-trap-ssh | cloudcomputing.pdf tr.13
+Q: Which command fixes the error "Permissions 0644 for 'my-key.pem' are too open"?
++ chmod 400 my-key.pem
+- chmod 644 my-key.pem
+- chmod 777 my-key.pem
+- chown root my-key.pem
+= Chỉ owner được đọc.
+
+Q: You SSH with the correct key and user but get a timeout. Which are possible causes?
++ Port 22 is not allowed for your IP in the Security Group
++ The instance is stopped
++ The public IP changed and you use the old one
+- The private key is wrong
+= Key sai cho Permission denied, không phải timeout.
+
+## k7-ports | reverse_proxy_https.pdf tr.19–21
+Q: Which final inbound rules match the course's HTTPS architecture?
++ 22/TCP from My IP (or runner for CD)
++ 80/TCP from 0.0.0.0/0
++ 443/TCP from 0.0.0.0/0
+- 8000/TCP from 0.0.0.0/0
+= Bảng port K7/K9.
+
+## k7-terms | cloudcomputing.pdf tr.3
+Q: In the course roadmap, which step comes right after "run the stack locally with Docker"?
++ Run it on a cloud server (EC2) with a public IP
+- Write the first Git commit
+- Learn Linux permissions
+- Create a Pydantic model
+= Laptop → đám mây.
+
+Q: Which is the main reason to put the app on a server instead of a laptop for the final project?
++ Others can access it any time over the Internet
+- It runs faster on any server
+- It avoids writing tests
+- It removes the need for Git
+= Dịch vụ thật.
+
+## k7-deploy | cloudcomputing.pdf tr.18–19 | bash
+Q: Which command copies `docker-compose.yml` from your laptop to the instance?
++ scp -i my-key.pem docker-compose.yml ubuntu@<ip>:/home/ubuntu/app/
+- cp docker-compose.yml ubuntu@<ip>
+- ssh docker-compose.yml
+- git push ubuntu@<ip>
+= scp qua SSH với key.
+
+Q: You changed .env on the instance. What must you do so containers use the new values?
++ Recreate the containers, e.g. `docker compose up -d` again (or restart them)
+- Nothing; containers re-read .env every second
+- Rebuild the AMI
+- Reboot your laptop
+= Biến môi trường nạp khi container khởi động.
+
+Q: Which command shows the logs of all services in the stack?
++ docker compose logs
+- docker images
+- git log
+- journalctl -u ssh
+= compose logs.
+
+## k7-trap-cost | cloudcomputing.pdf tr.9
+Q: Which actions help avoid unexpected AWS charges?
++ Terminate instances you no longer need
++ Choose Free Tier instance types
++ Release unused Elastic IPs and resources
+- Keep a large instance running all month
+= Tắt/xoá khi không dùng.
+
+## k7-terms | cloudcomputing.pdf tr.12
+Q: Which item is attached to the instance and acts as a virtual firewall?
++ Security Group
+- AMI
+- Key pair
+- Instance type
+= SG.
+
+Q: Which item is NOT part of launching an instance in the slides?
++ Writing a Caddyfile
+- Choosing an AMI
+- Choosing an instance type
+- Creating a key pair
+= Caddy ở K9.
+
+Q: You need to reach the app via a domain name over HTTPS. Which component handles certificates in the course (next block)?
++ Caddy with Let's Encrypt
+- The Security Group
+- The AMI
+- The key pair
+= K9.
+
+## k7-ports | cloudcomputing.pdf tr.14–17
+Q: A rule allows TCP 80 from 0.0.0.0/0. Which of the following can reach port 80?
++ Any client on the Internet
+- Only your laptop
+- Only AWS services
+- Nobody until you reboot
+= 0.0.0.0/0 = mọi IPv4.
+
+Q: Which source is written as "My IP" in the console converted to?
++ Your current public IP with /32 (a single address)
+- 0.0.0.0/0
+- The instance's private IP
+- 127.0.0.1
+= /32 = đúng một địa chỉ.
+
+## k7-steps | cloudcomputing.pdf tr.10–13
+Q: Which file extension is the private key downloaded from AWS for OpenSSH?
++ .pem
+- .pub
+- .crt
+- .env
+= my-key.pem.
+
+Q: Which statements about launching an instance are correct?
++ You must choose an AMI.
++ You choose an instance type.
++ You select or create a key pair.
+- You must write a Dockerfile first.
+= Dockerfile không thuộc bước launch.
+
+## k7-trap-timeout | cloudcomputing.pdf tr.17
+Q: Everything works from inside the instance, but users get "This site can't be reached". You have Caddy on 80/443. Which rule is most likely missing?
++ Inbound 80 and/or 443 from 0.0.0.0/0
+- Inbound 8000 from 0.0.0.0/0
+- Outbound 22
+- Inbound 5432
+= Mở 80/443.
+
+Q: Which port should NEVER be opened to the Internet for the course's PostgreSQL database?
++ 5432
+- 443
+- 80
+- None of them need care
+= DB chỉ dùng nội bộ (theo nguyên tắc quyền tối thiểu).

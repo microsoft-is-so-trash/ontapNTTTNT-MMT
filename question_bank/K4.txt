@@ -1,0 +1,840 @@
+## k4-uvicorn | week4.pdf tr.9 | bash
+Q: The FastAPI object is created as `app = FastAPI()` in `src/server.py`. Which command starts it with Uvicorn from the project root?
++ uvicorn src.server:app
+- uvicorn server.src:app
+- uvicorn src/server.py
+- uvicorn app:src.server
+= Quy tắc <thư_mục>.<file>:<biến>.
+
+Q: `main.py` is in the project root and contains `api = FastAPI()`. Which command is correct?
++ uvicorn main:api
+- uvicorn main.api
+- uvicorn api:main
+- uvicorn app.main:api
+= File ở gốc → module main; biến api.
+
+Q: In `uvicorn app.main:app --reload --port 8000`, what does `app.main` refer to?
++ The Python module app/main.py
+- The variable app inside main
+- The folder main inside app.py
+- A Docker image
+= Trước dấu : là module path.
+
+Q: In the same command, what does `:app` refer to?
++ The variable holding the FastAPI() object in that module
+- The folder app
+- The port name
+- The Uvicorn config file
+= Sau dấu : là tên biến.
+
+Q: What does `--reload` do?
++ Restarts the server automatically when code changes; for development only
+- Reloads the browser page
+- Reloads environment variables from .env on every request
+- Enables HTTPS
+= --reload chỉ dùng khi dev.
+
+Q: Which statements about Uvicorn are correct?
++ It is an ASGI server.
++ It listens on a network port and passes requests to the FastAPI app.
+- It is a database driver.
+- It replaces Pydantic validation.
+= Uvicorn = ASGI server.
+
+Q: `app/main.py` defines `server = FastAPI()`. Which command is correct?
++ uvicorn app.main:server
+- uvicorn app.main:app
+- uvicorn main.app:server
+- uvicorn app.server:main
+= Đổi tên biến → đổi phần sau dấu :.
+
+Q: Which command makes Uvicorn listen on all network interfaces (needed inside Docker)?
++ uvicorn main:app --host 0.0.0.0 --port 8000
+- uvicorn main:app --host 127.0.0.1
+- uvicorn main:app --public
+- uvicorn main:app --reload only
+= 0.0.0.0 nghe mọi interface; Dockerfile của llm_app dùng --host 0.0.0.0.
+
+## k4-proxy | week4.pdf tr.8; fastapi_llm.pdf tr.4–11
+Q: Which statements about WSGI and ASGI are correct?
++ WSGI is synchronous: one request per worker at a time.
++ ASGI supports async code and many concurrent requests.
++ ASGI suits chat, streaming and WebSocket apps that wait for LLM/DB.
+- FastAPI is a WSGI-only framework.
+= FastAPI chạy trên ASGI (Uvicorn).
+
+Q: When a FastAPI chatbot calls the Gemini API, what role does FastAPI play?
++ Server to the client and client to Gemini, like a proxy
+- Only a server
+- Only a client
+- A database
+= FastAPI đóng hai vai.
+
+Q: What does REST map an HTTP request to in FastAPI?
++ A Python function chosen by path + method
+- A database table
+- A Docker container
+- A Git branch
+= FastAPI ánh xạ "path + method" sang hàm.
+
+Q: Which HTTP method is typically used to send a new chat message (creating data)?
++ POST
+- GET
+- HEAD
+- DELETE
+= POST tạo mới; GET đọc.
+
+Q: Which HTTP method is typically used to read chat history?
++ GET
+- POST
+- PUT
+- PATCH
+= GET đọc dữ liệu.
+
+## k4-structure | week4.pdf tr.6, 10
+Q: In the course project structure, where do Pydantic request/response models go?
++ app/schemas/
+- app/routers/
+- app/db/
+- .env
+= routers: endpoint; schemas: Pydantic; db: kết nối.
+
+Q: Where is the database connection pool and `get_conn` dependency defined?
++ app/db/database.py
+- app/routers/chat.py
+- app/schemas/chat.py
+- requirements.txt
+= db/database.py.
+
+Q: Which file creates `FastAPI()` and calls `include_router(...)`?
++ app/main.py
+- app/routers/chat.py
+- app/db/database.py
+- Dockerfile
+= main.py lắp ráp app.
+
+Q: Which file must NOT be committed to Git?
++ .env
+- app/main.py
+- requirements.txt
+- app/schemas/chat.py
+= .env chứa bí mật, nằm trong .gitignore.
+
+## k4-router | week4.pdf tr.11 | python
+Q: What URL does this endpoint respond to?
+> router = APIRouter(prefix="/users", tags=["accounts"])
+> @router.get("/{user_id}")
+> async def get_user(user_id: int): ...
++ GET /users/{user_id}
+- GET /accounts/{user_id}
+- GET /{user_id}
+- POST /users/{user_id}
+= URL = prefix + path; tags không vào URL.
+
+Q: What URL does this endpoint respond to?
+> router = APIRouter(prefix="/chat", tags=["chat"])
+> @router.post("/")
+> async def send_message(...): ...
++ POST /chat/
+- GET /chat/
+- POST /
+- POST /chat/chat
+= prefix /chat + path /.
+
+Q: What are `tags` in APIRouter used for?
++ Grouping endpoints on the /docs page
+- Building the URL
+- Authentication
+- Database table names
+= tags chỉ nhóm trên Swagger UI.
+
+Q: Given the code below, which requests match a route?
+> router = APIRouter(prefix="/items")
+> @router.get("/list")
+> def list_items(): ...
+> @router.post("/add")
+> def add_item(): ...
++ GET /items/list
++ POST /items/add
+- POST /items/list
+- GET /list
+= Method + path phải khớp.
+
+Q: The router below is defined but `main.py` never calls `app.include_router(chat.router)`. What happens to GET /chat/history?
+> router = APIRouter(prefix="/chat")
+> @router.get("/history")
+> def history(): ...
++ It returns 404 because the router is not registered
+- It works normally
+- It returns 422
+- It returns 500
+= Router phải được include vào app.
+
+Q: Which line registers the router into the app?
++ app.include_router(chat.router)
+- app.add(chat)
+- router.include(app)
+- FastAPI(router=chat)
+= include_router.
+
+Q: Which statements are correct about `@router.get("/history")` inside `APIRouter(prefix="/chat")`?
++ GET /chat/history matches.
+- POST /chat/history matches.
+- GET /history matches.
+- GET /chat/history/ with another prefix matches.
+= Chỉ GET /chat/history.
+
+## k4-pydantic | week4.pdf tr.12–14 | python
+Q: Given the model below, which request body passes validation?
+> class ChatRequest(BaseModel):
+>     role: str
+>     content: str
++ {"role": "user", "content": "Hi"}
+- {"role": "user"}
+- {"content": "Hi"}
+- {}
+= Cả hai field bắt buộc.
+
+Q: Given the same model, what does FastAPI return for the body `{"role": "user"}`?
+> class ChatRequest(BaseModel):
+>     role: str
+>     content: str
++ 422 Unprocessable Entity, and the endpoint function does not run
+- 200 with content = ""
+- 200 with content = None
+- 500 Internal Server Error
+= Thiếu field bắt buộc → 422.
+
+Q: Which bodies are valid for this model?
+> class ChatRequest(BaseModel):
+>     role: str
+>     content: str
++ {"role": "moderator", "content": "Hello"}
++ {"role": "assistant", "content": ""}
+- {"role": "user"}
+- {"content": "x"}
+= str chỉ kiểm tra kiểu; chuỗi rỗng vẫn là str.
+
+Q: With `content: str = Field(..., min_length=1)`, what happens to `{"role":"user","content":""}`?
++ 422, because the string is shorter than 1 character
+- 200
+- 500
+- content is set to None
+= min_length=1 chặn chuỗi rỗng.
+
+Q: With `title: str | None = None`, what happens when the client omits title?
++ The request is valid and title is None
+- 422
+- title becomes ""
+- 500
+= Field tùy chọn có mặc định.
+
+Q: The endpoint returns the dict below and uses `response_model=PublicMessage`. What does the client receive?
+> class PublicMessage(BaseModel):
+>     id: int
+>     content: str
+> # endpoint returns:
+> {"id": 7, "content": "Hello", "internal_token": "secret"}
++ {"id": 7, "content": "Hello"}
+- {"id": 7, "content": "Hello", "internal_token": "secret"}
+- {"id": 7, "content": "Hello", "internal_token": null}
+- 422
+= response_model lọc bỏ field thừa.
+
+Q: What is the main purpose of `response_model`?
++ Shape and filter the response data, hiding internal fields
+- Validate the request body
+- Create the database table
+- Set the status code to 201
+= Request model kiểm tra vào; response_model định hình ra.
+
+Q: Which statements about request validation in FastAPI are correct?
++ Invalid bodies are rejected before the endpoint function runs.
++ The database is not touched when validation fails.
+- FastAPI fills missing str fields with empty strings.
+- Validation errors return 500.
+= Sai dữ liệu → 422 trước khi vào hàm.
+
+Q: The model has `age: int`. The client sends `{"age": "abc"}`. What is returned?
++ 422
+- 200 with age = 0
+- 500
+- 404
+= Không chuyển được sang int → 422.
+
+Q: The model has `role: str`. Why is `{"role": "hacker", "content": "x"}` accepted?
++ The model only checks the type str; it does not restrict allowed values
+- FastAPI accepts everything
+- role is optional
+- Pydantic ignores role
+= Muốn giới hạn giá trị phải khai báo thêm luật (vd Literal/Enum).
+
+Q: Removing `response_model` from an endpoint that returns `{"id":1,"password":"x"}` causes:
++ The password field to be sent to the client
+- A 422 error
+- The password to become null
+- The endpoint to fail
+= Không lọc → lộ field nội bộ.
+
+Q: Which class do Pydantic models inherit from?
++ BaseModel
+- BaseSettings only
+- APIRouter
+- FastAPI
+= class X(BaseModel).
+
+Q: Which status code does FastAPI return when the request body is not valid JSON for the model?
++ 422 Unprocessable Entity
+- 401 Unauthorized
+- 404 Not Found
+- 503 Service Unavailable
+= Lỗi validation phía client → 422.
+
+## k4-status | fastapi_llm.pdf tr.6, 16–17
+Q: Which status code group means a server-side error?
++ 5xx
+- 2xx
+- 4xx
+- 1xx
+= 2xx thành công; 4xx lỗi client; 5xx lỗi server.
+
+Q: Calling Gemini returns 401. What is the most likely cause?
++ Wrong or missing API key
+- Too many requests
+- The database is down
+- Wrong URL path
+= 401 Unauthorized → kiểm tra key trong .env.
+
+Q: Calling the LLM returns 429. What should you do?
++ Wait, reduce request frequency, or switch provider
+- Change the API key immediately
+- Restart PostgreSQL
+- Return 200 anyway
+= 429 rate limit.
+
+Q: A request goes to `/chat/histroy` (typo). Which status code is expected?
++ 404 Not Found
+- 422
+- 500
+- 200
+= Sai đường dẫn → 404.
+
+Q: In llm_app, a PostgreSQL error inside the endpoint results in:
++ 500
+- 422
+- 404
+- 401
+= Lỗi server/DB → 500.
+
+Q: In llm_app, the conversation id does not exist. Which status is returned?
++ 404
+- 401
+- 422
+- 429
+= Không có tài nguyên → 404.
+
+Q: In llm_app, Gemini fails to generate an answer. Which status does the app return?
++ 502
+- 401
+- 422
+- 200
+= Lỗi upstream → 502.
+
+Q: Which status codes indicate client-side errors?
++ 401
++ 404
++ 422
+- 500
+= 4xx = lỗi phía client.
+
+Q: A healthcheck receives 503. What does it mean?
++ The service is not ready / unavailable (server side)
+- The client sent invalid JSON
+- The API key is wrong
+- Everything is OK
+= 503 Service Unavailable.
+
+Q: What is a recommended reaction to a timeout when calling an LLM?
++ Set a reasonable timeout and retry
+- Delete the .env file
+- Return 422
+- Increase the database pool to 1000
+= Timeout → thời gian chờ hợp lý + retry; kéo dài → dự phòng provider khác (Groq).
+
+## k4-env | week4.pdf tr.20–24 | python
+Q: What does `os.getenv("DATABASE_URL")` return if the variable is not set?
++ None
+- An empty string ""
+- It raises KeyError
+- "DATABASE_URL"
+= getenv trả None khi thiếu; phải tự kiểm tra.
+
+Q: What does `load_dotenv()` do?
++ Reads variables from the .env file into the process environment
+- Writes variables into .env
+- Commits .env to Git
+- Encrypts the .env file
+= python-dotenv nạp .env.
+
+Q: Which statements about pydantic-settings `BaseSettings` are correct?
++ It gathers configuration in one place.
++ It validates types of environment variables.
++ A required variable that is missing causes a clear error at startup.
+- It always returns None for missing variables.
+= BaseSettings kiểm tra và báo lỗi rõ ràng.
+
+Q: In `postgresql://user:secret@localhost:5432/chatdb`, what is `chatdb`?
++ The database name
+- The user name
+- The host
+- The driver
+= scheme://user:password@host:port/dbname.
+
+Q: In the same connection string, what is 5432?
++ The default PostgreSQL port
+- The process id
+- The number of connections
+- The HTTP port
+= 5432 = cổng mặc định PostgreSQL.
+
+Q: In the same connection string, which part is the password?
++ secret
+- user
+- localhost
+- postgresql
+= user:password.
+
+Q: You accidentally committed a password, then deleted it in the next commit. Is the secret safe?
++ No; it remains in the Git history of the earlier commit
+- Yes, deleting the line removes it
+- Yes, if you push again
+- Only if the repo is private forever
+= Lịch sử Git giữ commit cũ. Đúng: .env + .gitignore từ đầu.
+
+Q: Which is the correct way to keep the database password out of the source code?
++ Put it in .env, list .env in .gitignore, read it with os.getenv/BaseSettings
+- Hardcode it in main.py
+- Put it in README.md
+- Put it in requirements.txt
+= Bí mật ở .env, không commit.
+
+Q: In the Settings class below, what happens if `DATABASE_URL` is missing from the environment and .env?
+> class Settings(BaseSettings):
+>     database_url: str
+>     app_env: str = "development"
+>     class Config:
+>         env_file = ".env"
+> settings = Settings()
++ A validation error is raised when the app starts
+- database_url becomes None
+- database_url becomes "development"
+- The app starts normally
+= Field không có mặc định là bắt buộc.
+
+Q: In the same Settings class, what is `app_env` if APP_ENV is not set?
++ "development"
+- None
+- ""
+- Error
+= Có giá trị mặc định.
+
+## k4-sql | week4.pdf tr.25–34 | sql
+Q: What does `id SERIAL PRIMARY KEY` mean?
++ An auto-incrementing integer that uniquely identifies each row
+- A random string id
+- A foreign key
+- A text column without limits
+= SERIAL tự tăng; PRIMARY KEY định danh duy nhất.
+
+Q: Which SQL statement is the "Create" in CRUD?
++ INSERT INTO messages (role, content) VALUES ('user', 'Hi');
+- SELECT * FROM messages;
+- UPDATE messages SET content='x';
+- DELETE FROM messages;
+= Create = INSERT.
+
+Q: Which statement reads all messages ordered by time?
++ SELECT * FROM messages ORDER BY created_at;
+- INSERT INTO messages ORDER BY created_at;
+- UPDATE messages ORDER BY created_at;
+- GET messages BY created_at;
+= Read = SELECT.
+
+Q: What does the statement below do?
+> UPDATE messages SET content = 'Da sua' WHERE id = 1;
++ Changes the content of the row with id 1
+- Deletes row 1
+- Inserts a new row
+- Changes every row
+= Update có WHERE.
+
+Q: What is the danger of `DELETE FROM messages;` without WHERE?
++ It deletes every row in the table
+- It deletes only the first row
+- It drops the table definition
+- Nothing, it fails
+= Không WHERE → xoá tất cả.
+
+Q: Which difference between TEXT and VARCHAR(n) is correct?
++ TEXT has no length limit; VARCHAR(n) limits to n characters
+- TEXT stores only numbers
+- VARCHAR has no limit
+- They are identical
+= Theo slide week4.
+
+Q: What does `created_at TIMESTAMP DEFAULT now()` do?
++ Fills the current time automatically if no value is given
+- Requires the client to send a time
+- Stores the time as text
+- Updates the time on every SELECT
+= DEFAULT now().
+
+Q: What does this statement add?
+> ALTER TABLE messages ADD COLUMN conversation_id INTEGER REFERENCES conversations(id);
++ A foreign key column linking messages to conversations
+- A primary key
+- A new table
+- An index on content
+= REFERENCES = khóa ngoại.
+
+Q: What does this query return?
+> SELECT c.title, m.role, m.content
+> FROM messages m JOIN conversations c ON m.conversation_id = c.id
+> WHERE c.id = 5 ORDER BY m.created_at;
++ The messages of conversation 5 with its title, oldest first
+- All conversations without messages
+- Only the title of conversation 5
+- Messages of every conversation newest first
+= JOIN đi theo khóa ngoại.
+
+Q: The log shows `connection refused`. What are likely causes?
++ Wrong host/port in the connection string
++ The database container is not running
+- The table does not exist
+- Wrong data type in INSERT
+= Kiểm tra connection string và docker ps.
+
+Q: The log shows `relation "messages" does not exist`. What is the cause?
++ The table has not been created (migration not run) on this database
+- Wrong password
+- The server is down
+- The id is not an integer
+= Chưa tạo bảng.
+
+Q: The log shows `invalid input syntax for type integer: "abc"`. What is the cause?
++ Inserting a string into an INTEGER column
+- Missing table
+- Wrong port
+- Connection pool full
+= Sai kiểu dữ liệu.
+
+Q: Which constraint prevents inserting a message without content?
++ content TEXT NOT NULL
+- content TEXT DEFAULT ''
+- content SERIAL
+- content PRIMARY KEY
+= NOT NULL bắt buộc có giá trị.
+
+Q: Which statements about primary key vs foreign key are correct?
++ A primary key identifies each row of its own table.
++ A foreign key links a row to a row in another table.
+- A foreign key must be SERIAL.
+- A table can only have foreign keys.
+= PK định danh; FK liên kết, JOIN đi theo FK.
+
+## k4-pool | week4.pdf tr.30–34; llm_app/completed/db/database.py
+Q: Why use a connection pool?
++ Reuse a few open connections instead of opening one per request
+- To store chat history in memory
+- To encrypt the database
+- To replace migrations
+= Mở sẵn vài kết nối (min_size=2, max_size=10).
+
+Q: When should the pool be created in the llm_app?
++ Once at server startup (lifespan), closed once at shutdown
+- On every request
+- On every SELECT
+- Only in tests
+= Pool tạo một lần.
+
+Q: What is Alembic used for?
++ Versioned database schema migrations committed to Git
+- Load balancing
+- Serving HTTPS
+- Testing endpoints
+= alembic revision --autogenerate, alembic upgrade head.
+
+Q: Which command applies all pending migrations?
++ alembic upgrade head
+- alembic revision --autogenerate
+- alembic init
+- alembic push
+= upgrade head áp các migration.
+
+## k4-depends | week4.pdf tr.15–19
+Q: What does `conn=Depends(get_conn)` do in an endpoint signature?
++ Runs get_conn before the endpoint and injects the connection
+- Creates a new database
+- Validates the request body
+- Sets the response model
+= Dependency injection.
+
+Q: Which statements about Depends are correct?
++ Tests can override the dependency with a fake connection.
++ The same dependency used twice in one request is executed once and cached.
+- Depends runs after the endpoint returns.
+- Depends can only be used with GET.
+= Lợi ích: tách phụ thuộc, dễ test.
+
+## k4-test | fastapi_llm.pdf tr.18–19; CI.pdf tr.19 | python
+Q: `/health` returns `{"status": "ok", "model": "gemini"}`. Does this test pass?
+> def test_health():
+>     response = client.get("/health")
+>     assert response.json() == {"status": "ok"}
++ No, the full body comparison fails because of the extra key model
+- Yes
+- It raises 422
+- It cannot run
+= == so sánh toàn bộ dict.
+
+Q: Which assertion checks only the status field of the body?
++ assert response.json()["status"] == "ok"
+- assert response.json == {"status": "ok"}
+- assert {"status": "ok"}
+- assert response.json() is not None
+= Kiểm tra một phần.
+
+Q: Why is `assert response.json` (without parentheses) useless?
++ It references the method object, which is always truthy
+- It raises an error
+- It compares the body
+- It checks the status code
+= Không gọi hàm → không kiểm tra gì.
+
+Q: Which tool sends requests to the app in tests without starting a real server?
++ fastapi.testclient.TestClient
+- uvicorn --reload
+- curl -f
+- psql
+= TestClient(app).
+
+Q: Which curl command sends a JSON POST to /chat?
++ curl -X POST http://localhost:8000/chat -H "Content-Type: application/json" -d '{"message": "Hi"}'
+- curl http://localhost:8000/chat -d message=Hi -X GET
+- curl -f /chat
+- curl --json-get /chat
+= -X POST, header Content-Type, -d body.
+
+Q: Where is the automatically generated Swagger UI of a FastAPI app?
++ /docs
+- /swagger.json only
+- /admin
+- /api
+= localhost:8000/docs → Try it out → Execute.
+
+Q: Which steps test an endpoint in Swagger UI?
++ Open /docs, choose the endpoint, click Try it out, then Execute
+- Open /docs and edit the source code
+- Run pytest inside the browser
+- Open /redoc and push to GitHub
+= Theo slide fastapi_llm.
+
+Q: Which assertion verifies both the status and the entire body of the health endpoint that returns `{"status":"ok"}`?
++ assert r.status_code == 200 and r.json() == {"status": "ok"}
+- assert r.status_code
+- assert r.json
+- assert {"status": "ok"}
+= Kiểm tra cả status và toàn bộ body.
+
+## k4-trap-uvicorn | week4.pdf tr.9
+Q: The file is `backend/app.py` with `application = FastAPI()`. Which command is correct?
++ uvicorn backend.app:application
+- uvicorn backend.application:app
+- uvicorn app.backend:application
+- uvicorn backend/app.py:application
+= <thư_mục>.<file>:<biến>.
+
+Q: You moved `app/main.py` to `main.py` at the root; the variable is still `api`. Which command now works?
++ uvicorn main:api
+- uvicorn app.main:api
+- uvicorn main.app:api
+- uvicorn api:main
+= Module path đổi theo vị trí file.
+
+## k4-trap-prefix | week4.pdf tr.11
+Q: `APIRouter(prefix="/chat", tags=["messages"])` + `@router.post("/history")`. Which request matches?
++ POST /chat/history
+- GET /chat/history
+- POST /messages/history
+- GET /messages/history
+= Chỉ POST; tags không vào URL.
+
+## k4-trap-422 | week4.pdf tr.13
+Q: Which statements about a 422 response are correct?
++ It is returned automatically by FastAPI when the body does not match the model.
++ The endpoint function is not executed.
+- PostgreSQL returns it.
+- It means the server crashed.
+= 422 do FastAPI/Pydantic.
+
+## k4-trap-respmodel | week4.pdf tr.14
+Q: Which statements about response_model are correct?
++ Extra fields are removed from the response.
++ It helps hide sensitive internal fields like tokens.
+- Extra fields become null.
+- It validates the request body.
+= Field thừa bị bỏ hẳn.
+
+## k4-journey | week4.pdf tr.35
+Q: Put the steps of a valid POST /chat in order.
++ Uvicorn receives → router matches → Pydantic validates → Depends gets connection → INSERT → response_model filters → JSON returned
+- Pydantic validates → Uvicorn receives → INSERT → router matches
+- INSERT → Uvicorn → router → response
+- Router matches → INSERT → Pydantic validates → Uvicorn
+= Hành trình request trong slide.
+
+Q: For an invalid POST /chat body, where does processing stop?
++ At the validation step, returning 422
+- After the INSERT
+- At response_model
+- At the database
+= Sai dữ liệu → dừng ở bước kiểm tra.
+
+Q: Which three questions organize week 4?
++ How is the app organized (routers/schemas/db)
++ Where do secrets live (.env)
++ Where is data stored (PostgreSQL)
+- Which CSS framework to use
+= Ba câu hỏi của buổi.
+
+## k4-router | week4.pdf tr.11
+Q: Which decorator defines an endpoint for DELETE /chat/{id} inside `APIRouter(prefix="/chat")`?
++ @router.delete("/{id}")
+- @router.get("/delete/{id}")
+- @router.post("/{id}", method="DELETE")
+- @app.remove("/chat/{id}")
+= Method decorator + path.
+
+Q: Path parameter `item_id: int` receives the URL `/items/abc`. What happens?
++ 422, because "abc" is not an int
+- 404
+- 200 with item_id = "abc"
+- 500
+= Path param cũng được validate.
+
+Q: Which endpoint signature reads the query parameter `limit` with default 10 (e.g. /history?limit=5)?
++ def history(limit: int = 10)
+- def history(body: Limit)
+- def history(request.limit)
+- def history(*, limit)
+= Tham số không có trong path → query param.
+
+Q: In FastAPI, an endpoint function parameter typed with a Pydantic model (e.g. `msg: ChatRequest`) is read from:
++ the JSON request body
+- the query string
+- the path
+- the headers
+= Model Pydantic → body.
+
+## k4-status | fastapi_llm.pdf tr.6
+Q: Which status code means "OK"?
++ 200
+- 201
+- 204
+- 302
+= 200 OK.
+
+Q: Which are server-side status codes?
++ 500
++ 502
++ 503
+- 422
+= 5xx.
+
+## k4-env | fastapi_llm.pdf tr.12–13
+Q: Where should GEMINI_API_KEY be stored for the chatbot?
++ In .env, read at runtime
+- In main.py as a constant
+- In the Dockerfile with ENV
+- In README.md
+= Bí mật ngoài mã nguồn.
+
+Q: Which line should be in .gitignore of the project?
++ .env
+- main.py
+- requirements.txt
+- Dockerfile
+= Không commit .env.
+
+Q: Which statements about .env are correct?
++ It holds secrets outside the source code.
++ Each environment (laptop, EC2) has its own .env.
+- It must be committed so teammates get the secrets.
+- It is automatically encrypted by Git.
+= .env tạo trên mỗi máy chạy.
+
+## k4-sql | week4.pdf tr.25–29
+Q: Which statement creates the messages table from the course?
++ CREATE TABLE messages (id SERIAL PRIMARY KEY, role VARCHAR(20) NOT NULL, content TEXT NOT NULL, created_at TIMESTAMP DEFAULT now());
+- INSERT TABLE messages (...);
+- NEW TABLE messages;
+- ALTER messages CREATE;
+= CREATE TABLE.
+
+Q: Why is `role VARCHAR(20)` reasonable?
++ Role values like "user"/"assistant" are short
+- VARCHAR cannot store text
+- It makes role a primary key
+- It allows unlimited length
+= Giới hạn 20 ký tự.
+
+Q: Which SQL keyword sorts the result?
++ ORDER BY
+- GROUP BY
+- SORT
+- WHERE
+= ORDER BY created_at.
+
+Q: Which SQL keyword filters rows?
++ WHERE
+- ORDER BY
+- JOIN
+- VALUES
+= WHERE id = 1.
+
+## k4-pydantic | llm_app/completed/schemas/chat.py
+Q: What does `Field(..., min_length=1, max_length=20_000)` mean in llm_app?
++ The field is required, must not be empty and must be at most 20,000 characters
+- The field is optional
+- The field has default "..."
+- The field must be a number between 1 and 20000
+= ... = bắt buộc.
+
+Q: Which body fails validation for `content: str = Field(..., max_length=5)`?
++ {"content": "Hello world"}
+- {"content": "Hi"}
+- {"content": "abc"}
+- {"content": "12345"}
+= Dài hơn 5 ký tự → 422.
+
+Q: The model is `class Msg(BaseModel): text: str; count: int = 1`. Which bodies are valid?
++ {"text": "a"}
++ {"text": "a", "count": 3}
+- {"count": 3}
+- {}
+= text bắt buộc; count có mặc định.
+
+## k4-proxy | fastapi_llm.pdf tr.4–5
+Q: What is an API in the context of the course?
++ A contract that lets programs talk to each other, e.g. over HTTP with JSON
+- A database engine
+- A programming language
+- A Git command
+= REST API qua HTTP + JSON.
+
+Q: Which data format is used by default for FastAPI request/response bodies?
++ JSON
+- XML
+- CSV
+- YAML
+= FastAPI làm việc với JSON.

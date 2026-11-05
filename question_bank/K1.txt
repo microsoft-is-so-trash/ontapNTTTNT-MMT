@@ -1,0 +1,751 @@
+## k1-vcs | week01.pdf tr.7–12
+Q: Which type of version control system keeps the full project history on every developer's machine?
+- Local VCS
+- Centralized VCS
++ Distributed VCS
+- Patch-based VCS
+= DVCS (Git, Mercurial, Darcs): mỗi client mirror toàn bộ repo kèm lịch sử.
+
+Q: What is the main weakness of a centralized VCS such as Subversion?
+- It cannot track binary files
++ The central server is a single point of failure
+- It stores snapshots instead of diffs
+- It cannot have more than one user
+= CVCS: server sập thì không ai cộng tác được; hỏng đĩa không backup là mất toàn bộ lịch sử.
+
+Q: Which statements about Git are correct?
++ Every clone is effectively a full backup of the repository.
++ Most operations (log, diff, commit) run locally without the network.
+- Every commit must be sent to a central server immediately.
+- Git stores each version as a list of line-by-line diffs.
+= Git là DVCS: clone = backup đầy đủ, hầu hết thao tác chạy local. Git lưu snapshot chứ không lưu diff.
+
+Q: Which of the following are examples of distributed version control systems?
++ Git
++ Mercurial
+- Subversion
+- Perforce
+= DVCS: Git, Mercurial, Darcs. Subversion, CVS, Perforce là CVCS.
+
+Q: RCS, a local version control system, stores versions as:
+- full snapshots of every file
++ patch sets (the differences between versions)
+- SHA-1 trees
+- remote branches
+= RCS lưu patch set — khác biệt giữa các phiên bản — trên đĩa cục bộ.
+
+Q: With Subversion (a CVCS), what can you NOT do while offline?
+- Edit files
+- Read files in the working copy
++ Commit your changes to the repository
+- Create new files
+= CVCS: sửa offline được nhưng commit phải có server. DVCS cho phép commit offline rồi push sau.
+
+## k1-objects | week01.pdf tr.12–14, 20
+Q: How does Git think about its data?
+- As a set of files plus a list of line changes over time
++ As a stream of snapshots of the tracked files
+- As a single compressed archive per branch
+- As a database table per file
+= Git lưu chuỗi snapshot; file không đổi chỉ là link tới bản trước.
+
+Q: In a new commit, a file that has NOT changed since the previous commit is:
+- stored again as a full copy
+- stored as an empty blob
++ not stored again; Git links to the identical file it already has
+- removed from the snapshot
+= File không đổi không lưu lại, chỉ link tới bản trước.
+
+Q: What does Git use to checksum everything it stores?
+- MD5
++ SHA-1
+- CRC32
+- Base64
+= Mọi thứ được checksum bằng SHA-1 (chuỗi 40 ký tự hex) nên không thể sửa nội dung mà Git không biết.
+
+Q: You stage and commit three files: README, test.rb, LICENSE. Which objects does this commit create?
++ 3 blobs, 1 tree, 1 commit
+- 3 commits
+- 1 blob, 3 trees, 1 commit
+- 3 trees, 3 blobs
+= Mỗi file → 1 blob; cấu trúc thư mục → 1 tree; cộng 1 commit object trỏ tới tree.
+
+Q: Which information is stored in a commit object?
++ A pointer to the root tree
++ Author name and email
++ The commit message
++ Pointer(s) to the parent commit(s)
+= Commit object gồm con trỏ tree, tác giả, email, message và con trỏ tới commit cha.
+
+Q: How many parents does the very first commit in a repository have?
++ 0
+- 1
+- 2
+- It points to itself
+= 0 cha = commit đầu · 1 cha = commit thường · nhiều cha = merge commit.
+
+Q: A commit that has two parents is:
+- a corrupted commit
+- an amended commit
++ a merge commit
+- a tagged commit
+= Merge commit có từ 2 cha trở lên.
+
+Q: Why is it practically impossible to change a file's content inside `.git` without Git noticing?
+- Git encrypts every file
++ Everything is checksummed, and the checksum is the name of the object
+- The .git folder is read-only
+- Git re-downloads the file on every command
+= Nội dung được tham chiếu bằng hash SHA-1; đổi nội dung là đổi hash.
+
+## k1-config | week01.pdf tr.38–39
+Q: Where does `git config --global` write its settings?
+- [path]/etc/gitconfig
++ ~/.gitconfig (or ~/.config/git/config)
+- .git/config in the current repository
+- /usr/share/git/config
+= --global = cấp user, mọi project của user hiện tại.
+
+Q: You run the commands below. Which email will Git use for commits in repository `work`?
+> git config --global user.email "me@home.com"
+> cd work
+> git config user.email "me@company.com"
+L: bash
+- me@home.com
++ me@company.com
+- Both, joined with a comma
+- None; Git reports a conflict
+= Local (.git/config) ghi đè Global. Thứ tự ưu tiên: Local > Global > System.
+
+Q: Which config level applies to every user on the system?
++ System
+- Global
+- Local
+- Remote
+= System: [path]/etc/gitconfig, áp dụng mọi user.
+
+Q: Which command sets your name for all your projects on this computer?
+- git config user.name "Alice"
++ git config --global user.name "Alice"
+- git init --name "Alice"
+- git user --set "Alice"
+= --global áp dụng cho mọi project của user hiện tại.
+
+Q: Which statements about Git configuration are correct?
++ Local settings are stored in `.git/config`.
++ Local settings override global settings.
+- Global settings override local settings.
+- `--global` writes into the current repository only.
+= Ưu tiên Local > Global > System.
+
+## k1-cmd | week01.pdf tr.43–76
+Q: What does `git init` do in an existing directory?
++ Creates a `.git` subdirectory with the repository skeleton; no files are tracked yet
+- Tracks every file in the directory automatically
+- Downloads the latest version from origin
+- Commits all files as the initial commit
+= git init chỉ tạo khung .git; phải git add + commit để bắt đầu track.
+
+Q: Which steps does `git clone <url>` perform?
++ Creates a new directory and initializes `.git` inside it
++ Adds a remote named `origin`
++ Fetches all the data and checks out the latest commit
+- Only downloads the latest snapshot without history
+= clone: tạo thư mục → init → thêm origin → fetch → checkout. Chép toàn bộ lịch sử.
+
+Q: After `git clone https://github.com/user/proj`, what is the default name of the remote?
+- master
+- upstream
++ origin
+- proj
+= clone tự đặt tên remote là origin.
+
+Q: You run the commands below. What does `git status` show for notes.txt?
+> echo "v1" > notes.txt
+> git add notes.txt
+> git commit -m "add notes"
+> echo "v2" >> notes.txt
+> git status
+L: bash
+- Untracked files
+- Changes to be committed
++ Changes not staged for commit: modified
+- nothing to commit, working tree clean
+= File đã track, sửa sau commit nhưng chưa add → modified, chưa stage.
+
+Q: Which command stages a modified file so it will be included in the next commit?
++ git add file
+- git commit file
+- git stage --remove file
+- git push file
+= git add vừa track file mới, vừa stage file đã sửa.
+
+Q: What does `git commit -m "msg"` commit?
+- All modified files in the working tree
++ Only what is in the staging area
+- Only untracked files
+- The working tree and the remote branch
+= commit lấy snapshot của staging area.
+
+Q: You modified tracked files a.txt and b.txt, but only ran `git add a.txt`. Then you run `git commit -m "x"`. What is committed?
++ Only the change in a.txt
+- Changes in a.txt and b.txt
+- Nothing
+- Only b.txt
+= commit chỉ lấy những gì đã stage.
+
+Q: You want to stop tracking `config.local` but keep the file on disk. Which command?
+- git rm config.local
++ git rm --cached config.local
+- git restore config.local
+- git mv config.local /tmp
+= --cached chỉ bỏ khỏi index, giữ file trên đĩa.
+
+Q: What does `git rm notes.txt` do?
++ Deletes the file from the working directory and stages the removal
+- Only stops tracking the file, keeps it on disk
+- Deletes the file from the remote only
+- Moves the file to the trash so it can be restored by Git later
+= git rm xoá file khỏi working dir và stage việc xoá.
+
+Q: `git mv README.md README` is equivalent to:
++ mv README.md README; git rm README.md; git add README
+- cp README.md README; git add README
+- git rm --cached README.md
+- git commit --amend README
+= git mv = đổi tên + rm bản cũ + add bản mới.
+
+Q: Which `git log` option shows each commit on a single line?
+- --graph
+- -p
++ --oneline
+- --stat
+= --oneline: một dòng/commit; --graph: đồ thị nhánh; -p: kèm diff; --stat: thống kê.
+
+Q: Which `git log` option shows the patch (diff) introduced in each commit?
++ -p
+- --oneline
+- --decorate
+- --name
+= -p (hoặc --patch) in diff của từng commit.
+
+Q: In which order does `git log` list commits by default?
+- Oldest first
++ Most recent first
+- Alphabetically by message
+- Random
+= Mặc định commit mới nhất ở trên cùng.
+
+Q: Which command shows the URLs that Git uses for fetching and pushing a remote?
+- git remote
++ git remote -v
+- git log --remote
+- git status -v
+= git remote -v liệt kê remote kèm URL fetch/push.
+
+Q: Which command adds a new remote called `pb`?
++ git remote add pb https://github.com/paulboone/ticgit
+- git add remote pb https://github.com/paulboone/ticgit
+- git clone pb https://github.com/paulboone/ticgit
+- git remote new pb
+= Cú pháp: git remote add <name> <url>.
+
+Q: What does `git fetch origin` change?
+- Your working directory files
+- Your current branch, by merging the new commits
++ Your remote-tracking branches such as origin/main
+- The remote repository
+= fetch tải dữ liệu mới và cập nhật origin/*; không merge, không đụng working dir.
+
+Q: Which statements about `git pull` are correct?
++ It fetches from the remote.
++ It then merges the fetched branch into the current branch.
+- It never changes the working directory.
+- It uploads local commits to the remote.
+= pull = fetch + merge. Đưa commit lên là push.
+
+Q: Your colleague pushed to `main` before you. You run `git push origin main`. What happens?
+- Your push overwrites their commits
++ The push is rejected; you must fetch/pull and integrate their work first
+- Git automatically rebases on the server
+- Both histories are stored as separate branches automatically
+= Push bị từ chối nếu remote có commit bạn chưa có.
+
+Q: Which commands only inspect information and never change the repository content?
++ git status
++ git log
++ git remote -v
+- git commit -m "x"
+= status, log, remote -v chỉ đọc; commit tạo commit mới.
+
+Q: Which command renames the remote `pb` to `paul`?
+- git remote mv pb paul
++ git remote rename pb paul
+- git branch -m pb paul
+- git config remote pb paul
+= git remote rename <old> <new>; xoá bằng git remote remove.
+
+Q: Which command shows more information about a particular remote (URL, tracking branches)?
++ git remote show origin
+- git remote -v origin
+- git show origin
+- git log origin
+= git remote show <name> hiển thị chi tiết remote.
+
+Q: Which command creates an annotated tag?
+- git tag v1.0
++ git tag -a v1.0 -m "release 1.0"
+- git tag --light v1.0
+- git commit --tag v1.0
+= -a tạo annotated tag, lưu người tag, email, ngày, message.
+
+Q: What does a lightweight tag store?
++ Only a pointer to a specific commit
+- The tagger name, email, date and message
+- A copy of all files
+- A new branch
+= Lightweight tag chỉ là con trỏ; annotated tag lưu đầy đủ thông tin.
+
+Q: You created tag `v1.0` and ran `git push origin main`. Is the tag on the server?
+- Yes, tags are always pushed with branches
++ No, you must push it explicitly, e.g. `git push origin v1.0`
+- Yes, but only lightweight tags
+- No, tags can never be pushed
+= Tag không được push mặc định.
+
+Q: Which type of tag is generally recommended for releases?
+- Lightweight
++ Annotated
+- Remote
+- Branch tag
+= Annotated tag lưu đủ metadata, khuyên dùng cho release.
+
+## k1-trap-a | week01.pdf tr.56; ex1.docx
+Q: What does the `-a` option of `git commit` do?
++ Automatically stages every file that is already tracked and modified before committing
+- Adds every new file in the directory
+- Amends the previous commit
+- Pushes the commit to all remotes
+= -a bỏ qua git add cho file đã track; file mới vẫn cần git add.
+
+Q: You run the commands below in a repo where app.py is tracked. Which files are in the new commit?
+> echo "print(1)" >> app.py
+> echo "x" > new.txt
+> git commit -a -m "update"
+L: bash
++ Only the change to app.py
+- app.py and new.txt
+- Only new.txt
+- No files; commit fails
+= new.txt chưa track nên -a bỏ qua.
+
+Q: Continuing the previous scenario, how would you include new.txt in a commit?
++ Run `git add new.txt` and then commit
+- Run `git commit -a` a second time
+- Run `git commit --amend -a`
+- Run `git fetch`
+= File untracked phải git add trước.
+
+## k1-trap-diff | week01.pdf tr.53–55
+Q: Which command shows changes that are modified but NOT yet staged?
++ git diff
+- git diff --staged
+- git log -p
+- git show
+= git diff = working tree so với staging.
+
+Q: Which command shows what will go into your next commit?
+- git diff
++ git diff --staged
+- git status -s
+- git log
+= --staged (đồng nghĩa --cached) = staging so với commit cuối.
+
+Q: You edit a.txt and run `git add a.txt`. Then you run `git diff`. What is printed?
++ Nothing
+- The full change to a.txt
+- An error
+- Only the file name
+= Mọi thay đổi đã stage nên git diff trống; xem bằng git diff --staged.
+
+Q: After staging a.txt, you edit a.txt again. Which statements are correct?
++ `git diff` shows only the second edit.
++ `git diff --staged` shows only the first (staged) edit.
++ `git status -s` shows `MM a.txt`.
+- `git commit` will include both edits.
+= Staged một phần, working tree một phần → MM. Commit chỉ lấy phần đã stage.
+
+Q: `git diff --cached` is:
++ a synonym of `git diff --staged`
+- a way to clear the cache
+- the diff with the remote
+- the diff of untracked files
+= --cached và --staged là đồng nghĩa.
+
+## k1-short | week01.pdf tr.51
+Q: In `git status -s` output, what does the left column represent?
++ The staging area
+- The working tree
+- The remote
+- The number of commits
+= Cột trái = staging area, cột phải = working tree.
+
+Q: What does `??` mean in `git status -s`?
+- The file is staged
+- The file is modified and staged
++ The file is untracked
+- The file is in conflict
+= ?? = untracked.
+
+Q: What does `A  lib/git.rb` (A in the left column) mean?
++ A new file that has been added to the staging area
+- A modified file not yet staged
+- An ignored file
+- A deleted file
+= A = mới được stage.
+
+Q: Read the output. Which files have changes that are NOT yet staged?
+> M README
+> MM Rakefile
+> A  lib/git.rb
+> M  lib/simplegit.rb
+L: text
++ README
++ Rakefile
+- lib/git.rb
+- lib/simplegit.rb
+= Cột phải có M → còn thay đổi chưa stage: README (␣M) và Rakefile (MM).
+
+Q: In `git status -s`, what does the line below mean?
+> M  lib/simplegit.rb
+L: text
++ lib/simplegit.rb is modified and staged with nothing left unstaged
+- lib/simplegit.rb is untracked
+- lib/simplegit.rb is modified but not staged
+- lib/simplegit.rb was deleted
+= "M␣" = sửa đã stage, cột phải trống.
+
+## k1-ignore | week01.pdf tr.52; Pro Git tr.38–39
+Q: With the .gitignore below, which files are ignored?
+> *.a
+> !lib.a
+L: text
++ libfoo.a
+- lib.a
++ build/x.a
+- notes.txt
+= *.a bỏ qua mọi file .a (đệ quy); !lib.a phủ định nên lib.a vẫn được track.
+
+Q: With the .gitignore rule `/TODO`, which file is ignored?
++ TODO in the root directory
+- subdir/TODO
+- Both TODO and subdir/TODO
+- No file
+= / ở đầu = chỉ thư mục hiện tại (gốc).
+
+Q: With the rule `build/`, what is ignored?
++ All files inside any directory named build
+- Only a file named build
+- Only the root directory build, not nested ones
+- Nothing; the trailing slash is invalid
+= / ở cuối = thư mục; glob áp dụng đệ quy.
+
+Q: With the rule `doc/*.txt`, which file is NOT ignored?
+- doc/notes.txt
++ doc/server/arch.txt
+- doc/a.txt
+- doc/readme.txt
+= * không đi qua thư mục con; muốn đệ quy dùng doc/**/*.txt.
+
+Q: Which pattern ignores every .pdf file in `doc/` and all its subdirectories?
+- doc/*.pdf
++ doc/**/*.pdf
+- /doc.pdf
+- !doc/*.pdf
+= ** khớp thư mục lồng nhau.
+
+Q: In a .gitignore file, how are blank lines and lines starting with `#` treated?
++ They are ignored (comments)
+- They ignore every file
+- They cause an error
+- They negate the previous rule
+= Dòng trống hoặc bắt đầu bằng # bị bỏ qua.
+
+Q: What does the `!` prefix do in a .gitignore pattern?
+- Ignores the file even more strongly
++ Negates the pattern, so matching files are tracked again
+- Marks a comment
+- Matches directories only
+= ! = phủ định.
+
+## k1-trap-ignore | Pro Git tr.44–45
+Q: `secret.txt` was already committed. You then add `secret.txt` to .gitignore. What happens?
+- Git stops tracking it immediately
++ Git keeps tracking it; you must run `git rm --cached secret.txt` and commit
+- Git deletes the file from history
+- Git deletes the file from disk
+= .gitignore chỉ áp dụng cho file untracked.
+
+Q: Which statements about .gitignore are correct?
++ It only affects files that are not tracked yet.
++ Patterns are applied recursively throughout the working tree.
+- Adding a tracked file to it removes the file from previous commits.
+- It must be placed in the .git directory.
+= .gitignore đặt trong working tree; không xoá lịch sử.
+
+## k1-trap-amend | week01.pdf tr.64; Pro Git tr.53
+Q: You run the commands below. How many commits are in the history afterwards?
+> git commit -m "Initial commit"
+> git add forgotten_file
+> git commit --amend
+L: bash
++ 1
+- 2
+- 3
+- 0
+= --amend thay thế commit trước: cuối cùng chỉ còn 1 commit chứa cả file quên.
+
+Q: Which statements about `git commit --amend` are correct?
++ It replaces the last commit with a new commit.
++ It can be used to fix the last commit message.
++ It should only be used on commits that have not been pushed.
+- It adds a second commit on top of the previous one.
+= amend tạo commit mới thay commit cũ (hash khác) — tránh với commit đã push.
+
+Q: You just committed with a typo in the message and nothing has been pushed. What is the simplest fix?
++ git commit --amend
+- git revert HEAD
+- git rm --cached
+- git fetch
+= Sửa message commit cuối: git commit --amend.
+
+## k1-trap-push | week01.pdf tr.73–76
+Q: Which command unstages `README.md` but keeps your modifications in the working directory?
++ git restore --staged README.md
+- git restore README.md
+- git rm README.md
+- git commit --amend
+= --staged chỉ bỏ stage; git reset HEAD README.md cũng làm được.
+
+Q: Which command also unstages a file while keeping changes?
++ git reset HEAD CONTRIBUTING.md
+- git checkout -- CONTRIBUTING.md
+- git restore CONTRIBUTING.md
+- git clean -f
+= reset HEAD <file> = cách cũ của restore --staged.
+
+Q: You run `git restore notes.txt` on a modified, unstaged file. What happens?
+- The change is staged
++ The file returns to the last committed version; your uncommitted change is lost
+- The file is deleted
+- Nothing, restore only works on staged files
+= Nguy hiểm: thay đổi chưa commit mất vĩnh viễn.
+
+Q: Which commands can permanently discard uncommitted changes in a file?
++ git restore file
++ git checkout -- file
+- git restore --staged file
+- git diff file
+= restore/checkout -- ghi đè file bằng bản đã commit; restore --staged chỉ bỏ stage.
+
+## k1-cmd | week01.pdf tr.28–33
+Q: In which state is a file that you modified but have not added yet?
++ Modified
+- Staged
+- Committed
+- Untracked
+= Modified: đã thay đổi nhưng chưa đánh dấu cho commit.
+
+Q: A file is "staged" when:
++ you marked a modified file in its current version to go into the next commit
+- it is safely stored in the local database
+- it has been pushed
+- it is listed in .gitignore
+= Staged = đã đánh dấu bản hiện tại cho commit tiếp.
+
+Q: Where is the staging area physically stored?
+- In a hidden file in your home directory
++ In a file inside the `.git` directory (the index)
+- On the remote server
+- In the working tree
+= Staging area còn gọi là index, nằm trong .git.
+
+Q: Which directory is the most important part of Git and is copied when you clone?
+- The working tree
++ The Git directory (.git)
+- The staging area
+- The home directory
+= .git chứa metadata và object database; clone sao chép nó.
+
+Q: Match the basic Git workflow in the correct order.
++ Modify files → stage with git add → commit with git commit
+- Commit → modify → stage
+- Stage → modify → commit
+- Push → commit → stage
+= Sửa ở working tree → stage → commit vào .git.
+
+Q: Which statements about tracked and untracked files are correct?
++ Tracked files are files that were in the last snapshot or newly staged.
++ Tracked files can be unmodified, modified or staged.
++ Untracked files are everything else in the working directory.
+- A newly created file is tracked automatically.
+= File mới tạo là untracked cho tới khi git add.
+
+Q: Right after `git clone`, all files are:
++ tracked and unmodified
+- untracked
+- staged
+- modified
+= Vừa clone: mọi file đã track và chưa thay đổi.
+
+Q: Which command shows a short, two-column status?
+- git status --long
++ git status -s
+- git log --short
+- git diff -s
+= git status -s (hoặc --short).
+
+Q: What does `git log --stat` add to each commit?
+- The full patch
++ Statistics of modified files (files changed, insertions, deletions)
+- Only the hash
+- Branch graph
+= --stat liệt kê file thay đổi và số dòng thêm/xoá.
+
+Q: Which command lists commits with an ASCII graph of branches and merges?
++ git log --graph
+- git log -p
+- git log --stat
+- git remote -v
+= --graph vẽ đồ thị nhánh.
+
+Q: Which statements are correct?
++ `git commit` is a local operation.
++ `git push` is needed to send commits to a remote.
+- `git commit` automatically updates `origin/main`.
+- `git fetch` uploads commits.
+= Commit là local; push mới đưa lên remote.
+
+Q: Which command removes the remote named `paul`?
++ git remote remove paul
+- git branch -d paul
+- git rm paul
+- git remote --delete-all
+= git remote remove (hoặc rm) <name>.
+
+Q: In the sequence below, which commands are safe because they never lose work?
+> git status
+> git diff
+> git fetch origin
+> git restore app.py
+L: bash
++ git status
++ git diff
++ git fetch origin
+- git restore app.py
+= restore có thể làm mất thay đổi chưa commit; ba lệnh còn lại chỉ đọc/tải về.
+
+Q: Which file pattern could you use to ignore all files ending with `.o` or `.a`?
++ *.[oa]
+- *.oa
+- [*.o,*.a]
+- **.o.a
+= [oa] khớp một ký tự o hoặc a (Pro Git tr.38).
+
+Q: Which pattern ignores files ending with a tilde (editor backups)?
++ *~
+- ~*
+- !~
+- /~
+= *~ (Pro Git tr.38).
+
+Q: Why does `git rm log/\*.log` use a backslash?
++ So that Git, not the shell, expands the glob (including subdirectories)
+- To escape a space
+- To delete files recursively on the remote
+- It is a comment marker
+= Dấu \ để Git tự mở rộng glob (Pro Git tr.45).
+
+Q: You run `git init`, create README and run `git status`. What is the state of README?
++ Untracked
+- Staged
+- Committed
+- Ignored
+= Chưa add thì là untracked.
+
+Q: Which command would you run first to see which files are staged, unstaged or untracked?
++ git status
+- git push
+- git log -p
+- git tag
+= git status là công cụ chính để xem trạng thái file.
+
+Q: You staged a change by mistake and want to keep it in the working tree but not in the next commit. Which commands work?
++ git restore --staged file
++ git reset HEAD file
+- git restore file
+- git rm file
+= Hai lệnh đầu bỏ stage, giữ thay đổi.
+
+Q: What is the output of `git diff --staged` right after a commit, if nothing has been changed since?
++ Empty output
+- The whole last commit
+- An error
+- The list of tracked files
+= Staging = commit cuối → không có khác biệt.
+
+Q: You are offline. Which can you still do with Git?
++ Commit changes
++ View the full log
++ Diff against an old version
+- Push to GitHub
+= Git là DVCS, hầu hết thao tác local; push cần mạng.
+
+Q: Which statement about `git fetch` vs `git pull` is correct?
++ fetch is safe because it never modifies your working directory
+- pull is safer because it does not merge
+- fetch merges automatically
+- both are identical
+= fetch chỉ tải; pull = fetch + merge.
+
+Q: What is printed when everything is committed and there are no untracked files?
++ nothing to commit, working tree clean
+- Untracked files: (none)
+- Changes to be committed: none
+- fatal: not a git repository
+= Thông báo chuẩn khi working tree sạch.
+
+Q: Running `git status` in a directory that is not a Git repository gives:
+- nothing to commit
++ fatal: not a git repository
+- An empty output
+- Untracked files: all
+= Không có .git → Git báo fatal.
+
+Q: Which part of `git config --list` precedence is correct?
++ Local > Global > System
+- System > Global > Local
+- Global > Local > System
+- They cannot overlap
+= Cấp gần repo hơn ghi đè.
+
+Q: `git tag` (without arguments) does what?
++ Lists the existing tags
+- Creates a tag named "tag"
+- Pushes all tags
+- Deletes all tags
+= git tag liệt kê tag.
+
+Q: Which statement about tags and branches is correct?
++ A tag stays on the same commit; a branch pointer moves when you commit
+- A tag moves forward with each commit
+- Branches cannot move
+- Tags are automatically pushed while branches are not
+= Tag không di chuyển như branch.
+
+Q: Which command pushes all of your local tags at once?
++ git push origin --tags
+- git push origin main
+- git tag --push
+- git fetch --tags
+= --tags đẩy toàn bộ tag (Pro Git tr.59).

@@ -1,0 +1,768 @@
+## k9-tls | reverse_proxy_https.pdf tr.2–10
+Q: What is a reverse proxy in the course architecture?
++ A server in front of the app that receives Internet requests, routes them and handles HTTPS
+- A proxy on the client that hides the user's IP
+- A database replica
+- A Docker registry
+= Caddy đứng trước app.
+
+Q: Which statements about Caddy in the course are correct?
++ It receives HTTPS requests from the Internet.
++ It performs TLS termination.
++ It forwards requests to the app over plain HTTP at localhost:8000.
+- It runs inside the GitHub runner.
+= Caddy lo mã hoá, app chỉ cần HTTP.
+
+Q: What does TLS termination mean?
++ The proxy decrypts HTTPS traffic and passes plain HTTP to the internal app
+- The app shuts down TLS completely for clients
+- Certificates are deleted
+- The connection is closed after one request
+= Mã hoá kết thúc ở proxy.
+
+Q: What is the difference between HTTP and HTTPS?
++ HTTPS is HTTP with encryption (TLS) between browser and server
+- HTTPS is faster because it uses UDP
+- HTTP is encrypted, HTTPS is not
+- They are identical
+= HTTPS = HTTP + mã hoá.
+
+Q: Which information does a certificate contain according to the slides?
++ Domain name
++ Issuer
++ Validity period
++ Public key
+= Chứng chỉ gồm 4 thông tin.
+
+Q: What does a certificate prove and enable?
++ It proves the site's identity and enables HTTPS encryption
+- It speeds up DNS
+- It replaces the Security Group
+- It stores the private SSH key
+= Chứng chỉ chứng minh danh tính + mã hoá.
+
+Q: What does the green padlock in the browser indicate?
++ The certificate is valid and data is encrypted
+- The site has no bugs
+- The server is in AWS
+- Port 22 is closed
+= Ổ khóa xanh.
+
+Q: What is Let's Encrypt?
++ An organization that issues free TLS certificates
+- A reverse proxy
+- A DNS registrar only
+- A Docker image
+= Cấp chứng chỉ miễn phí.
+
+Q: How does Caddy get certificates?
++ It automatically requests and renews them from Let's Encrypt
+- You must buy and install them manually
+- AWS installs them
+- GitHub provides them
+= Caddy tự xin và tự gia hạn.
+
+Q: Which port does the app use internally behind Caddy in the course?
++ 8000 on localhost
+- 443
+- 22
+- 80
+= reverse_proxy localhost:8000.
+
+## k9-caddy | reverse_proxy_https.pdf tr.12–13, 23–24 | caddy
+Q: Read the Caddyfile. Which statements are correct?
+> myapp.example.com {
+>     reverse_proxy localhost:8000
+> }
++ Caddy obtains a certificate for myapp.example.com.
++ Requests are forwarded to the app on localhost:8000.
+- The app must handle HTTPS itself.
+- Port 8000 must be open to the Internet.
+= Dòng ngoài = tên miền; dòng trong = đích.
+
+Q: In the Caddyfile above, what does the first line `myapp.example.com {` define?
++ The domain name Caddy serves and requests a certificate for
+- The internal app address
+- The SSH host
+- The Docker image
+= Dòng đầu là tên miền.
+
+Q: Your app moves to port 9000. What must change in the Caddyfile?
++ reverse_proxy localhost:9000, then reload Caddy
+- The domain name
+- Nothing
+- Open port 9000 in the Security Group
+= Sửa đích rồi systemctl reload caddy.
+
+Q: Which command edits the Caddyfile on the instance?
++ sudo nano /etc/caddy/Caddyfile
+- nano ~/Caddyfile.txt
+- docker edit Caddyfile
+- git commit Caddyfile
+= Đường dẫn cấu hình chuẩn.
+
+Q: You edited the Caddyfile. What must you run for the change to take effect?
++ sudo systemctl reload caddy
+- sudo systemctl status caddy only
+- docker compose pull
+- nothing; Caddy watches the file
+= Sửa file chưa có tác dụng tới khi reload.
+
+Q: Which command follows Caddy's logs when certificates cannot be issued?
++ sudo journalctl -u caddy -f
+- docker logs caddy-hub
+- tail -f /etc/caddy/Caddyfile
+- curl -f caddy
+= journalctl -u caddy -f.
+
+Q: Which command shows the certificate and HTTPS connection details from the terminal?
++ curl -v https://your-domain
+- curl -f http://localhost:8000
+- ping your-domain
+- ssh -v your-domain
+= curl -v thấy chứng chỉ.
+
+Q: Which Caddyfile uses an IP that Let's Encrypt can NOT issue a certificate for?
+> 203.0.113.25 {
+>     reverse_proxy localhost:8000
+> }
++ This one, because it uses a bare IP address
+- None; IPs are fine
+- Only if port 443 is closed
+- Only if the app runs on 8000
+= Let's Encrypt chỉ cấp cho tên miền.
+
+Q: Which change makes the Caddyfile above work with Let's Encrypt without buying a domain?
++ Use 203.0.113.25.nip.io as the site name
+- Use https://203.0.113.25
+- Use localhost
+- Use port 8443
+= nip.io trỏ sẵn về IP.
+
+Q: Which are the three checks that HTTPS works, according to the slides?
++ The HTTPS address shows a green padlock
++ curl -v shows the certificate
++ The certificate validity has not expired
+- Port 8000 is open to everyone
+= Kiểm tra đạt.
+
+## k9-domain | reverse_proxy_https.pdf tr.15–18
+Q: Why do we need a domain name for HTTPS in the course?
++ Let's Encrypt issues certificates for domain names, not for bare IP addresses
+- Browsers cannot connect to IPs
+- AWS requires domain names
+- Docker requires domain names
+= Lý do cần tên miền.
+
+Q: What does an A record do?
++ Maps a domain name to an IPv4 address
+- Maps a name to a mail server
+- Maps an alias to a canonical name
+- Maps a domain to its name server
+= Gõ tên miền → DNS trả IP.
+
+Q: What is nip.io?
++ A free service where a name containing an IP resolves to that IP, e.g. 203.0.113.25.nip.io
+- A certificate authority
+- A reverse proxy
+- An AWS service
+= Không cấu hình thêm.
+
+Q: Which name resolves to 54.10.20.30 via nip.io?
++ 54.10.20.30.nip.io
+- nip.io.54.10.20.30
+- 54-10-20-30.io
+- 54.10.20.30/nip
+= Ghép IP vào trước nip.io.
+
+Q: You bought `mychat.com`. What must you configure for Caddy to obtain a certificate?
++ An A record for the (sub)domain pointing to the instance's public IP
+- A CNAME to localhost
+- An MX record
+- Nothing
+= Thêm bản ghi A trỏ về Public IP.
+
+Q: The instance IP changed after a restart and you use nip.io. What must you update?
++ The site name in the Caddyfile to the new IP.nip.io (and reload)
+- Nothing
+- The Docker image
+- The SSH key
+= nip.io gắn với IP.
+
+## k9-sg | reverse_proxy_https.pdf tr.19–21
+Q: Which Security Group rules are needed for Caddy HTTPS?
++ TCP 80 from 0.0.0.0/0
++ TCP 443 from 0.0.0.0/0
+- TCP 8000 from 0.0.0.0/0
+- UDP 443 from My IP only
+= 80 cho Let's Encrypt, 443 cho người dùng.
+
+Q: Why must port 80 stay open even after HTTPS works?
++ Let's Encrypt sends validation requests to port 80 (and for HTTP access/renewal)
+- SSH uses port 80
+- Docker Hub uses port 80
+- It is not needed
+= Đóng 80 → không cấp/gia hạn được.
+
+Q: Which port do users connect to for HTTPS?
++ 443
+- 80
+- 8000
+- 22
+= 443.
+
+Q: Why should port 8000 not be opened to the Internet?
++ The app should only be reached through Caddy on the same instance
+- 8000 is reserved for SSH
+- Let's Encrypt blocks 8000
+- Docker cannot publish 8000
+= Không thêm rule cho 8000.
+
+## k9-debug | reverse_proxy_https.pdf tr.23–24
+Q: Which are the three common reasons a certificate is not issued?
++ Port 80 closed
++ Domain not pointing to the correct IP
++ Hitting Let's Encrypt rate limits
+- Port 8000 closed
+= Ba lỗi khi chứng chỉ không cấp được.
+
+Q: Caddy logs show a certificate error and the Security Group has only 443 and 22. What is the fix?
++ Open port 80 from 0.0.0.0/0
+- Open port 8000
+- Close port 443
+- Restart Docker
+= Let's Encrypt xác minh qua 80.
+
+Q: The A record points to an old IP. What happens when Caddy requests a certificate?
++ The Let's Encrypt challenge goes to the wrong server and validation fails
+- It works because Caddy ignores DNS
+- The certificate is issued for the IP instead
+- The app crashes
+= Thử thách gửi sai chỗ.
+
+Q: You retried a wrong configuration many times and now Let's Encrypt refuses. What happened and what can you do?
++ You hit the rate limit; use a new subdomain or wait until the limit resets
+- The domain is banned forever
+- Reinstall Ubuntu
+- Open port 8000
+= Đọc log trước khi thử lại.
+
+Q: Before retrying certificate issuance, what should you do first?
++ Read the Caddy logs with journalctl -u caddy -f and fix the cause
+- Restart repeatedly
+- Delete the domain
+- Close port 80
+= Tránh rate limit.
+
+## k9-trap-8000 | reverse_proxy_https.pdf tr.19–21
+Q: A student opens port 8000 to 0.0.0.0/0 "just in case" after setting up Caddy. Which statements are correct?
++ It is unnecessary because Caddy reaches the app via localhost.
++ It exposes the app over plain HTTP, bypassing HTTPS.
+- It is required by Let's Encrypt.
+- It improves security.
+= Không mở port app.
+
+## k9-trap-80 | reverse_proxy_https.pdf tr.20
+Q: "We already have HTTPS on 443, so let's close port 80." What is the consequence?
++ Let's Encrypt validation/renewal fails, so certificates cannot be issued or renewed
+- Nothing
+- HTTPS becomes faster
+- SSH breaks
+= Không đóng 80.
+
+## k9-trap-ip | reverse_proxy_https.pdf tr.15
+Q: Which site addresses in a Caddyfile can get a Let's Encrypt certificate?
++ myapp.example.com (with an A record to the instance)
++ 203.0.113.25.nip.io
+- 203.0.113.25
+- localhost:8000
+= Phải là tên miền trỏ đúng IP.
+
+## k9-trap-file | reverse_proxy_https.pdf tr.12–13
+Q: In a Caddyfile, which part is the internal destination?
+> chat.example.com {
+>     reverse_proxy localhost:8000
+> }
++ localhost:8000
+- chat.example.com
+- the braces
+- reverse_proxy is the domain
+= reverse_proxy <đích bên trong>.
+
+Q: You swapped the two values by mistake as below. What happens?
+> localhost:8000 {
+>     reverse_proxy chat.example.com
+> }
++ Caddy serves the wrong site name and forwards to the wrong target; HTTPS for chat.example.com is not set up
+- It works the same
+- Caddy fixes the order automatically
+- Let's Encrypt issues for both
+= Dòng ngoài là tên miền, dòng trong là đích.
+
+## k9-trap-rate | reverse_proxy_https.pdf tr.24
+Q: Which statements about Let's Encrypt rate limits are correct?
++ Too many requests in a short time temporarily stop new certificates.
++ A new subdomain or waiting can solve it.
+- Rate limits are permanent.
+- They are caused by opening port 443.
+= Rate limit.
+
+## k9-tls | reverse_proxy_https.pdf tr.5–6, 11
+Q: Put the request path in order for the final system.
++ Browser (HTTPS:443) → Caddy on EC2 → app at localhost:8000 (HTTP) → response back through Caddy
+- Browser → app:8000 → Caddy → browser
+- Browser → Docker Hub → EC2
+- Browser → GitHub runner → EC2
+= Toàn hệ thống qua HTTPS công khai.
+
+Q: Where does the HTTPS encryption happen in the course architecture?
++ Between the browser and Caddy
+- Between Caddy and the app on localhost
+- Between Docker Hub and EC2 only
+- Nowhere
+= Bên trong instance là HTTP thường.
+
+Q: Which component holds the certificate's private key?
++ Caddy on the server
+- The user's browser
+- Let's Encrypt only
+- The GitHub runner
+= Server giữ private key của chứng chỉ (khác SSH key).
+
+Q: Which statements about the TLS handshake are correct (slide overview)?
++ The server sends its certificate to the browser.
++ The browser verifies the certificate before sending encrypted data.
+- The browser sends its SSH private key.
+- No keys are involved.
+= Bắt tay TLS tr.9.
+
+Q: What happens when a user visits `http://myapp.example.com` (port 80) with Caddy's default config?
++ Caddy redirects to HTTPS automatically
+- The request goes directly to port 8000
+- The browser shows the SSH login
+- An error always
+= Caddy mặc định chuyển HTTP → HTTPS (bổ sung).
+
+Q: What does the browser show if a certificate is expired?
++ A security warning (no valid padlock)
+- A green padlock
+- Nothing
+- The SSH fingerprint
+= Kiểm tra hạn chứng chỉ.
+
+## k9-caddy | reverse_proxy_https.pdf tr.12–13
+Q: Where is Caddy installed in the course?
++ Directly on the EC2 instance as a system service (systemctl)
+- On GitHub
+- On Docker Hub
+- On your laptop only
+= systemctl reload caddy.
+
+Q: Which command checks whether the Caddy service is running?
++ sudo systemctl status caddy
+- caddy --ping
+- docker ps caddy
+- journalctl --list caddy
+= systemctl status.
+
+Q: You edited the Caddyfile but forgot to reload. Which statement is correct?
++ Caddy still uses the old configuration
+- The new config is active
+- Caddy crashes
+- The certificate is revoked
+= Phải reload.
+
+Q: Which file name/path does Caddy use by default as configuration on Ubuntu?
++ /etc/caddy/Caddyfile
+- /etc/nginx/nginx.conf
+- ~/.caddy.yml
+- /var/www/Caddyfile.json
+= Đường dẫn trong slide.
+
+Q: Which directive forwards requests to the backend?
++ reverse_proxy
+- forward_to
+- proxy_pass
+- upstream_http
+= proxy_pass là của nginx.
+
+Q: Which Caddyfile serves two subdomains to two apps?
+> api.example.com {
+>     reverse_proxy localhost:8000
+> }
+> admin.example.com {
+>     reverse_proxy localhost:9000
+> }
++ api → app on 8000, admin → app on 9000, each with its own certificate
+- Both go to 8000
+- Only the first block works
+- It is invalid
+= Mỗi khối một tên miền.
+
+## k9-domain | reverse_proxy_https.pdf tr.16–18
+Q: Where do you add the A record for your own domain?
++ In the domain provider's DNS management page
+- In the Security Group
+- In the Caddyfile
+- In GitHub Secrets
+= Trang quản lý tên miền.
+
+Q: What value should the A record have?
++ The instance's public IP
+- The private IP
+- localhost
+- The Docker Hub URL
+= Trỏ về Public IP.
+
+Q: After adding a DNS record, why may it not work immediately?
++ DNS changes take time to propagate and caches have TTLs
+- Caddy blocks new domains
+- AWS must approve it
+- Let's Encrypt deletes it
+= Liên hệ TTL (MMT C2).
+
+Q: Which is the main advantage of nip.io for students?
++ No DNS configuration is needed
+- It gives a permanent domain independent of IP
+- It provides certificates
+- It hides the IP
+= Ghép IP vào tên.
+
+## k9-sg | reverse_proxy_https.pdf tr.19
+Q: Which final inbound rule table is correct for the course?
++ 22 My IP · 80 0.0.0.0/0 · 443 0.0.0.0/0
+- 22 0.0.0.0/0 · 8000 0.0.0.0/0
+- 80 only
+- 443 only
+= Bảng SG cho HTTPS.
+
+## k9-debug | reverse_proxy_https.pdf tr.23–24
+Q: `curl -v https://myapp.example.com` prints the certificate issuer "Let's Encrypt" and an expiry date in the future. What does it mean?
++ HTTPS is configured correctly with a valid certificate
+- The certificate failed
+- The app is down
+- Port 80 is closed
+= Kiểm tra đạt.
+
+Q: The browser shows the padlock but the page returns 502 Bad Gateway. Which component is likely failing?
++ The app behind Caddy (not running or wrong port in reverse_proxy)
+- Let's Encrypt
+- DNS
+- The Security Group port 443
+= Caddy chạy, upstream lỗi.
+
+Q: Caddy is running and the certificate is valid, but users get a timeout. Which rule is likely missing?
++ Inbound 443 from 0.0.0.0/0
+- Inbound 8000
+- Outbound 22
+- Inbound 5432
+= Người dùng vào qua 443.
+
+## k9-tls | reverse_proxy_https.pdf tr.2–4
+Q: Which benefits does putting Caddy in front of the app give?
++ HTTPS without changing the app
++ Automatic certificate management
++ A single public entry point
+- The app no longer needs to run
+= Lợi ích reverse proxy.
+
+Q: Which statement about the app behind Caddy is correct?
++ It can keep serving plain HTTP on localhost:8000
+- It must load the TLS certificate itself
+- It must listen on 443
+- It must be removed from Docker
+= TLS termination ở Caddy.
+
+## k9-caddy | reverse_proxy_https.pdf tr.12
+Q: The Caddyfile contains a typo and `systemctl reload caddy` fails. What happens to the running Caddy?
++ It keeps running with the previous valid config; check the error with journalctl/status
+- It deletes the certificate
+- It shuts down EC2
+- It switches to HTTP only
+= Đọc log khi lỗi (bổ sung).
+
+## k9-trap-80 | reverse_proxy_https.pdf tr.20–21
+Q: Which port is used by Let's Encrypt's HTTP challenge?
++ 80
+- 443
+- 22
+- 8000
+= HTTP-01 challenge qua 80.
+
+## k9-trap-ip | reverse_proxy_https.pdf tr.15
+Q: Why can't you just visit `https://203.0.113.25` with a Let's Encrypt certificate?
++ Let's Encrypt (in the course) issues certificates for domain names, not bare IPs
+- HTTPS does not support IPv4
+- Port 443 cannot be used with IPs
+- Caddy cannot listen on IPs
+= Cần tên miền / nip.io.
+
+## k9-tls | reverse_proxy_https.pdf tr.8–10
+Q: Which entity signs (issues) the certificate in the course?
++ Let's Encrypt (the issuer)
+- The browser
+- AWS EC2
+- GitHub
+= Bên cấp.
+
+Q: Which statements about HTTPS benefits are correct?
++ Data between browser and server is encrypted.
++ The browser can verify the site's identity.
+- HTTPS guarantees the app has no bugs.
+- HTTPS replaces the Security Group.
+= Mã hoá + danh tính.
+
+## k9-caddy | reverse_proxy_https.pdf tr.13
+Q: Which order of commands applies a new Caddyfile and watches for certificate issues?
++ sudo nano /etc/caddy/Caddyfile → sudo systemctl reload caddy → sudo journalctl -u caddy -f
+- journalctl → nano → git push
+- docker compose up → nano → ssh
+- reload → nano → status
+= Sửa → nạp lại → xem log.
+
+## k9-debug | reverse_proxy_https.pdf tr.24
+Q: Which symptoms point to DNS problems rather than port problems?
++ Let's Encrypt validation reaches a different IP
++ `ping myapp.example.com` resolves to the wrong address
+- The padlock is green
+- SSH Permission denied
+= Kiểm tra bản ghi A.
+
+## k9-trap-8000 | reverse_proxy_https.pdf tr.21
+Q: Which request should NOT work from the Internet in the final architecture?
++ http://<public-ip>:8000
+- https://myapp.example.com
+- http://myapp.example.com (redirects to HTTPS)
+- curl -v https://myapp.example.com
+= Port 8000 không mở ra ngoài.
+
+## k9-tls | reverse_proxy_https.pdf tr.6
+Q: In the final architecture, how many services listen on public ports on the instance?
++ Caddy on 80 and 443 (plus SSH on 22 for admin)
+- The app on 8000 and Caddy on 443
+- Only the database on 5432
+- None
+= App chỉ ở localhost.
+
+## k9-domain | reverse_proxy_https.pdf tr.15–18
+Q: Which DNS record type is used to point a domain to an IPv4 address for Caddy?
++ A
+- MX
+- NS
+- TXT only
+= Bản ghi A.
+
+Q: Which of these is a correct nip.io-based Caddyfile?
+> 3.25.10.7.nip.io {
+>     reverse_proxy localhost:8000
+> }
++ It is correct if the instance's public IP is 3.25.10.7
+- It never works
+- It works only with port 8000 open
+- It requires an MX record
+= nip.io phải đúng IP.
+
+## k9-sg | reverse_proxy_https.pdf tr.19–21
+Q: Which ports does Caddy itself listen on for a site block like `myapp.example.com { ... }`?
++ 80 and 443
+- 8000 only
+- 22
+- 5432
+= HTTP và HTTPS.
+
+## k9-trap-rate | reverse_proxy_https.pdf tr.24
+Q: A student keeps restarting Caddy with a wrong domain every minute. What is the risk?
++ Hitting Let's Encrypt rate limits so no certificate can be issued for a while
+- Being charged by Let's Encrypt
+- Losing SSH access
+- Deleting the instance
+= Rate limit.
+
+## k9-tls | reverse_proxy_https.pdf tr.5
+Q: Which statement about the role of the reverse proxy vs the app is correct?
++ The proxy stands in front, receives Internet requests, routes them and handles HTTPS; the app only needs HTTP
+- The app stands in front of the proxy
+- The proxy stores the database
+- Both must handle TLS
+= Bảng so sánh K9.
+
+Q: Which statement about "Caddy vs manual certificates" is correct?
++ Caddy requests and renews certificates automatically when it starts; no manual purchase/installation
+- Caddy requires you to upload certificates monthly
+- Manual certificates are required for Let's Encrypt
+- Caddy cannot renew
+= Tự động.
+
+## k9-caddy | reverse_proxy_https.pdf tr.12
+Q: Which line should replace `???` so that Caddy forwards to a FastAPI app on port 8000?
+> chat.example.com {
+>     ???
+> }
++ reverse_proxy localhost:8000
+- proxy_pass http://localhost:8000;
+- forward 8000
+- listen 8000
+= Cú pháp Caddy.
+
+## k9-debug | reverse_proxy_https.pdf tr.23
+Q: Which commands are useful when HTTPS is not working?
++ sudo journalctl -u caddy -f
++ curl -v https://domain
++ sudo systemctl status caddy
+- git rebase main
+= Công cụ debug.
+
+## k9-trap-file | reverse_proxy_https.pdf tr.12
+Q: Your FastAPI container is published with `-p 127.0.0.1:8000:8000`. Can Caddy on the same instance proxy to localhost:8000?
++ Yes; the port is reachable from the host's loopback, but not from the Internet
+- No, Caddy needs 0.0.0.0
+- Only via port 22
+- Only through Docker Hub
+= Bind loopback giúp app không lộ ra ngoài (bổ sung).
+
+## k9-tls | reverse_proxy_https.pdf tr.9
+Q: Which key in the certificate is shared with browsers?
++ The public key
+- The private key
+- The SSH key
+- The Docker token
+= Chứng chỉ chứa khóa công khai.
+
+## k9-domain | reverse_proxy_https.pdf tr.17
+Q: Which statement about subdomains is correct?
++ You can create an A record for `chat.mydomain.com` pointing to the instance
+- Subdomains cannot have certificates
+- Subdomains need port 8000
+- Only nip.io supports subdomains
+= Tên miền con mới cũng là cách tránh rate limit.
+
+## k9-sg | reverse_proxy_https.pdf tr.20
+Q: Which protocol must the rules for 80 and 443 use?
++ TCP
+- UDP
+- ICMP
+- SSH
+= HTTP/HTTPS trên TCP.
+
+## k9-caddy | reverse_proxy_https.pdf tr.13
+Q: Which actions are needed after changing the domain in the Caddyfile?
++ Make sure the new domain's A record points to the instance
++ Reload Caddy
++ Watch the logs for certificate issuance
+- Open port 8000
+= Quy trình đổi tên miền.
+
+## k9-tls | reverse_proxy_https.pdf tr.10
+Q: Which is NOT stored in a certificate?
++ The server's private key
+- Domain name
+- Issuer
+- Validity period
+= Private key ở server, không nằm trong chứng chỉ.
+
+Q: Which risk does HTTPS mitigate for the chatbot users?
++ Others on the network reading messages or the API traffic in transit
+- The LLM giving wrong answers
+- The database filling up
+- Git merge conflicts
+= Mã hoá dữ liệu trên đường truyền.
+
+## k9-trap-80 | reverse_proxy_https.pdf tr.20
+Q: Which pair of statements about ports 80 and 443 is correct?
++ 80: Let's Encrypt validation (and HTTP); 443: users accessing HTTPS
+- 80: SSH; 443: Docker
+- 80: database; 443: app internal
+- Both are only for Let's Encrypt
+= Bảng so sánh.
+
+## k9-debug | reverse_proxy_https.pdf tr.23
+Q: The Caddy log says "no such host" for your domain during issuance. What is the cause?
++ The domain has no DNS record yet (or a typo in the name)
+- Port 443 is closed
+- The app is down
+- The rate limit
+= DNS chưa trỏ.
+
+## k9-tls | reverse_proxy_https.pdf tr.11
+Q: In which block of the course does the project get a public HTTPS address?
++ The reverse proxy & HTTPS block (Caddy + Let's Encrypt)
+- The Git block
+- The Linux block
+- The CI block
+= K9 hoàn tất hệ thống.
+
+Q: Which statement about the overall course pipeline is correct?
++ push → CI test/build → CD push image & deploy to EC2 → users reach it via Caddy HTTPS
+- users → Docker Hub → laptop
+- EC2 builds → GitHub serves HTTPS
+- Caddy runs tests
+= Toàn bộ chuỗi.
+
+## k9-caddy | reverse_proxy_https.pdf tr.12–13 | caddy
+Q: Which Caddyfile is correct for a nip.io name and an app on port 8080?
++ 18.1.2.3.nip.io { reverse_proxy localhost:8080 }
+- localhost:8080 { reverse_proxy 18.1.2.3.nip.io }
+- 18.1.2.3 { reverse_proxy :443 }
+- nip.io { reverse_proxy 18.1.2.3 }
+= Ngoài: tên miền; trong: đích nội bộ.
+
+Q: After `sudo systemctl reload caddy`, which statement is correct?
++ Caddy applies the new config without a full restart of the machine
+- The EC2 instance reboots
+- Docker containers restart
+- All certificates are deleted
+= reload nạp lại cấu hình.
+
+## k9-debug | reverse_proxy_https.pdf tr.23–24
+Q: Which pairs (error → fix) are correct?
++ Port 80 closed → open port 80
++ Domain not pointing correctly → fix A record / nip.io string
++ Rate limit → new subdomain or wait
+- Rate limit → open port 8000
+= Bảng ba lỗi.
+
+Q: `curl -v https://myapp.example.com` reports "SSL certificate problem: certificate has expired". What should you check?
++ Whether Caddy can renew (port 80 open, DNS correct) and the Caddy logs
+- The Docker image tag
+- The Git branch
+- The pytest output
+= Gia hạn cần cùng điều kiện như cấp mới.
+
+## k9-domain | reverse_proxy_https.pdf tr.15
+Q: Which steps happen when a browser opens https://myapp.example.com?
++ DNS resolves the name to the instance IP (A record)
++ The browser connects to port 443 and verifies the certificate
++ Caddy forwards the request to localhost:8000
+- The browser connects directly to port 8000
+= Đường đi của request.
+
+## k9-sg | reverse_proxy_https.pdf tr.21
+Q: Which statement about the database and app ports in the final system is correct?
++ Neither the app port (8000) nor the database port needs an inbound rule from the Internet
+- Both must be open to 0.0.0.0/0
+- Only the database must be open
+- Only 8000 must be open
+= Chỉ mở 80/443 (và 22 cho quản trị).
+
+## k9-tls | reverse_proxy_https.pdf tr.8–9
+Q: What happens if a site presents a certificate for a different domain than the one in the address bar?
++ The browser shows a security warning because the identity does not match
+- The padlock is green
+- The connection is faster
+- Nothing happens
+= Chứng chỉ phải khớp tên miền.
+
+Q: Which component checks that the certificate was issued by a trusted authority?
++ The browser
+- The app on port 8000
+- Docker Hub
+- The Security Group
+= Trình duyệt kiểm tra chứng chỉ.
+
+## k9-caddy | reverse_proxy_https.pdf tr.13
+Q: Which statement about editing `/etc/caddy/Caddyfile` is correct?
++ It is owned by root, so you edit it with sudo
+- Any user can edit it without sudo
+- It must be edited on GitHub
+- It is inside the Docker image
+= sudo nano /etc/caddy/Caddyfile.
