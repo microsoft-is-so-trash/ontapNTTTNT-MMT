@@ -1,4 +1,4 @@
-## c4-sau-planes | chuong 4 v1.pdf tr.4–8
+## c4-sau-planes | chuong 4 v1.pdf tr.4–8; K&R §4.1.1 tr.304–309, §4.4 tr.353–360
 Q: Trong ví dụ chuyến đi, "đi qua một giao điểm" tương ứng với chức năng nào?
 + Chuyển tiếp (forwarding)
 - Định tuyến (routing)
@@ -32,16 +32,16 @@ Q: Chuyển tiếp tổng quát (OpenFlow) dùng mô hình bảng nào?
 - Chỉ khớp IP đích và chuyển tiếp
 - Chỉ khớp địa chỉ MAC
 - Bảng DNS
-= K&R §4.4.
+= K&R tr.353.
 
 Q: Hành động nào KHÔNG phải ví dụ của "action" trong chuyển tiếp tổng quát?
 + Phân giải tên miền
 - Chuyển tiếp ra một cổng
 - Bỏ gói
 - Sửa trường header
-= K&R §4.4.
+= K&R tr.353: bỏ gói (tường lửa), sửa header (NAT), chuyển tiếp…
 
-## c4-sau-svc | chuong 4 v1.pdf tr.9
+## c4-sau-svc | chuong 4 v1.pdf tr.9; K&R §4.1.2 tr.309–311
 Q: Mô hình dịch vụ nào đảm bảo tốc độ ổn định, không mất mát, đúng thứ tự và thời gian?
 + ATM CBR
 - Internet best effort
@@ -68,9 +68,9 @@ Q: Theo giáo trình, vì sao mô hình best effort vẫn thành công?
 - Vì nó đảm bảo băng thông
 - Vì nó không mất gói
 - Vì router lưu trạng thái
-= K&R §4.1.2.
+= K&R tr.309–311.
 
-## c4-sau-lpm | chuong 4 v1.pdf tr.11–12; K&R §4.2.1
+## c4-sau-lpm | chuong 4 v1.pdf tr.11–12; K&R §4.2.1 tr.314–317
 Q: Vì sao mỗi cổng vào giữ một bản sao bảng chuyển tiếp?
 + Để quyết định chuyển tiếp cục bộ theo tốc độ dòng, không phải hỏi bộ xử lý trung tâm
 - Để tiết kiệm bộ nhớ
@@ -111,9 +111,9 @@ Q: Vì sao bảng chuyển tiếp lưu tiền tố thay vì từng địa chỉ 
 - Vì IP chỉ dài 8 bit
 - Vì router không đọc được địa chỉ đầy đủ
 - Vì DNS yêu cầu
-= K&R §4.2.1.
+= K&R tr.315.
 
-## c4-sau-fabric | chuong 4 v1.pdf tr.13–17; K&R §4.2.4–4.2.6
+## c4-sau-fabric | chuong 4 v1.pdf tr.13–17; K&R §4.2.2–4.2.5 tr.317–330
 Q: Vì sao chuyển mạch qua memory bị giới hạn?
 + Mỗi gói qua bus bộ nhớ hai lần và chỉ một gói được chuyển mỗi lúc
 - Vì không dùng CPU
@@ -140,7 +140,7 @@ Q: HOL blocking xảy ra ở đâu?
 - Hàng đợi cổng ra
 - Server DNS
 - Tầng ứng dụng
-= K&R §4.2.4.
+= K&R tr.320.
 
 Q: Hàng đợi ở cổng ra hình thành khi nào?
 + Khi gói từ fabric tới cổng ra nhanh hơn tốc độ truyền của liên kết ra
@@ -154,14 +154,14 @@ Q: Quy tắc kích thước đệm khi có N luồng TCP lớn theo giáo trình
 - B = RTT·C
 - B = C/N
 - B = N·RTT
-= Quy tắc cũ B = RTT·C.
+= K&R tr.323; quy tắc cũ B = RTT·C.
 
 Q: Bufferbloat là gì?
 + Bộ đệm quá lớn làm hàng đợi dài, trễ cao kéo dài
 - Bộ đệm quá nhỏ làm mất gói
 - Header quá lớn
 - DNS cache quá lớn
-= K&R §4.2.5.
+= K&R tr.324.
 
 Q: Lập lịch WFQ có 3 lớp trọng số 1, 2, 2 trên liên kết 10 Mbps. Lớp trọng số 2 được đảm bảo ít nhất?
 + 4 Mbps
@@ -175,9 +175,9 @@ Q: Lập lịch ưu tiên (priority) hoạt động thế nào?
 - Phục vụ luân phiên đều mọi hàng
 - Phục vụ ngẫu nhiên
 - Chỉ phục vụ gói lớn
-= K&R §4.2.6.
+= K&R §4.2.5 tr.325–330.
 
-## c4-sau-ipv4 | chuong 4 v1.pdf tr.20; K&R §4.3
+## c4-sau-ipv4 | chuong 4 v1.pdf tr.20; K&R §4.3.1 tr.331–333
 Q: Trường "upper layer" trong header IPv4 bằng 6 nghĩa là gì?
 + Phần dữ liệu là TCP segment
 - Phần dữ liệu là UDP
@@ -225,7 +225,7 @@ Q: Các mảnh IPv4 được tập hợp lại ở đâu?
 - Ở router kế tiếp
 - Ở mọi router
 - Ở DNS
-= K&R §4.3.2.
+= Phân mảnh: ngoài bản 8 (tr.332 chỉ nêu khái niệm; chi tiết ở tài liệu online của bản cũ).
 
 Q: Các mảnh của cùng một datagram được nhận diện bằng trường nào?
 + 16-bit identifier
@@ -241,7 +241,7 @@ Q: Vì sao dữ liệu mỗi mảnh (trừ mảnh cuối) phải là bội số 
 - Vì TCP yêu cầu
 = Fragment offset 13 bit.
 
-## c4-sau-addr | chuong 4 v1.pdf tr.21–27
+## c4-sau-addr | chuong 4 v1.pdf tr.21–27; K&R §4.3.2 tr.333–340
 Q: Địa chỉ 10.1.5.200/22 thuộc mạng nào?
 + 10.1.4.0
 - 10.1.5.0
@@ -303,28 +303,28 @@ Q: Route aggregation (tổng hợp tuyến) mang lại lợi ích gì?
 - Tăng số địa chỉ IP
 - Bỏ được DNS
 - Mã hóa gói tin
-= K&R §4.3.3.
+= K&R tr.338–339.
 
 Q: Tổ chức 1 chuyển từ ISP A (quảng bá 200.23.16.0/20) sang ISP B nhưng giữ khối 200.23.18.0/23. Lưu lượng tới tổ chức 1 đi về đâu?
 + Về ISP B, vì ISP B quảng bá tiền tố /23 dài hơn và router chọn longest prefix match
 - Về ISP A vì /20 xuất hiện trước
 - Bị bỏ
 - Chia đều hai ISP
-= K&R §4.3.3.
+= K&R tr.339–340.
 
-Q: Địa chỉ 127.0.0.1 dùng để làm gì?
-+ Loopback, chỉ chính máy mình
-- Broadcast toàn mạng
-- Địa chỉ của DNS gốc
-- Địa chỉ gateway mặc định
-= Địa chỉ đặc biệt.
+Q: Host gửi datagram tới đích 255.255.255.255. Điều gì xảy ra?
++ Datagram được chuyển tới mọi host trong cùng subnet
+- Datagram tới mọi host trên Internet
+- Datagram tới server DNS gốc
+- Datagram bị bỏ ngay tại host
+= K&R tr.340: router thường không chuyển tiếp sang subnet lân cận.
 
-Q: Khối nào là địa chỉ riêng (private) dùng sau NAT?
-+ 192.168.0.0/16
+Q: Theo giáo trình, khối nào là một trong ba khối địa chỉ riêng (RFC 1918) dùng trong mạng nhà sau NAT?
++ 10.0.0.0/8
 - 8.8.8.0/24
 - 128.119.0.0/16
 - 223.1.1.0/24
-= Cùng với 10/8 và 172.16/12.
+= K&R tr.344.
 
 Q: Mạng có 3 router nối nhau từng cặp và mỗi router có một LAN riêng. Có bao nhiêu subnet?
 + 6
@@ -333,7 +333,7 @@ Q: Mạng có 3 router nối nhau từng cặp và mỗi router có một LAN ri
 - 9
 = 3 LAN + 3 liên kết điểm-điểm.
 
-## c4-sau-dhcp | chuong 4 v1.pdf tr.28–30; K&R §4.3.3–4.3.4
+## c4-sau-dhcp | chuong 4 v1.pdf tr.28–30; K&R DHCP tr.340–343, NAT §4.3.3 tr.344–347
 Q: Thông điệp DHCP DISCOVER được gửi tới địa chỉ nào?
 + 255.255.255.255 cổng 67 (quảng bá)
 - Địa chỉ IP của DNS server
@@ -346,21 +346,21 @@ Q: Thứ tự 4 thông điệp DHCP là?
 - REQUEST → OFFER → DISCOVER → ACK
 - OFFER → DISCOVER → ACK → REQUEST
 - DISCOVER → ACK → OFFER → REQUEST
-= K&R §4.3.3.
+= K&R tr.342–343.
 
 Q: Ngoài địa chỉ IP, DHCP còn cung cấp gì cho host?
 + Gateway mặc định, địa chỉ DNS server, mặt nạ mạng
 - Mật khẩu WiFi
 - Bảng định tuyến BGP
 - Khoá TLS
-= K&R §4.3.3.
+= K&R tr.341–342.
 
 Q: DHCP chạy trên giao thức giao vận nào?
 + UDP (server cổng 67, client cổng 68)
 - TCP cổng 80
 - TCP cổng 25
 - ICMP
-= K&R §4.3.3.
+= K&R tr.342–343.
 
 Q: Bảng NAT có mục 138.76.29.7:5001 ↔ 10.0.0.1:3345. Router nhận datagram đích 138.76.29.7:5001. Nó làm gì?
 + Đổi đích thành 10.0.0.1:3345 rồi chuyển vào mạng nhà
@@ -374,23 +374,23 @@ Q: Một IP công khai sau NAT hỗ trợ tối đa khoảng bao nhiêu kết n�
 - 256
 - 4 tỷ
 - 1
-= K&R §4.3.4.
+= K&R tr.346.
 
 Q: Vì sao NAT bị phê phán theo giáo trình?
 + Router can thiệp tới tầng giao vận (sửa số cổng), trái nguyên lý phân tầng; server sau NAT khó được tiếp xúc
 - Vì NAT tăng địa chỉ IPv4
 - Vì NAT mã hóa gói
 - Vì NAT không dùng bảng
-= Cần NAT traversal.
+= K&R tr.346: cần NAT traversal; "purists" phản đối vì router là thiết bị tầng 3.
 
 Q: Lợi ích nào là của NAT?
 + Thay đổi ISP không cần đổi địa chỉ các thiết bị trong mạng nhà
 - Mỗi thiết bị có IP công khai riêng
 - Không cần router
 - Tăng băng thông
-= K&R §4.3.4.
+= K&R tr.344–346.
 
-## c4-sau-icmp | chuong 4 v1.pdf tr.31–32
+## c4-sau-icmp | chuong 4 v1.pdf tr.31–32; K&R §5.6 tr.423–425
 Q: ICMP được mang trong gì?
 + Trong IP datagram
 - Trong TCP segment
@@ -426,13 +426,13 @@ Q: Vì sao traceroute gửi UDP tới số cổng khó có trên đích?
 - Để tránh DNS
 = Slide tr.32.
 
-## c4-sau-v6 | chuong 4 v1.pdf tr.33–38
+## c4-sau-v6 | chuong 4 v1.pdf tr.33–38; K&R tr.347–352
 Q: Rút gọn địa chỉ 2001:0db8:0000:0000:0000:ff00:0042:8329 thế nào?
 + 2001:db8::ff00:42:8329
 - 2001:db8:0:ff00:42:8329
 - 2001:db8::ff00::42:8329
 - 2001:0db8::ff:42:8329
-= Bỏ 0 đầu nhóm; :: thay chuỗi nhóm 0 một lần duy nhất.
+= Bỏ 0 đầu nhóm; :: thay chuỗi nhóm 0 một lần duy nhất (quy ước RFC 4291, ngoài bản 8).
 
 Q: Vì sao IPv6 bỏ header checksum?
 + Để giảm thời gian xử lý ở mỗi hop; giao vận và liên kết đã kiểm lỗi
@@ -469,27 +469,27 @@ Q: Trong tunneling, router IPv4 ở giữa đường hầm thấy gì?
 - Không thấy gì
 = Slide tr.37–38.
 
-Q: "Dual stack" (giáo trình) là gì?
-+ Nút chạy cả IPv4 và IPv6, dịch header khi cần (có thể mất trường riêng như flow label)
-- Hai router cùng địa chỉ
-- Hai đường hầm song song
-- Hai DNS server
-= Cách chuyển đổi khác tunneling.
+Q: Theo giáo trình bản 8, cách chuyển đổi IPv4 sang IPv6 được áp dụng rộng rãi nhất trong thực tế là gì?
++ Tunneling (RFC 4213)
+- Một "ngày chuyển đổi" (flag day) cho toàn Internet
+- Tắt IPv4 trên mọi router
+- Dùng NAT thay IPv6
+= K&R tr.351.
 
-## c4-sau-ls | chuong 4 v1.pdf tr.45–51; K&R §5.2.1
+## c4-sau-ls | chuong 4 v1.pdf tr.45–51; K&R §5.2.1 tr.383–388
 Q: Độ phức tạp tính toán của Dijkstra cơ bản với n nút là?
 + O(n²)
 - O(n)
 - O(log n)
 - O(2^n)
-= n(n+1)/2 phép so sánh.
+= K&R tr.386: n(n+1)/2 phép so sánh; dùng heap thì nhanh hơn.
 
 Q: Hiện tượng dao động trong định tuyến link state xảy ra khi nào?
 + Chi phí liên kết phụ thuộc lượng tải và các router chạy thuật toán đồng thời
 - Khi mọi chi phí bằng 1
 - Khi mạng chỉ có 2 nút
 - Khi dùng RIP
-= Giải pháp: ngẫu nhiên hoá thời điểm chạy.
+= K&R tr.386–387: giải pháp là chi phí không phụ thuộc tải hoặc ngẫu nhiên hoá thời điểm chạy.
 
 Q: Từ kết quả Dijkstra, cách xác định hop kế tiếp tới đích z trong bảng chuyển tiếp của u là?
 + Lần ngược p(·) từ z cho tới nút kề với u; nút đó là hop kế tiếp
@@ -505,7 +505,7 @@ Q: Trong link state, mỗi nút có được thông tin gì trước khi chạy 
 - Không có thông tin
 = Slide tr.49.
 
-## c4-sau-dv | chuong 4 v1.pdf tr.53–54, 62–63; K&R §5.2.2
+## c4-sau-dv | chuong 4 v1.pdf tr.53–54, 62–63; K&R §5.2.2 tr.388–395
 Q: c(x,y) = 2, c(x,z) = 7; d_y(w) = 4, d_z(w) = 1. d_x(w) và hop kế tiếp?
 + 6, qua y
 - 8, qua z
@@ -518,14 +518,14 @@ Q: Hiện tượng "đếm tới vô cùng" xảy ra khi nào?
 - Chi phí liên kết giảm
 - Mạng dùng link state
 - Mọi chi phí bằng 1
-= "Tin xấu lan chậm".
+= K&R tr.393: "tin xấu lan chậm".
 
 Q: Ví dụ giáo trình: x–y = 4, y–z = 1, x–z = 50; liên kết x–y tăng lên 60. Cần khoảng bao nhiêu vòng lặp để hội tụ?
 + 44
 - 1
 - 4
 - 60
-= K&R §5.2.2.
+= K&R tr.393.
 
 Q: Poisoned reverse hoạt động thế nào?
 + Nếu z đi tới x qua y thì z báo cho y rằng khoảng cách của z tới x là vô cùng
@@ -539,7 +539,7 @@ Q: Poisoned reverse có giải quyết được mọi vòng lặp không?
 - Có, mọi vòng lặp
 - Chỉ trong OSPF
 - Chỉ trong BGP
-= K&R §5.2.2.
+= K&R tr.394.
 
 Q: So với LS, nhược điểm về độ bền vững của DV là gì?
 + Một router quảng bá chi phí sai có thể làm sai đường đi của toàn mạng
@@ -553,9 +553,9 @@ Q: Thuật toán DV có những đặc điểm nào?
 - Tập trung, đồng bộ, một lần
 - Tập trung, cần toàn bộ bản đồ
 - Chỉ chạy trên SDN controller
-= K&R §5.2.2.
+= K&R tr.388–390.
 
-## c4-sau-as | chuong 4 v1.pdf tr.56–74
+## c4-sau-as | chuong 4 v1.pdf tr.56–74; K&R §5.3–5.4 tr.395–410
 Q: Vì sao Internet phải dùng định tuyến phân cấp?
 + Quy mô quá lớn và mỗi tổ chức muốn tự chủ quản trị mạng của mình
 - Vì router không đủ băng thông
@@ -563,19 +563,19 @@ Q: Vì sao Internet phải dùng định tuyến phân cấp?
 - Vì DNS phân cấp
 = Slide tr.56.
 
-Q: RIP chạy trên giao thức nào (theo giáo trình)?
-+ UDP, cổng 520
-- TCP, cổng 179
-- Trực tiếp trên IP
-- ICMP
-= OSPF chạy trực tiếp trên IP; BGP trên TCP.
+Q: Thông điệp OSPF được mang thế nào theo giáo trình?
++ Trực tiếp trên IP với upper-layer protocol = 89, nên OSPF tự làm truyền tin cậy
+- Trên TCP cổng 179
+- Trên UDP cổng 53
+- Trên ICMP
+= K&R tr.398; BGP mới chạy trên TCP cổng 179.
 
 Q: BGP chạy trên giao thức giao vận nào?
 + TCP (cổng 179)
 - UDP
 - Trực tiếp trên IP
 - ICMP
-= Kết nối TCP bán bền vững.
+= K&R tr.401: kết nối TCP bán bền vững, cổng 179.
 
 Q: Một thông báo RIP chứa tối đa bao nhiêu subnet đích?
 + 25
@@ -596,7 +596,7 @@ Q: Hot potato routing trong BGP nghĩa là gì?
 - Chọn AS-PATH dài nhất
 - Chọn đường rẻ nhất toàn cục tới đích
 - Chọn ngẫu nhiên
-= Tiêu chí ③ chọn tuyến BGP.
+= Tiêu chí ③ chọn tuyến BGP (K&R tr.404–405).
 
 Q: Tiêu chí ưu tiên đầu tiên khi BGP chọn tuyến là gì?
 + Local preference (quyết định chính sách)
@@ -631,7 +631,7 @@ Q: Mạng khách hàng X nối với hai ISP B và C (dual-homed). Theo chính s
 - Có, luôn luôn
 - Chỉ khi dùng RIP
 - Chỉ khi dùng OSPF
-= K&R §5.4.5.
+= K&R tr.408–409.
 
 Q: Trong OSPF phân cấp, router nào tổng hợp khoảng cách tới mạng trong vùng và quảng bá sang vùng khác?
 + Router biên vùng
@@ -674,3 +674,110 @@ Q: IGRP là gì theo slide?
 - Giao thức DNS
 - Giao thức thư
 = Slide tr.61.
+
+## c4-sau-lpm | K&R tr.315–316
+Q: TCAM giúp gì cho việc tra bảng chuyển tiếp?
++ Trả về mục khớp với địa chỉ 32 bit trong thời gian gần như hằng số
+- Nén bảng định tuyến
+- Mã hoá datagram
+- Tính Dijkstra
+= K&R tr.316.
+
+## c4-sau-fabric | K&R tr.320–328
+Q: Theo [Karol 1987] trong giáo trình, HOL blocking ở hàng đợi vào có thể dẫn tới gì?
++ Hàng đợi vào tăng không giới hạn (mất gói đáng kể) trong một số điều kiện
+- Hàng đợi luôn rỗng
+- Tăng tốc fabric
+- Giảm trễ lan truyền
+= K&R tr.320.
+
+Q: Liên kết 10 Gbps, RTT 250 ms. Theo quy tắc cũ B = RTT·C, cần bao nhiêu bộ đệm?
++ 2,5 Gbit
+- 25 Mbit
+- 250 Mbit
+- 10 Gbit
+= K&R tr.323.
+
+Q: Ba quy tắc trung lập mạng của FCC (2015) gồm những gì?
++ Không chặn, không bóp băng thông, không ưu tiên có trả tiền
+- Không mã hoá, không nén, không cache
+- Không NAT, không IPv6, không BGP
+- Không UDP, không ICMP, không DNS
+= K&R tr.328.
+
+## c4-sau-ipv4 | K&R tr.332
+Q: Theo giáo trình, datagram IPv4 hiếm khi lớn hơn bao nhiêu byte và vì sao?
++ 1500 byte, để vừa phần payload của frame Ethernet lớn nhất
+- 65 535 byte, vì trường length 16 bit
+- 576 byte, vì DNS
+- 40 byte, vì header
+= K&R tr.332.
+
+Q: Trường datagram length 16 bit cho phép kích thước lý thuyết tối đa là bao nhiêu?
++ 65 535 byte
+- 1500 byte
+- 4096 byte
+- 255 byte
+= K&R tr.332.
+
+## c4-sau-addr | K&R tr.340
+Q: Tổ chức nào quản lý việc cấp phát địa chỉ IP và quản lý DNS root theo giáo trình?
++ ICANN
+- IETF
+- IEEE
+- ISO
+= K&R tr.340.
+
+## c4-sau-dhcp | K&R tr.342–343
+Q: Trong DHCP, trường yiaddr nghĩa là gì?
++ "Your Internet address" — địa chỉ được cấp cho client mới
+- Địa chỉ của DNS server
+- Địa chỉ của router
+- Địa chỉ broadcast
+= K&R tr.342.
+
+Q: DHCP OFFER trong ví dụ của giáo trình được gửi từ server tới đâu?
++ 255.255.255.255 cổng 68
+- 0.0.0.0 cổng 67
+- 223.1.2.4 cổng 80
+- 127.0.0.1 cổng 68
+= K&R tr.343.
+
+## c4-sau-v6 | K&R tr.350
+Q: Router IPv6 nhận datagram quá lớn so với liên kết ra. Nguồn sẽ làm gì sau khi nhận thông báo?
++ Gửi lại dữ liệu bằng datagram nhỏ hơn
+- Bật phân mảnh tại router
+- Đổi sang IPv4
+- Bỏ qua thông báo
+= K&R tr.350.
+
+## c4-sau-ls | K&R tr.383
+Q: Theo giáo trình, RIP, OSPF và BGP ngày nay là thuật toán nhạy tải hay không nhạy tải?
++ Không nhạy tải: chi phí liên kết không phản ánh mức tắc nghẽn hiện tại
+- Nhạy tải
+- Chỉ OSPF nhạy tải
+- Chỉ BGP nhạy tải
+= K&R tr.383.
+
+## c4-sau-dv | K&R tr.390, 394
+Q: Theo giáo trình, giao thức nào trong thực tế dùng thuật toán kiểu distance vector?
++ RIP và BGP (cùng ISO IDRP, Novell IPX, ARPAnet gốc)
+- OSPF và IS-IS
+- DHCP và DNS
+- ICMP và ARP
+= K&R tr.390.
+
+## c4-sau-as | K&R tr.398–401
+Q: Trong OSPF phân cấp, có bao nhiêu vùng backbone trong một AS?
++ Đúng một
+- Mỗi router một vùng
+- Không có
+- Tối đa 15
+= K&R tr.398: backbone chứa mọi router biên vùng.
+
+Q: Phiên BGP giữa hai router thuộc hai AS khác nhau gọi là gì?
++ eBGP
+- iBGP
+- OSPF
+- RIP
+= K&R tr.401.

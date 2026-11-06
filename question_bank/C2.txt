@@ -1,4 +1,4 @@
-## c2-sau-proc | chuong 2 v1.pdf tr.9–12
+## c2-sau-proc | chuong 2 v1.pdf tr.9–12; K&R §2.1.2 tr.85–88
 Q: Trong ứng dụng client-server, tiến trình client là gì?
 + Tiến trình khởi tạo truyền thông
 - Tiến trình chờ được tiếp xúc
@@ -41,7 +41,7 @@ Q: Để gửi thông điệp HTTP tới gaia.cs.umass.edu, cần những thông
 - Địa chỉ MAC của server
 = IP + cổng.
 
-## c2-sau-req | chuong 2 v1.pdf tr.13–17
+## c2-sau-req | chuong 2 v1.pdf tr.13–17; K&R §2.1.3–2.1.4 tr.88–94
 Q: Ứng dụng nào yêu cầu truyền tin cậy 100%?
 + Truyền file, web
 - Audio thời gian thực
@@ -89,9 +89,9 @@ Q: DNS chạy trên giao thức giao vận nào, cổng bao nhiêu (theo giáo t
 - TCP, cổng 80
 - UDP, cổng 25
 - TCP, cổng 21
-= K&R §2.4.
+= K&R tr.123, 126.
 
-## c2-sau-http | chuong 2 v1.pdf tr.22–30
+## c2-sau-http | chuong 2 v1.pdf tr.22–30; K&R §2.2.2–2.2.4 tr.98–108
 Q: Trang gồm HTML gốc và 10 ảnh; HTTP liên tục có pipelining. Bỏ qua thời gian truyền, tổng thời gian khoảng bao nhiêu?
 + 3 RTT
 - 12 RTT
@@ -183,7 +183,7 @@ Q: Mối lo ngại chính khi dùng cookie là gì?
 - Tăng trễ lan truyền
 = Slide tr.33.
 
-## c2-sau-cache | K&R §2.2.5
+## c2-sau-cache | K&R §2.2.5–2.2.6 tr.108–116
 Q: Liên kết truy nhập 15 Mbps, 15 yêu cầu/s, mỗi đối tượng 1 Mbit, không có cache. Cường độ lưu lượng trên liên kết truy nhập là?
 + 1, trễ hàng đợi rất lớn
 - 0,15
@@ -203,14 +203,14 @@ Q: Vì sao lắp cache thường tốt hơn nâng cấp liên kết truy nhập?
 - Vì cache tăng băng thông liên kết
 - Vì cache loại bỏ DNS
 - Vì cache mã hóa dữ liệu
-= Ví dụ K&R: trễ TB ~1,2 s so với ~2 s.
+= K&R tr.110–112: trễ TB ~1,2 s so với ~2 s khi nâng liên kết.
 
 Q: Conditional GET dùng dòng tiêu đề nào?
 + If-Modified-Since
 - Set-Cookie
 - Location
 - Connection: close
-= K&R §2.2.5.
+= K&R tr.112–113.
 
 Q: Đối tượng trong cache chưa thay đổi ở server. Server trả gì cho conditional GET?
 + 304 Not Modified, không kèm đối tượng
@@ -231,14 +231,14 @@ Q: HTTP/2 giảm HOL blocking bằng cách nào?
 - Mở một kết nối TCP cho mỗi đối tượng
 - Chuyển sang dùng FTP
 - Bỏ header HTTP
-= K&R §2.2.5.
+= K&R §2.2.6 tr.114–115.
 
 Q: HTTP/3 chạy trên giao thức nào?
 + QUIC trên UDP
 - TCP thuần
 - SCTP
 - ICMP
-= K&R §2.2.5.
+= K&R tr.116 (năm 2020 còn là bản nháp).
 
 ## c2-sau-ftp | chuong 2 v1.pdf tr.37–39
 Q: Trong một phiên FTP, người dùng tải 3 file. Có tổng cộng bao nhiêu kết nối TCP?
@@ -269,7 +269,7 @@ Q: Mã FTP 425 nghĩa là gì?
 - Lỗi ghi file
 = Slide tr.39.
 
-## c2-sau-mail | chuong 2 v1.pdf tr.41–49
+## c2-sau-mail | chuong 2 v1.pdf tr.41–49; K&R §2.3 tr.116–122
 Q: Khi mail server của Alice chưa gửi được thư cho server của Bob, thư được giữ ở đâu?
 + Hàng đợi thông điệp của mail server Alice, sẽ thử gửi lại
 - Hộp thư của Bob
@@ -299,11 +299,11 @@ Q: Vì sao Bob không dùng SMTP để lấy thư từ mail server về máy?
 = Cần POP3/IMAP/HTTP.
 
 Q: SMTP gửi ảnh nhị phân thế nào khi chỉ cho phép ASCII 7-bit?
-+ Mã hóa dữ liệu nhị phân thành ASCII (MIME) trước khi gửi
++ Mã hóa dữ liệu nhị phân sang ASCII trước khi gửi, giải mã sau khi nhận
 - Gửi nguyên bản nhị phân
 - Gửi qua FTP thay thế
 - Không thể gửi ảnh
-= K&R §2.3.
+= K&R tr.118: giới hạn 7-bit ASCII áp dụng cho cả thân thư.
 
 Q: Trong POP3, server trả lời thành công bằng gì?
 + +OK
@@ -326,7 +326,7 @@ Q: Bob đọc thư bằng POP3 chế độ "tải và giữ". Điều gì xảy 
 - Thư bị xoá
 = Tải và giữ: sao chép lên nhiều client.
 
-## c2-sau-dns | chuong 2 v1.pdf tr.51–64
+## c2-sau-dns | chuong 2 v1.pdf tr.51–64; K&R §2.4 tr.122–136
 Q: Host hỏi DNS cục bộ; DNS cục bộ đã cache địa chỉ server TLD .edu. Truy vấn lặp tới server có thẩm quyền cần bao nhiêu thông điệp?
 + 6
 - 8
@@ -388,9 +388,9 @@ Q: Có bao nhiêu tên server DNS gốc logic (a đến m)?
 - 1
 - 4
 - 255
-= Mỗi tên được nhân bản ở nhiều nơi.
+= K&R tr.127: hơn 1000 bản thể là bản sao của 13 server gốc.
 
-## c2-sau-p2p | K&R §2.5
+## c2-sau-p2p | K&R §2.5 tr.136–143
 Q: Với kiến trúc client-server, thời gian phân phối file cho N client tăng thế nào khi N lớn?
 + Tăng tuyến tính theo N
 - Gần như không đổi
@@ -440,7 +440,7 @@ Q: DHT trong P2P là gì?
 - Một giao thức thư
 = Nêu trong tổng kết chương 2.
 
-## c2-sau-sock | K&R §2.7
+## c2-sau-sock | K&R §2.7 tr.152–165
 Q: Trong TCP server, lệnh accept() trả về gì?
 + Một socket kết nối mới dành riêng cho client vừa tới
 - Socket cửa đón cũ
@@ -462,7 +462,7 @@ Q: Trong TCP, gọi connect() ở client sẽ kích hoạt việc gì?
 - Đóng kết nối
 = Thiết lập kết nối.
 
-## c2-sau-cdn | K&R §2.6
+## c2-sau-cdn | K&R §2.6 tr.143–152
 Q: Trong DASH, ai chọn tốc độ mã hóa cho đoạn video tiếp theo?
 + Client, dựa trên băng thông đo được
 - Server luôn chọn
@@ -482,4 +482,115 @@ Q: CDN thường chuyển hướng client tới cụm server phù hợp bằng c
 - Dùng SMTP
 - Dùng FTP
 - Dùng ICMP
-= K&R §2.6.3.
+= K&R tr.147–148.
+
+## c2-sau-http | K&R tr.101–103
+Q: Theo giáo trình, chế độ mặc định của HTTP/1.1 là gì?
++ Kết nối liên tục có pipelining
+- Kết nối không liên tục
+- Mỗi đối tượng một kết nối UDP
+- Liên tục nhưng cấm pipelining
+= K&R tr.101.
+
+Q: Với HTTP/1.1 liên tục, khi nào server đóng kết nối TCP?
++ Khi kết nối không được dùng trong một khoảng timeout cấu hình được
+- Ngay sau mỗi đáp ứng
+- Không bao giờ
+- Khi client gửi HEAD
+= K&R tr.101.
+
+Q: Lập trình viên thường dùng phương thức HEAD để làm gì?
++ Gỡ lỗi (debugging), vì server trả đáp ứng không kèm đối tượng
+- Tải tệp lên server
+- Xoá tệp
+- Mã hoá kết nối
+= K&R tr.103.
+
+## c2-sau-cache | K&R tr.113–116
+Q: HTTP/2 được chuẩn hoá năm nào theo giáo trình?
++ 2015 (RFC 7540)
+- 1997
+- 2020
+- 1991
+= K&R tr.113: là bản HTTP mới đầu tiên kể từ HTTP/1.1 (1997).
+
+Q: HTTP/2 thay đổi thành phần nào của HTTP?
++ Cách đóng khung và truyền dữ liệu giữa client và server (ghép kênh, ưu tiên, server push, nén header)
+- Các phương thức GET/POST
+- Các mã trạng thái
+- Cấu trúc URL
+= K&R tr.113: không đổi method, mã trạng thái, URL, header.
+
+Q: HTTP/1.1 thường né HOL blocking bằng cách nào và nhược điểm là gì?
++ Mở nhiều kết nối TCP song song, khiến trình duyệt chiếm nhiều băng thông hơn khi tắc nghẽn
+- Dùng UDP, mất tin cậy
+- Dùng FTP, chậm hơn
+- Bỏ cache, tốn băng thông
+= K&R tr.114.
+
+## c2-sau-mail | K&R tr.117–122
+Q: Mail server của Alice không gửi được thư tới server của Bob. Theo giáo trình nó thường thử lại thế nào?
++ Khoảng mỗi 30 phút; vài ngày không được thì xoá và báo lại người gửi
+- Thử lại mỗi giây cho tới khi được
+- Gửi qua server trung gian
+- Xoá thư ngay lập tức
+= K&R tr.117.
+
+Q: Theo giáo trình bản 8, Bob lấy thư từ mail server bằng những cách nào?
++ HTTP (webmail, ứng dụng) hoặc IMAP
+- Chỉ SMTP
+- Chỉ FTP
+- Chỉ DNS
+= K&R tr.121–122 (POP3 chỉ có trong slide).
+
+## c2-sau-dns | K&R tr.129–135
+Q: Theo giáo trình, truy vấn phân giải gaia.cs.umass.edu (cache trống, TLD biết server có thẩm quyền) gồm bao nhiêu thông điệp?
++ 8 (4 truy vấn và 4 trả lời)
+- 4
+- 6
+- 10
+= K&R tr.129.
+
+Q: Nếu server TLD chỉ biết một server DNS trung gian (dns.umass.edu), còn dns.cs.umass.edu mới có thẩm quyền, cần bao nhiêu thông điệp?
++ 10
+- 8
+- 12
+- 6
+= K&R tr.130.
+
+Q: Trong thực tế, truy vấn DNS thường theo mẫu nào?
++ Host → DNS cục bộ là đệ quy, các truy vấn còn lại là lặp
+- Tất cả đều đệ quy
+- Tất cả đều lặp, kể cả từ host
+- Host hỏi thẳng server gốc
+= K&R tr.130.
+
+Q: Registrar là gì theo giáo trình?
++ Công ty thương mại kiểm tra tính duy nhất của tên miền, đưa tên vào CSDL DNS và thu phí
+- Server DNS gốc
+- Một loại bản ghi DNS
+- Phần mềm BIND
+= K&R tr.134.
+
+Q: DNSSEC được thiết kế để làm gì?
++ Bảo vệ DNS khỏi các tấn công giả mạo, chuyển hướng
+- Tăng tốc truy vấn
+- Thay thế UDP bằng TCP
+- Nén bản ghi
+= K&R tr.135 (RFC 4033).
+
+## c2-sau-p2p | K&R tr.143
+Q: Theo giáo trình, nếu BitTorrent không có tit-for-tat thì điều gì có khả năng xảy ra?
++ Phần lớn người dùng sẽ ăn bám (freerider) và BitTorrent khó tồn tại
+- Tải nhanh hơn
+- Tracker bị quá tải
+- Chunk lớn hơn
+= K&R tr.143.
+
+## c2-sau-cdn | K&R tr.146
+Q: So với "enter deep", thiết kế CDN "bring home" có đặc điểm gì?
++ Ít cụm lớn (thường ở IXP), dễ quản lý hơn nhưng có thể trễ cao hơn và thông lượng thấp hơn
+- Rất nhiều cụm nhỏ trong mạng truy nhập
+- Không cần sao chép nội dung
+- Không dùng DNS
+= K&R tr.146.

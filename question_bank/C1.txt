@@ -20,7 +20,7 @@ Q: Vì sao không cần viết ứng dụng cho các thiết bị ở lõi mạn
 - Vì thiết bị lõi không có địa chỉ IP
 = Nhờ vậy ứng dụng được phát triển và phổ biến nhanh.
 
-## c1-sau-switch | K&R §1.3
+## c1-sau-switch | K&R §1.3.1–1.3.2 tr.22–31
 Q: Liên kết 1 Mbps, mỗi người dùng cần 100 kbps khi hoạt động. Chuyển mạch kênh phục vụ tối đa bao nhiêu người dùng?
 + 10
 - 35
@@ -33,7 +33,7 @@ Q: Cùng liên kết 1 Mbps, mỗi người dùng cần 100 kbps và chỉ hoạ
 - Luôn bị nghẽn vì 35 > 10
 - Chỉ phục vụ được 10 người
 - Mỗi người được đảm bảo 100 kbps tuyệt đối
-= Ghép kênh thống kê: phục vụ gấp 3,5 lần chuyển mạch kênh.
+= K&R tr.30: xác suất có từ 11 người trở lên cùng hoạt động ≈ 0,0004 → phục vụ gấp 3,5 lần chuyển mạch kênh.
 
 Q: Chuyển mạch gói phù hợp nhất với loại lưu lượng nào?
 + Lưu lượng bùng nổ (bursty), lúc có lúc không
@@ -54,7 +54,7 @@ Q: Gửi file 640 000 bit qua mạng chuyển mạch kênh TDM 1,536 Mbps chia 2
 - 0,42 s
 - 10 s
 - 0,92 s
-= Mỗi kênh 64 kbps → 640 000/64 000 = 10 s; cộng 0,5 s thiết lập.
+= K&R tr.30: mỗi kênh 64 kbps → 10 s; cộng 0,5 s thiết lập. Thời gian truyền không phụ thuộc số liên kết.
 
 Q: Điểm lãng phí của chuyển mạch kênh là gì?
 + Kênh dành riêng vẫn bị chiếm khi người dùng im lặng
@@ -63,7 +63,7 @@ Q: Điểm lãng phí của chuyển mạch kênh là gì?
 - Trễ hàng đợi thay đổi liên tục
 = Tài nguyên dành riêng không chia sẻ được.
 
-## c1-sau-saf | K&R §1.3.1
+## c1-sau-saf | K&R tr.23–24 (công thức 1.1), tr.41
 Q: Gói L bit đi qua N liên kết giống nhau tốc độ R theo kiểu store-and-forward, bỏ qua các trễ khác. Trễ đầu-cuối là?
 + N·L/R
 - L/R
@@ -92,7 +92,7 @@ Q: Vì sao router chuyển mạch gói phải đợi nhận đủ cả gói?
 - Vì router không đọc được header
 = Lưu và chuyển tiếp.
 
-## c1-sau-delay | K&R §1.4.2
+## c1-sau-delay | K&R §1.4.1–1.4.2 tr.35–41; bài tập P25–P27 tr.74
 Q: Cường độ lưu lượng (traffic intensity) được tính bằng công thức nào (a = số gói đến mỗi giây)?
 + L·a / R
 - R / (L·a)
@@ -143,11 +143,11 @@ Q: Trong ví dụ "đoàn xe qua trạm thu phí", thời gian xe chạy từ tr
 = Đẩy cả đoàn qua trạm = d_trans; chạy giữa hai trạm = d_prop.
 
 Q: Liên kết vệ tinh địa tĩnh thường có loại trễ nào rất lớn?
-+ Trễ lan truyền (khoảng 270 ms)
++ Trễ lan truyền (hàng trăm mili giây, vệ tinh ở độ cao 36 000 km)
 - Trễ xử lý
 - Trễ truyền luôn lớn hơn 1 s
 - Không có trễ
-= Khoảng cách rất xa.
+= K&R tr.21, 38.
 
 Q: Gói 100 byte trên liên kết 1 Gbps dài 200 km. So sánh d_trans và d_prop?
 + d_trans = 0,8 µs, d_prop = 1 ms: trễ lan truyền lớn hơn nhiều
@@ -156,7 +156,7 @@ Q: Gói 100 byte trên liên kết 1 Gbps dài 200 km. So sánh d_trans và d_pr
 - d_prop = 0,8 µs
 = 800 bit/10^9; 2×10^5 m / 2×10^8 m/s.
 
-## c1-sau-thr | K&R §1.4.4
+## c1-sau-thr | K&R §1.4.4 tr.43–46
 Q: Mỗi server nối với liên kết R_s = 2 Mbps, mỗi client R_c = 1 Mbps; 10 cặp chia sẻ liên kết lõi R = 5 Mbps. Thông lượng mỗi cặp là?
 + 0,5 Mbps
 - 1 Mbps
@@ -169,7 +169,7 @@ Q: Trong thực tế, nút cổ chai thường nằm ở đâu?
 - Luôn ở lõi Internet
 - Ở server DNS
 - Ở tầng ứng dụng
-= K&R §1.4.4.
+= K&R tr.46: nút cổ chai thường ở mạng truy nhập.
 
 Q: Ở ví dụ trên, liên kết lõi tăng lên R = 50 Mbps (10 cặp chia sẻ). Thông lượng mỗi cặp?
 + 1 Mbps
@@ -178,7 +178,7 @@ Q: Ở ví dụ trên, liên kết lõi tăng lên R = 50 Mbps (10 cặp chia s�
 - 2 Mbps
 = min(2, 1, 5) = 1 → cổ chai quay về R_c.
 
-## c1-sau-access | K&R §1.2
+## c1-sau-access | K&R §1.2.1–1.2.2 tr.12–22
 Q: Đặc điểm nào đúng với DSL?
 + Dùng dây điện thoại sẵn có, đường truyền dành riêng cho từng nhà, tốc độ tải xuống lớn hơn tải lên
 - Môi trường chia sẻ giữa nhiều nhà
@@ -228,7 +228,7 @@ Q: Môi trường nào thuộc loại "không có hướng" (unguided)?
 - Cáp xoắn đôi
 = Vô tuyến lan trong không gian.
 
-## c1-sau-isp | chuong 1 v2.pdf tr.43–51
+## c1-sau-isp | chuong 1 v2.pdf tr.43–51; K&R §1.3.3 tr.31–35
 Q: Vì sao phương án "mọi ISP truy nhập nối với một ISP toàn cầu duy nhất" không bền vững?
 + ISP toàn cầu sinh lời sẽ xuất hiện đối thủ cạnh tranh, dẫn tới nhiều ISP toàn cầu cần kết nối nhau
 - Vì cần O(N²) liên kết
@@ -255,16 +255,16 @@ Q: Multi-home nghĩa là gì?
 - Một host có nhiều trình duyệt
 - Một router có một cổng
 - Một IXP có một ISP
-= K&R §1.3.3.
+= K&R tr.33: ISP lớp 1 không multi-home.
 
 Q: PoP (point of presence) là gì?
 + Nhóm router trong mạng ISP cấp trên nơi ISP khách hàng nối vào
 - Giao thức nhận thư
 - Một loại cáp
 - Một bản ghi DNS
-= K&R §1.3.3.
+= K&R tr.33.
 
-## c1-sau-layer | chuong 1 v2.pdf tr.61–63
+## c1-sau-layer | chuong 1 v2.pdf tr.20–28, 61–63; K&R §1.5 tr.47–54
 Q: Theo ví dụ vận chuyển hàng không, một tầng thực hiện dịch vụ của nó bằng cách nào?
 + Bằng hoạt động bên trong tầng và dựa vào dịch vụ của tầng bên dưới
 - Bằng cách gọi trực tiếp tầng vật lý
@@ -284,14 +284,14 @@ Q: Nhược điểm của phân tầng theo K&R là gì?
 - Không thể đóng gói dữ liệu
 - Không hỗ trợ router
 - Không có giao thức
-= Duplication of functionality.
+= K&R tr.49: ví dụ khôi phục lỗi vừa theo từng liên kết vừa đầu-cuối.
 
 Q: Mô hình 5 tầng không có Presentation và Session. Vậy mã hóa, nén dữ liệu do ai đảm nhận nếu cần?
 + Chính ứng dụng
 - Tầng liên kết
 - Router
 - Tầng vật lý
-= K&R §1.5.
+= Mô hình 5 tầng (K&R §1.5).
 
 Q: Tầng nào thêm cả header và trailer khi đóng gói (OSI)?
 + Tầng liên kết dữ liệu
@@ -328,7 +328,7 @@ Q: Trong mô hình TCP/IP của slide, tầng Internet đảm nhận chức năn
 - Đưa bit lên phương tiện truyền dẫn
 = Slide tr.25.
 
-## c1-sau-sec | chuong 1 v2.pdf tr.65–69; K&R §1.6
+## c1-sau-sec | chuong 1 v2.pdf tr.65–69; K&R §1.6 tr.54–58
 Q: Vì sao an ninh là điểm yếu từ đầu của Internet?
 + Internet ban đầu được thiết kế cho một nhóm người dùng tin tưởng lẫn nhau
 - Vì không có giao thức TCP
@@ -348,7 +348,7 @@ Q: Theo K&R, loại DoS nào gửi nhiều kết nối TCP nửa mở hoặc m�
 - Tấn công lỗ hổng
 - Làm ngập băng thông
 - Đầu độc DNS
-= 3 loại DoS: lỗ hổng, ngập băng thông, ngập kết nối.
+= K&R tr.55–56: 3 loại DoS là tấn công lỗ hổng, ngập băng thông, ngập kết nối.
 
 Q: Vì sao sniffing khó phát hiện?
 + Vì kẻ bắt gói chỉ thụ động nghe, không phát gói nào lên mạng
@@ -362,9 +362,9 @@ Q: Biện pháp chống IP spoofing theo K&R là gì?
 - Tăng băng thông
 - Dùng cáp quang
 - Tắt DNS
-= Xác định thông điệp thật sự đến từ đâu.
+= K&R tr.57: cơ chế xác định chắc chắn thông điệp đến từ đâu.
 
-## c1-sau-hist | chuong 1 v2.pdf tr.71–76
+## c1-sau-hist | chuong 1 v2.pdf tr.71–76; K&R §1.7 tr.58–64
 Q: Nguyên lý nào KHÔNG thuộc nguyên lý kết nối mạng của Cerf và Kahn?
 + Router phải lưu trạng thái mọi kết nối
 - Tối giản, tự chủ
@@ -406,3 +406,99 @@ Q: Mạng vệ tinh ALOHAnet ở Hawaii ra đời năm nào?
 - 1983
 - 1994
 = Slide tr.72.
+
+## c1-sau-switch | K&R bài tập R13 tr.67; tr.28–30
+Q: Liên kết 2 Mbps; mỗi người dùng truyền 1 Mbps khi hoạt động và chỉ hoạt động 20% thời gian. Chuyển mạch kênh phục vụ được bao nhiêu người dùng?
++ 2
+- 10
+- 5
+- 1
+= 2 Mbps / 1 Mbps (bài tập R13, K&R tr.67).
+
+Q: Trong FDM của mạng điện thoại, mỗi kết nối thường được cấp dải tần rộng bao nhiêu?
++ 4 kHz
+- 1 MHz
+- 50 kHz
+- 64 kHz
+= K&R tr.28: độ rộng dải gọi là bandwidth.
+
+Q: Theo ví dụ TDM của giáo trình, thời gian truyền file có phụ thuộc vào số liên kết trên đường đi không?
++ Không, vì mạch có tốc độ cố định từ đầu đến cuối
+- Có, tăng tuyến tính theo số liên kết
+- Có, giảm theo số liên kết
+- Chỉ khi có hàng đợi
+= K&R tr.30.
+
+## c1-sau-delay | K&R tr.37–40
+Q: Trong ví dụ đoàn xe của giáo trình (10 xe, trạm phục vụ 12 s/xe, hai trạm cách 100 km, xe chạy 100 km/h), thời gian để cả đoàn đi qua một trạm là?
++ 120 s
+- 12 s
+- 1 giờ
+- 62 phút
+= 10 × 12 s — tương ứng trễ truyền (K&R tr.37–38).
+
+Q: Cùng ví dụ đoàn xe, thời gian xe đầu tiên chạy từ trạm này tới trạm kế tiếp là?
++ 1 giờ
+- 120 s
+- 12 s
+- 2 giờ
+= 100 km / 100 km/h — tương ứng trễ lan truyền.
+
+Q: Cùng cường độ lưu lượng La/R, trường hợp nào gây trễ hàng đợi trung bình lớn hơn?
++ Gói đến theo cụm (bursty)
+- Gói đến đều đặn, mỗi L/R giây một gói
+- Hai trường hợp như nhau
+- Không có trễ trong cả hai
+= K&R tr.39–40: đến đều đặn thì không có trễ hàng đợi.
+
+## c1-sau-access | K&R tr.13–21
+Q: Trong DSL, tải xuống tốc độ cao dùng dải tần nào?
++ 50 kHz – 1 MHz
+- 0 – 4 kHz
+- 4 – 50 kHz
+- 1 – 10 GHz
+= K&R tr.13.
+
+Q: Thiết bị CMTS ở đầu cáp của mạng HFC có vai trò tương tự thiết bị nào trong DSL?
++ DSLAM
+- Router lõi
+- Switch Ethernet
+- Server DNS
+= K&R tr.15.
+
+Q: Cáp xoắn đôi loại nào đạt 10 Gbps trong khoảng 100 m theo giáo trình?
++ Category 6a
+- Category 3
+- Cáp đồng trục
+- Cáp quang đơn mode
+= K&R tr.20: xoắn đôi là giải pháp thống trị cho LAN tốc độ cao.
+
+Q: Vệ tinh địa tĩnh ở độ cao khoảng bao nhiêu?
++ 36 000 km
+- 2 000 km
+- 360 km
+- 360 000 km
+= K&R tr.21: khoảng cách lớn gây trễ lan truyền đáng kể.
+
+## c1-sau-isp | K&R tr.33
+Q: Peering "settlement-free" nghĩa là gì?
++ Hai ISP trao đổi lưu lượng trực tiếp mà không bên nào trả phí cho bên kia
+- ISP khách hàng trả phí cho ISP cấp trên
+- Lưu lượng đi qua IXP phải trả phí gấp đôi
+- Chỉ ISP lớp 1 mới được peering
+= K&R tr.33.
+
+Q: Loại ISP nào không multi-home theo giáo trình?
++ ISP lớp 1
+- ISP truy nhập
+- ISP khu vực
+- Mạng doanh nghiệp
+= K&R tr.33: ISP lớp 1 không có nhà cung cấp cấp trên.
+
+## c1-sau-sec | K&R tr.55–57
+Q: Tấn công DoS loại "lỗ hổng" (vulnerability attack) hoạt động thế nào?
++ Gửi một vài thông điệp được dựng đặc biệt tới ứng dụng/hệ điều hành có lỗ hổng làm dịch vụ dừng hoặc sập
+- Gửi khối lượng gói khổng lồ làm ngập liên kết
+- Mở thật nhiều kết nối TCP nửa mở
+- Bắt gói trên đường truyền chung
+= K&R tr.55.
