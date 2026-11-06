@@ -67,20 +67,49 @@ def parse(path, khoi, mon):
             'demo': None, 'hoi': None, 'bo': 'luyentap'})
     return out
 
+
+PATCHES = [
+ # chọn số câu cho quiz từng khối
+ ("""  h += '<div class="donebar"><button class="btn pri" id="go">Bắt đầu</button>'+(back?""",
+  """  if(back && qs.length>25) h += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0" class="small"><span>Số câu mỗi lượt:</span><select id="qN" style="padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)">'+[20,40,60].filter(x=>x<qs.length).map(x=>'<option value="'+x+'"'+(x===20?' selected':'')+'>'+x+' câu</option>').join("")+'<option value="0">Tất cả '+qs.length+' câu</option></select><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="qNew" checked> Ưu tiên câu chưa làm / ít làm</label></div>';
+  h += '<div class="donebar"><button class="btn pri" id="go">Bắt đầu</button>'+(back?"""),
+ ("""  $("#go").onclick=()=>startQuiz(kind, qs, title, {block:back?back.id:null});""",
+  """  $("#go").onclick=()=>{ let pick=qs; const sN=$("#qN");
+    if(sN && +sN.value>0){ const n=+sN.value; const pre=$("#qNew")&&$("#qNew").checked; pick = pre ? shuffle(qs).sort((a,b)=>(S.seen[a.id]||0)-(S.seen[b.id]||0)).slice(0,n) : shuffle(qs).slice(0,n); }
+    startQuiz(kind, pick, title, {block:back?back.id:null}); };"""),
+ # mục "Lý thuyết chuyên sâu" chèn sau mục 3 khi khối có page.sau
+ ("""  const p=b.page||{};
+  let h = '<div class="kicker">""",
+  """  const p=b.page||{};
+  const SX = p.sau ? SECS.slice(0,3).concat([["sau","Lý thuyết chuyên sâu (slide + giáo trình)"]], SECS.slice(3)) : SECS;
+  let h = '<div class="kicker">"""),
+ ("""  h += '<div class="flow small">'+SECS.map(""", """  h += '<div class="flow small">'+SX.map("""),
+ ("""  SECS.forEach((s,i)=>{
+    const id = bid.toLowerCase()+"-"+s[0];""", """  SX.forEach((s,i)=>{
+    const id = bid.toLowerCase()+"-"+s[0];"""),
+]
+
 def main(src, dst):
     h = open(src, encoding='utf8').read()
+    for a, b in PATCHES:
+        assert h.count(a) == 1, a[:60]
+        h = h.replace(a, b)
     m = re.search(r'(<script type="application/json" id="D">)(.*?)(</script>)', h, re.S)
     d = json.loads(m.group(2))
     mon_of = {b['id']: b['mon'] for b in d['blocks']}
     d['questions'] = [q for q in d['questions'] if q.get('bo') != 'luyentap']
     here = os.path.dirname(os.path.abspath(__file__))
+    for b in d['blocks']:
+        tp = os.path.join(here, 'theory', b['id'] + '.html')
+        if os.path.exists(tp):
+            b['page']['sau'] = open(tp, encoding='utf8').read()
     stats = {}
     for b in d['blocks']:
         p = os.path.join(here, b['id'] + '.txt')
         if not os.path.exists(p): continue
         new = parse(p, b['id'], b['mon'])
         anchors = set(re.findall(r'id="([a-z0-9-]+)"', ''.join(v for v in b['page'].values() if isinstance(v, str))))
-        anchors |= {b['id'].lower() + '-' + x for x in ('y', 'mohinh', 'bang', 'sosanh', 'bay', 'checklist', 'nhanh', 'docthem')}
+        anchors |= {b['id'].lower() + '-' + x for x in ('y', 'sau', 'mohinh', 'bang', 'sosanh', 'bay', 'checklist', 'nhanh', 'docthem')}
         for q in new:
             if q['muc'] and q['muc'] not in anchors:
                 print('WARN muc khong ton tai', q['id'], q['muc'])

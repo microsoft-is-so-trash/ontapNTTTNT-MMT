@@ -1,0 +1,83 @@
+<div class="note">Cách đọc mục này: <span class="tag">Slide</span> = giảng giải sâu nội dung có trong <code>chuong 1 v2.pdf</code> (ra đề chắc chắn) · <span class="tag multi">K&amp;R §</span> = mở rộng từ giáo trình Kurose &amp; Ross bản 8 (hiểu sâu, làm bài tính, đề nâng cao). Repo không có file PDF giáo trình nên chỉ ghi số mục (§), không ghi số trang.</div>
+
+<h3 id="c1-sau-view">1. Hai góc nhìn về Internet <span class="tag">Slide tr.30–33</span></h3>
+<div class="tw"><table><tr><th>Góc nhìn</th><th>Internet là…</th><th>Từ khoá phải nhớ</th></tr>
+<tr><td>Hạ tầng (“nuts and bolts”)</td><td>Hàng tỷ host + liên kết truyền thông + router/switch chuyển mạch gói, ghép thành “mạng của các mạng”</td><td>host = end system · băng thông = tốc độ truyền · giao thức ở mọi nơi · chuẩn Internet: <b>RFC</b> do <b>IETF</b> ban hành</td></tr>
+<tr><td>Dịch vụ</td><td>Hạ tầng cung cấp dịch vụ cho ứng dụng phân tán (Web, VoIP, email, game…)</td><td>cung cấp <b>giao diện lập trình (socket API)</b> để chương trình “kết nối” vào Internet, với các tuỳ chọn dịch vụ (TCP/UDP)</td></tr></table></div>
+<p><b>Vì sao quan trọng:</b> câu hỏi “Internet là gì” có hai đáp án đúng tuỳ góc nhìn. Ứng dụng chỉ chạy ở host (biên); lõi không chạy ứng dụng người dùng → phát triển ứng dụng nhanh (chương 2 tr.5).</p>
+
+<h3 id="c1-sau-switch">2. Chuyển mạch gói vs chuyển mạch kênh — phân tích định lượng</h3>
+<p><span class="tag">Slide tr.17–19, 40–42</span> Kênh: dành riêng tài nguyên suốt cuộc gọi (đảm bảo hiệu năng, lãng phí khi im lặng). Gói: chia sẻ theo nhu cầu (<i>statistical multiplexing</i>), không cần thiết lập, nhưng có hàng đợi và mất gói.</p>
+<p><span class="tag multi">K&amp;R §1.3</span> Ví dụ kinh điển: liên kết 1 Mbps; mỗi user cần 100 kbps khi hoạt động và chỉ hoạt động 10% thời gian.</p>
+<ul><li>Chuyển mạch kênh: tối đa <b>1 Mbps / 100 kbps = 10 user</b>.</li>
+<li>Chuyển mạch gói với 35 user: xác suất có hơn 10 user cùng hoạt động ≈ <b>0,0004</b> → gần như luôn đủ băng thông, phục vụ được <b>gấp 3,5 lần</b> số user.</li>
+<li>Kết luận K&amp;R: chuyển mạch gói tốt cho dữ liệu <b>bùng nổ (bursty)</b>; muốn đảm bảo giống kênh (cho video/thoại) thì cần cơ chế QoS.</li></ul>
+<p><b>Ghép kênh trong chuyển mạch kênh</b> <span class="tag multi">K&amp;R §1.3.2</span>: FDM (mỗi kết nối một dải tần) · TDM (mỗi kết nối một khe thời gian lặp lại trong từng frame). Bài tính mẫu: gửi file 640 000 bit qua TDM 1,536 Mbps chia 24 khe, thiết lập kênh 500 ms → mỗi kết nối 1,536/24 = 64 kbps → 640 000/64 000 = 10 s + 0,5 s = <b>10,5 s</b>.</p>
+
+<h3 id="c1-sau-saf">3. Store-and-forward và trễ đầu-cuối</h3>
+<p><span class="tag">Slide tr.53–55</span> Router phải <b>nhận đủ cả gói</b> rồi mới đẩy lên liên kết kế tiếp → mỗi liên kết tốn một lần L/R.</p>
+<div class="tw"><table><tr><th>Tình huống <span class="tag multi">K&amp;R §1.3.1, §1.4.3</span></th><th>Công thức</th></tr>
+<tr><td>1 gói qua N liên kết giống nhau (N−1 router), bỏ qua trễ khác</td><td>d = N·L/R</td></tr>
+<tr><td>P gói nối đuôi qua N liên kết (pipeline)</td><td>d = (N + P − 1)·L/R</td></tr>
+<tr><td>N liên kết, có xử lý và lan truyền, không hàng đợi</td><td>d<sub>end-end</sub> = N·(d<sub>proc</sub> + d<sub>trans</sub> + d<sub>prop</sub>)</td></tr></table></div>
+<p>Ví dụ: L = 8 000 bit, R = 2 Mbps, 3 liên kết → 1 gói: 3 × 4 ms = 12 ms; 3 gói nối đuôi: (3+3−1) × 4 = 20 ms.</p>
+
+<h3 id="c1-sau-delay">4. Đi sâu 4 loại trễ</h3>
+<div class="tw"><table><tr><th>Trễ</th><th>Phụ thuộc</th><th>Không phụ thuộc</th><th>Độ lớn điển hình</th></tr>
+<tr><td>d<sub>proc</sub></td><td>CPU/phần cứng router</td><td>khoảng cách, kích thước liên kết</td><td>µs (slide: &lt; ms)</td></tr>
+<tr><td>d<sub>queue</sub></td><td>lưu lượng đến, mức tắc nghẽn</td><td>—</td><td>0 → rất lớn, biến động mạnh nhất</td></tr>
+<tr><td>d<sub>trans</sub> = L/R</td><td>kích thước gói, băng thông</td><td><b>khoảng cách</b></td><td>µs–ms</td></tr>
+<tr><td>d<sub>prop</sub> = d/s</td><td>chiều dài cáp, môi trường</td><td><b>kích thước gói, băng thông</b></td><td>µs (LAN) → hàng trăm ms (vệ tinh)</td></tr></table></div>
+<p><span class="tag multi">K&amp;R §1.4.2</span> <b>Cường độ lưu lượng</b> (traffic intensity) = <b>L·a / R</b> (a = số gói đến mỗi giây):</p>
+<ul><li>La/R ≈ 0 → trễ hàng đợi nhỏ.</li><li>La/R → 1 → trễ hàng đợi tăng rất nhanh (không tuyến tính).</li><li>La/R &gt; 1 → bit đến nhiều hơn khả năng phục vụ → hàng đợi tăng vô hạn (thực tế: đầy bộ đệm → <b>mất gói</b>). Quy tắc thiết kế: <b>không để cường độ lưu lượng vượt 1</b>.</li></ul>
+<p><b>Tích băng thông × trễ</b> <span class="tag multi">K&amp;R bài tập ch.1</span>: R·d<sub>prop</sub> = số bit tối đa “đang nằm trên dây”. Ví dụ R = 10 Mbps, d<sub>prop</sub> = 20 ms → 200 000 bit. Ví von <b>đoàn xe – trạm thu phí</b>: thời gian “đẩy” cả đoàn qua trạm = d<sub>trans</sub>; thời gian xe chạy giữa hai trạm = d<sub>prop</sub>.</p>
+
+<h3 id="c1-sau-thr">5. Thông lượng nâng cao</h3>
+<p><span class="tag">Slide tr.58–59</span> Thông lượng đầu-cuối = min(R<sub>s</sub>, R<sub>c</sub>) = liên kết nút cổ chai. Thời gian truyền file F bit ≈ F / min(R<sub>s</sub>, R<sub>c</sub>).</p>
+<p><span class="tag multi">K&amp;R §1.4.4</span> Khi liên kết lõi R bị <b>chia sẻ bởi K luồng</b>: thông lượng mỗi luồng = <b>min(R<sub>s</sub>, R<sub>c</sub>, R/K)</b>. Ví dụ R<sub>s</sub> = 2 Mbps, R<sub>c</sub> = 1 Mbps, lõi R = 5 Mbps chia 10 luồng → min(2, 1, 0,5) = <b>0,5 Mbps</b> (nút cổ chai chuyển vào lõi). Thực tế lõi thường được cấp dư nên cổ chai hay nằm ở <b>mạng truy nhập</b>.</p>
+
+<h3 id="c1-sau-access">6. Mạng truy nhập và đường truyền vật lý</h3>
+<p><span class="tag">Slide tr.6–8, 38</span> Slide chỉ liệt kê; <span class="tag multi">K&amp;R §1.2</span> giải thích cơ chế:</p>
+<div class="tw"><table><tr><th>Công nghệ</th><th>Cơ chế</th><th>Đặc điểm cần nhớ</th></tr>
+<tr><td>DSL</td><td>dùng dây điện thoại đồng sẵn có tới tổng đài; DSLAM tách dữ liệu/thoại</td><td><b>dành riêng</b> từng nhà; bất đối xứng (tải xuống &gt; tải lên); chia dải tần: thoại 0–4 kHz, lên 4–50 kHz, xuống 50 kHz–1 MHz</td></tr>
+<tr><td>Cable (HFC)</td><td>cáp quang tới nút khu vực, cáp đồng trục tới từng nhà; CMTS ở đầu cáp</td><td>môi trường <b>chia sẻ</b> giữa các nhà → giờ cao điểm chậm</td></tr>
+<tr><td>FTTH / FTTx</td><td>cáp quang tới nhà; PON: bộ chia thụ động, OLT ở tổng đài, ONT ở nhà</td><td>tốc độ Gbps</td></tr>
+<tr><td>Ethernet doanh nghiệp, WiFi, 4G/5G</td><td>switch Ethernet; điểm truy nhập 802.11; trạm gốc di động</td><td>WiFi: phạm vi vài chục mét; 4G/5G: vài km</td></tr></table></div>
+<div class="tw"><table><tr><th>Môi trường</th><th>Loại</th><th>Ghi chú</th></tr>
+<tr><td>Cáp xoắn đôi</td><td>có hướng (guided)</td><td>rẻ, phổ biến nhất trong LAN; xoắn để giảm nhiễu</td></tr>
+<tr><td>Cáp đồng trục</td><td>có hướng</td><td>hai dây đồng đồng tâm; dùng trong truyền hình cáp, môi trường chia sẻ</td></tr>
+<tr><td>Cáp quang</td><td>có hướng</td><td>xung ánh sáng; tốc độ rất cao, suy hao thấp, miễn nhiễm điện từ, khó nghe lén → đường trục</td></tr>
+<tr><td>Vô tuyến (radio, viba, vệ tinh, hồng ngoại)</td><td>không có hướng (unguided)</td><td>chịu phản xạ, che chắn, nhiễu; vệ tinh địa tĩnh trễ lan truyền ~270 ms</td></tr></table></div>
+
+<h3 id="c1-sau-isp">7. Vì sao Internet có cấu trúc phân cấp ISP</h3>
+<p><span class="tag">Slide tr.43–51</span> Lập luận từng bước của slide là đề rất hay hỏi “vì sao”:</p>
+<ol><li>Nối mọi ISP truy nhập trực tiếp với nhau: <b>O(N²)</b> kết nối → không khả thi.</li>
+<li>Nối tất cả vào <b>một ISP toàn cầu</b> (khách hàng trả tiền nhà cung cấp) → có lời nên sẽ có <b>đối thủ cạnh tranh</b> (ISP A, B, C).</li>
+<li>Các ISP toàn cầu cần nối với nhau → <b>IXP</b> và <b>liên kết ngang hàng (peering)</b>.</li>
+<li>Xuất hiện <b>ISP khu vực</b> gom các mạng truy nhập.</li>
+<li><b>Mạng nhà cung cấp nội dung</b> (Google, Microsoft, Akamai) xây mạng riêng, thường <b>bỏ qua ISP lớp 1 và khu vực</b> để tới gần người dùng.</li></ol>
+<p><span class="tag multi">K&amp;R §1.3.3</span> Thêm khái niệm: <b>PoP</b> (điểm hiện diện — nhóm router nơi ISP khách hàng nối vào ISP cấp trên), <b>multi-home</b> (nối tới hai ISP cấp trên để dự phòng), peering giữa hai ISP cùng cấp thường <b>không trả phí</b>.</p>
+
+<h3 id="c1-sau-layer">8. Phân tầng: dịch vụ, giao thức, đóng gói</h3>
+<p><span class="tag">Slide tr.22–28, 61–63</span> Ví dụ hàng không: mỗi tầng thực hiện một dịch vụ (vé, hành lý, cổng, cất/hạ cánh, định hướng chuyến bay) <b>bằng hoạt động bên trong tầng</b> và <b>dựa vào dịch vụ của tầng dưới</b>. Lợi ích: cấu trúc rõ ràng, <b>thay đổi bên trong một tầng không ảnh hưởng phần còn lại</b> (modularity).</p>
+<div class="tw"><table><tr><th>Tầng (Kurose)</th><th>Dịch vụ</th><th>PDU</th><th>Giao thức</th><th>Thiết bị xử lý tới tầng này</th></tr>
+<tr><td>Ứng dụng</td><td>hỗ trợ ứng dụng mạng</td><td>message</td><td>HTTP, SMTP, DNS, FTP</td><td>host</td></tr>
+<tr><td>Giao vận</td><td>tiến trình ↔ tiến trình</td><td>segment</td><td>TCP, UDP</td><td>host</td></tr>
+<tr><td>Mạng</td><td>host ↔ host qua nhiều router</td><td>datagram</td><td>IP, giao thức định tuyến</td><td>router</td></tr>
+<tr><td>Liên kết</td><td>nút ↔ nút kề nhau</td><td>frame</td><td>Ethernet, 802.11</td><td>switch</td></tr>
+<tr><td>Vật lý</td><td>bit trên đường truyền</td><td>bit</td><td>phụ thuộc môi trường</td><td>—</td></tr></table></div>
+<p><b>Đóng gói</b> (tr.27): M → [H<sub>t</sub>|M] → [H<sub>n</sub>|H<sub>t</sub>|M] → [H<sub>l</sub>|H<sub>n</sub>|H<sub>t</sub>|M]. Switch mở tới H<sub>l</sub>; router mở tới H<sub>n</sub> rồi đóng gói frame mới cho liên kết kế tiếp; chỉ host đích mở tới M. OSI tr.23: tầng liên kết thêm cả <b>header và trailer</b>.</p>
+<p><span class="tag multi">K&amp;R §1.5</span> Mô hình 5 tầng thiếu Presentation và Session của OSI → nếu cần mã hoá, nén, đồng bộ phiên thì <b>ứng dụng tự làm</b>. Nhược điểm của phân tầng: chức năng có thể <b>lặp lại</b> ở nhiều tầng (vd kiểm lỗi ở liên kết và giao vận); tầng này đôi khi cần thông tin của tầng khác. Tổ chức chuẩn hoá trong slide tr.20: ITU, TIA, EIA, IEEE, ISO.</p>
+
+<h3 id="c1-sau-sec">9. An ninh mạng sâu hơn</h3>
+<p><span class="tag">Slide tr.65–69</span> Internet ban đầu thiết kế cho “một nhóm người dùng tin tưởng lẫn nhau” → an ninh được bổ sung sau (“catch-up”), phải xét ở <b>mọi tầng</b>.</p>
+<div class="tw"><table><tr><th>Tấn công</th><th>Cơ chế</th><th>Phòng chống (K&amp;R §1.6, ch.8)</th></tr>
+<tr><td>Virus / worm / spyware</td><td>virus cần người dùng thực thi; worm tự thực thi; spyware ghi phím, trang đã xem</td><td>cập nhật, chống mã độc</td></tr>
+<tr><td>Botnet → DDoS</td><td>host bị nhiễm bị điều khiển gửi spam/lưu lượng</td><td>lọc lưu lượng</td></tr>
+<tr><td>DoS (K&amp;R chia 3 loại)</td><td>① tấn công lỗ hổng (gói được dựng đặc biệt làm sập dịch vụ) ② làm ngập băng thông ③ làm ngập kết nối (mở nhiều TCP nửa vời)</td><td>lọc, SYN cookie (chương 3)</td></tr>
+<tr><td>Sniffing</td><td>đường truyền chung (Ethernet chia sẻ, WiFi) cho phép đọc mọi gói, kể cả mật khẩu; thụ động nên khó phát hiện</td><td><b>mã hoá</b></td></tr>
+<tr><td>IP spoofing</td><td>gói mang địa chỉ nguồn giả</td><td><b>xác thực đầu cuối</b> (end-point authentication)</td></tr></table></div>
+
+<h3 id="c1-sau-hist">10. Lịch sử — các mốc hay hỏi và ý nghĩa</h3>
+<p><span class="tag">Slide tr.71–77</span> 1961 Kleinrock (hàng đợi → chuyển mạch gói hiệu quả) · 1964 Baran (chuyển mạch gói cho quân đội) · 1967 ARPAnet hình thành · 1969 nút ARPAnet đầu tiên · 1972 NCP, email đầu tiên, 15 nút · 1970 ALOHAnet · 1974 Cerf &amp; Kahn · 1976 Ethernet (Xerox PARC) · 1979 200 nút · 1982 SMTP · 1983 TCP/IP, DNS · 1985 FTP · 1988 điều khiển tắc nghẽn TCP · đầu 1990 Web (Berners-Lee), 1994 Mosaic · 2008 SDN · 2017 thiết bị di động nhiều hơn cố định · ~15 tỷ thiết bị (2023). Việt Nam: 1991 thất bại, 1996 chuẩn bị (VNPT, 64 kbps), <b>1997 chính thức</b> (1 IXP, 4 ISP: VNPT, Netnam, FPT, SPT).</p>
+<p><b>Nguyên lý Cerf–Kahn (tr.72) = kiến trúc Internet ngày nay:</b> tối giản, tự chủ (không cần sửa bên trong mạng để kết nối), dịch vụ <b>best effort</b>, router <b>không lưu trạng thái</b>, điều khiển <b>phân tán</b>.</p>

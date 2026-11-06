@@ -1,0 +1,408 @@
+## c1-sau-view | chuong 1 v2.pdf tr.30–33
+Q: Theo góc nhìn "dịch vụ", Internet cung cấp gì cho ứng dụng?
++ Giao diện lập trình (socket API) để chương trình kết nối vào Internet, kèm các tùy chọn dịch vụ
+- Các router và cáp quang
+- Một máy chủ trung tâm lưu mọi trang web
+- Bảng chuyển tiếp cho từng host
+= Góc nhìn dịch vụ: hạ tầng cung cấp dịch vụ + API cho ứng dụng phân tán.
+
+Q: Chuẩn của Internet được công bố dưới dạng tài liệu nào và bởi tổ chức nào?
++ RFC, do IETF ban hành
+- ISO 7498, do ISO ban hành
+- IEEE 802, do ICANN ban hành
+- TCP/IP Book, do ARPAnet ban hành
+= Slide tr.32: RFC – Request for Comments; IETF – Internet Engineering Task Force.
+
+Q: Vì sao không cần viết ứng dụng cho các thiết bị ở lõi mạng?
++ Thiết bị lõi không chạy ứng dụng người dùng; ứng dụng chỉ chạy ở hệ thống đầu cuối
+- Vì router tự sinh mã ứng dụng
+- Vì lõi mạng chỉ dùng UDP
+- Vì thiết bị lõi không có địa chỉ IP
+= Nhờ vậy ứng dụng được phát triển và phổ biến nhanh.
+
+## c1-sau-switch | K&R §1.3
+Q: Liên kết 1 Mbps, mỗi người dùng cần 100 kbps khi hoạt động. Chuyển mạch kênh phục vụ tối đa bao nhiêu người dùng?
++ 10
+- 35
+- 100
+- 1
+= 1 Mbps / 100 kbps = 10 kênh dành riêng.
+
+Q: Cùng liên kết 1 Mbps, mỗi người dùng cần 100 kbps và chỉ hoạt động 10% thời gian. Với 35 người dùng, chuyển mạch gói cho kết quả nào?
++ Xác suất có hơn 10 người cùng hoạt động chỉ khoảng 0,0004, nên gần như luôn đủ băng thông
+- Luôn bị nghẽn vì 35 > 10
+- Chỉ phục vụ được 10 người
+- Mỗi người được đảm bảo 100 kbps tuyệt đối
+= Ghép kênh thống kê: phục vụ gấp 3,5 lần chuyển mạch kênh.
+
+Q: Chuyển mạch gói phù hợp nhất với loại lưu lượng nào?
++ Lưu lượng bùng nổ (bursty), lúc có lúc không
+- Lưu lượng cố định cần đảm bảo băng thông tuyệt đối
+- Chỉ lưu lượng thoại
+- Lưu lượng không bao giờ có dữ liệu
+= Chia sẻ tài nguyên theo nhu cầu.
+
+Q: Trong chuyển mạch kênh dùng TDM, tài nguyên được chia thế nào?
++ Mỗi kết nối được một khe thời gian lặp lại trong mỗi frame
+- Mỗi kết nối được một dải tần số riêng
+- Mỗi gói chọn đường riêng
+- Không chia, ai đến trước dùng trước
+= FDM chia tần số; TDM chia khe thời gian.
+
+Q: Gửi file 640 000 bit qua mạng chuyển mạch kênh TDM 1,536 Mbps chia 24 khe, thiết lập kênh mất 500 ms. Tổng thời gian là bao nhiêu?
++ 10,5 s
+- 0,42 s
+- 10 s
+- 0,92 s
+= Mỗi kênh 64 kbps → 640 000/64 000 = 10 s; cộng 0,5 s thiết lập.
+
+Q: Điểm lãng phí của chuyển mạch kênh là gì?
++ Kênh dành riêng vẫn bị chiếm khi người dùng im lặng
+- Gói có thể bị mất do tràn bộ đệm
+- Gói đến sai thứ tự
+- Trễ hàng đợi thay đổi liên tục
+= Tài nguyên dành riêng không chia sẻ được.
+
+## c1-sau-saf | K&R §1.3.1
+Q: Gói L bit đi qua N liên kết giống nhau tốc độ R theo kiểu store-and-forward, bỏ qua các trễ khác. Trễ đầu-cuối là?
++ N·L/R
+- L/R
+- L/(N·R)
+- (N−1)·L/R
+= Mỗi liên kết phải nhận đủ gói rồi mới truyền tiếp.
+
+Q: 3 gói, mỗi gói L = 8000 bit, nối đuôi qua 3 liên kết 2 Mbps (store-and-forward). Gói cuối tới đích sau bao lâu?
++ 20 ms
+- 12 ms
+- 36 ms
+- 4 ms
+= (N + P − 1)·L/R = (3 + 3 − 1) × 4 ms.
+
+Q: Gói 1500 byte qua 2 liên kết 10 Mbps (1 router), mỗi liên kết d_prop = 1 ms, bỏ qua xử lý và hàng đợi. Trễ đầu-cuối?
++ 4,4 ms
+- 2,2 ms
+- 3,2 ms
+- 1,2 ms
+= Mỗi liên kết: 1,2 ms truyền + 1 ms lan truyền; ×2.
+
+Q: Vì sao router chuyển mạch gói phải đợi nhận đủ cả gói?
++ Vì theo cơ chế store-and-forward, cần cả gói để kiểm tra và xác định liên kết ra
+- Vì router không có bộ đệm
+- Vì gói đi theo đường dành riêng
+- Vì router không đọc được header
+= Lưu và chuyển tiếp.
+
+## c1-sau-delay | K&R §1.4.2
+Q: Cường độ lưu lượng (traffic intensity) được tính bằng công thức nào (a = số gói đến mỗi giây)?
++ L·a / R
+- R / (L·a)
+- L / R
+- d / s
+= La/R so sánh tốc độ bit đến với tốc độ phục vụ.
+
+Q: Khi cường độ lưu lượng La/R > 1, điều gì xảy ra?
++ Bit đến nhanh hơn khả năng truyền, hàng đợi tăng không giới hạn (thực tế mất gói)
+- Trễ hàng đợi bằng 0
+- Liên kết tự tăng băng thông
+- Trễ lan truyền giảm
+= Quy tắc thiết kế: không để La/R vượt 1.
+
+Q: Khi La/R tiến gần tới 1, trễ hàng đợi thay đổi thế nào?
++ Tăng rất nhanh, không tuyến tính
+- Giảm dần về 0
+- Không đổi
+- Tăng tuyến tính và nhỏ
+= Đường cong trễ dốc đứng gần 1.
+
+Q: Router nhận 100 gói/s, mỗi gói 1000 bit, liên kết ra 1 Mbps. Cường độ lưu lượng là?
++ 0,1
+- 1
+- 10
+- 0,01
+= 100 × 1000 / 10^6.
+
+Q: Tích băng thông × trễ lan truyền (R·d_prop) cho biết điều gì?
++ Số bit tối đa đang nằm trên đường truyền tại một thời điểm
+- Số gói bị mất
+- Thời gian truyền một gói
+- Số router trên đường đi
+= Ví dụ 10 Mbps × 20 ms = 200 000 bit.
+
+Q: Liên kết R = 1 Gbps, d_prop = 10 ms. Có tối đa bao nhiêu bit "trên dây"?
++ 10^7 bit
+- 10^5 bit
+- 10^9 bit
+- 10^4 bit
+= 10^9 × 0,01.
+
+Q: Trong ví dụ "đoàn xe qua trạm thu phí", thời gian xe chạy từ trạm này tới trạm kế tiếp tương ứng với?
++ Trễ lan truyền
+- Trễ truyền
+- Trễ xử lý
+- Trễ hàng đợi
+= Đẩy cả đoàn qua trạm = d_trans; chạy giữa hai trạm = d_prop.
+
+Q: Liên kết vệ tinh địa tĩnh thường có loại trễ nào rất lớn?
++ Trễ lan truyền (khoảng 270 ms)
+- Trễ xử lý
+- Trễ truyền luôn lớn hơn 1 s
+- Không có trễ
+= Khoảng cách rất xa.
+
+Q: Gói 100 byte trên liên kết 1 Gbps dài 200 km. So sánh d_trans và d_prop?
++ d_trans = 0,8 µs, d_prop = 1 ms: trễ lan truyền lớn hơn nhiều
+- d_trans lớn hơn d_prop
+- Bằng nhau
+- d_prop = 0,8 µs
+= 800 bit/10^9; 2×10^5 m / 2×10^8 m/s.
+
+## c1-sau-thr | K&R §1.4.4
+Q: Mỗi server nối với liên kết R_s = 2 Mbps, mỗi client R_c = 1 Mbps; 10 cặp chia sẻ liên kết lõi R = 5 Mbps. Thông lượng mỗi cặp là?
++ 0,5 Mbps
+- 1 Mbps
+- 2 Mbps
+- 5 Mbps
+= min(R_s, R_c, R/10) = min(2, 1, 0,5).
+
+Q: Trong thực tế, nút cổ chai thường nằm ở đâu?
++ Mạng truy nhập, vì lõi Internet thường được cấp băng thông dư
+- Luôn ở lõi Internet
+- Ở server DNS
+- Ở tầng ứng dụng
+= K&R §1.4.4.
+
+Q: Ở ví dụ trên, liên kết lõi tăng lên R = 50 Mbps (10 cặp chia sẻ). Thông lượng mỗi cặp?
++ 1 Mbps
+- 5 Mbps
+- 0,5 Mbps
+- 2 Mbps
+= min(2, 1, 5) = 1 → cổ chai quay về R_c.
+
+## c1-sau-access | K&R §1.2
+Q: Đặc điểm nào đúng với DSL?
++ Dùng dây điện thoại sẵn có, đường truyền dành riêng cho từng nhà, tốc độ tải xuống lớn hơn tải lên
+- Môi trường chia sẻ giữa nhiều nhà
+- Chỉ dùng cáp quang
+- Không thể dùng cùng lúc với điện thoại
+= DSLAM tách dữ liệu và thoại theo dải tần.
+
+Q: Trong DSL, dải tần 0–4 kHz dùng cho gì?
++ Thoại
+- Tải xuống
+- Tải lên
+- Truyền hình
+= Tải lên 4–50 kHz, tải xuống 50 kHz–1 MHz.
+
+Q: Vì sao truy nhập bằng cáp truyền hình (cable/HFC) có thể chậm giờ cao điểm?
++ Đường cáp là môi trường chia sẻ giữa nhiều nhà
+- Vì dùng dây điện thoại
+- Vì không có router
+- Vì không hỗ trợ TCP
+= Cable là môi trường chia sẻ (CMTS ở đầu cáp).
+
+Q: HFC là viết tắt của kiến trúc nào?
++ Kết hợp cáp quang và cáp đồng trục (Hybrid Fiber Coax)
+- Cáp xoắn đôi tốc độ cao
+- Mạng vệ tinh lai
+- Mạng WiFi công cộng
+= Quang tới nút khu vực, đồng trục tới nhà.
+
+Q: Ưu điểm nào của cáp quang khiến nó được dùng cho đường trục?
++ Tốc độ rất cao, suy hao thấp, miễn nhiễm nhiễu điện từ
+- Rẻ nhất và dễ lắp nhất
+- Không cần thiết bị đầu cuối
+- Truyền bằng sóng radio
+= Truyền xung ánh sáng.
+
+Q: Cáp xoắn đôi được xoắn để làm gì?
++ Giảm nhiễu điện từ giữa các dây
+- Tăng độ dài cáp
+- Truyền ánh sáng
+- Tăng trễ lan truyền
+= Đặc điểm cáp xoắn đôi.
+
+Q: Môi trường nào thuộc loại "không có hướng" (unguided)?
++ Sóng radio, vệ tinh
+- Cáp quang
+- Cáp đồng trục
+- Cáp xoắn đôi
+= Vô tuyến lan trong không gian.
+
+## c1-sau-isp | chuong 1 v2.pdf tr.43–51
+Q: Vì sao phương án "mọi ISP truy nhập nối với một ISP toàn cầu duy nhất" không bền vững?
++ ISP toàn cầu sinh lời sẽ xuất hiện đối thủ cạnh tranh, dẫn tới nhiều ISP toàn cầu cần kết nối nhau
+- Vì cần O(N²) liên kết
+- Vì ISP toàn cầu không dùng IP
+- Vì mạng truy nhập không trả phí
+= Lập luận từng bước của slide.
+
+Q: Thành phần nào cho phép nhiều ISP gặp nhau và trao đổi lưu lượng?
++ IXP
+- DSLAM
+- CMTS
+- DNS gốc
+= Internet exchange point.
+
+Q: Mạng nhà cung cấp nội dung (Google, Facebook) thường làm gì để tới người dùng?
++ Xây mạng riêng nối data center, thường bỏ qua ISP lớp 1 và ISP khu vực
+- Chỉ dùng ISP lớp 1
+- Không dùng router
+- Gửi nội dung qua email
+= Slide tr.51.
+
+Q: Multi-home nghĩa là gì?
++ Một ISP nối tới hai hay nhiều ISP cấp trên để dự phòng
+- Một host có nhiều trình duyệt
+- Một router có một cổng
+- Một IXP có một ISP
+= K&R §1.3.3.
+
+Q: PoP (point of presence) là gì?
++ Nhóm router trong mạng ISP cấp trên nơi ISP khách hàng nối vào
+- Giao thức nhận thư
+- Một loại cáp
+- Một bản ghi DNS
+= K&R §1.3.3.
+
+## c1-sau-layer | chuong 1 v2.pdf tr.61–63
+Q: Theo ví dụ vận chuyển hàng không, một tầng thực hiện dịch vụ của nó bằng cách nào?
++ Bằng hoạt động bên trong tầng và dựa vào dịch vụ của tầng bên dưới
+- Bằng cách gọi trực tiếp tầng vật lý
+- Bằng cách bỏ qua tầng dưới
+- Bằng cách chỉ dùng tầng trên
+= Slide tr.63.
+
+Q: Lợi ích chính của phân tầng là gì?
++ Thay đổi cài đặt bên trong một tầng không ảnh hưởng tới phần còn lại của hệ thống
+- Loại bỏ trễ lan truyền
+- Không cần header
+- Tăng băng thông
+= Modularity.
+
+Q: Nhược điểm của phân tầng theo K&R là gì?
++ Một chức năng có thể bị lặp lại ở nhiều tầng (ví dụ kiểm lỗi)
+- Không thể đóng gói dữ liệu
+- Không hỗ trợ router
+- Không có giao thức
+= Duplication of functionality.
+
+Q: Mô hình 5 tầng không có Presentation và Session. Vậy mã hóa, nén dữ liệu do ai đảm nhận nếu cần?
++ Chính ứng dụng
+- Tầng liên kết
+- Router
+- Tầng vật lý
+= K&R §1.5.
+
+Q: Tầng nào thêm cả header và trailer khi đóng gói (OSI)?
++ Tầng liên kết dữ liệu
+- Tầng mạng
+- Tầng giao vận
+- Tầng ứng dụng
+= Slide tr.23: frame header + trailer.
+
+Q: Khi frame đi qua một switch, switch mở gói tới header nào?
++ Header tầng liên kết (H_l)
+- Header tầng mạng
+- Header tầng giao vận
+- Message ứng dụng
+= Switch xử lý tầng 1–2.
+
+Q: Một router nhận frame, nó xử lý thế nào?
++ Mở tới header tầng mạng, chọn liên kết ra, đóng gói vào frame mới của liên kết kế tiếp
+- Chuyển nguyên frame không đọc gì
+- Mở tới message ứng dụng
+- Xoá header giao vận
+= Router xử lý tầng 1–3.
+
+Q: Tổ chức nào sau đây KHÔNG được slide nêu là tổ chức định chuẩn?
++ ICANN
+- ITU
+- IEEE
+- ISO
+= Slide tr.20: ITU, TIA, EIA, IEEE, ISO.
+
+Q: Trong mô hình TCP/IP của slide, tầng Internet đảm nhận chức năng nào?
++ Chọn đường tốt nhất, gán địa chỉ, đóng gói và định tuyến
+- Mã hóa, trình bày dữ liệu
+- Vận chuyển từ tiến trình nguồn đến tiến trình đích
+- Đưa bit lên phương tiện truyền dẫn
+= Slide tr.25.
+
+## c1-sau-sec | chuong 1 v2.pdf tr.65–69; K&R §1.6
+Q: Vì sao an ninh là điểm yếu từ đầu của Internet?
++ Internet ban đầu được thiết kế cho một nhóm người dùng tin tưởng lẫn nhau
+- Vì không có giao thức TCP
+- Vì không dùng mã hóa ở tầng vật lý
+- Vì router quá chậm
+= Slide tr.65.
+
+Q: Spyware làm gì theo slide?
++ Ghi lại thao tác bàn phím, trang web đã truy cập và gửi về trang thu thập
+- Làm ngập băng thông server
+- Giả mạo địa chỉ IP
+- Phân giải tên miền giả
+= Phần mềm gián điệp.
+
+Q: Theo K&R, loại DoS nào gửi nhiều kết nối TCP nửa mở hoặc mở đầy đủ tới máy đích?
++ Làm ngập kết nối (connection flooding)
+- Tấn công lỗ hổng
+- Làm ngập băng thông
+- Đầu độc DNS
+= 3 loại DoS: lỗ hổng, ngập băng thông, ngập kết nối.
+
+Q: Vì sao sniffing khó phát hiện?
++ Vì kẻ bắt gói chỉ thụ động nghe, không phát gói nào lên mạng
+- Vì luôn dùng mã hóa
+- Vì chỉ chạy trên router lõi
+- Vì làm sập server
+= Biện pháp chính: mã hóa.
+
+Q: Biện pháp chống IP spoofing theo K&R là gì?
++ Xác thực đầu cuối (end-point authentication)
+- Tăng băng thông
+- Dùng cáp quang
+- Tắt DNS
+= Xác định thông điệp thật sự đến từ đâu.
+
+## c1-sau-hist | chuong 1 v2.pdf tr.71–76
+Q: Nguyên lý nào KHÔNG thuộc nguyên lý kết nối mạng của Cerf và Kahn?
++ Router phải lưu trạng thái mọi kết nối
+- Tối giản, tự chủ
+- Dịch vụ best effort
+- Điều khiển phân tán
+= Router không lưu trạng thái.
+
+Q: Năm 1976 có sự kiện nào?
++ Ethernet ra đời tại Xerox PARC
+- Triển khai TCP/IP
+- Ra đời Web
+- ARPAnet có 15 nút
+= Slide tr.72.
+
+Q: Giao thức quản lý mạng đầu tiên của ARPAnet (1972) là gì?
++ NCP
+- TCP/IP
+- SMTP
+- DNS
+= Network Control Protocol.
+
+Q: Năm 1997, Việt Nam kết nối Internet với bao nhiêu ISP?
++ 4 ISP (VNPT, Netnam, FPT, SPT) và 1 IXP
+- 1 ISP và 4 IXP
+- 20 ISP và 4 IXP
+- 2 ISP
+= Slide tr.76.
+
+Q: Giao thức SMTP và FTP được định nghĩa lần lượt vào năm nào theo slide?
++ 1982 và 1985
+- 1983 và 1988
+- 1974 và 1976
+- 1990 và 1994
+= Slide tr.73.
+
+Q: Mạng vệ tinh ALOHAnet ở Hawaii ra đời năm nào?
++ 1970
+- 1961
+- 1983
+- 1994
+= Slide tr.72.

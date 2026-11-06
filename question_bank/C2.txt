@@ -1,0 +1,485 @@
+## c2-sau-proc | chuong 2 v1.pdf tr.9–12
+Q: Trong ứng dụng client-server, tiến trình client là gì?
++ Tiến trình khởi tạo truyền thông
+- Tiến trình chờ được tiếp xúc
+- Tiến trình chạy trên router
+- Tiến trình của hệ điều hành
+= Server là tiến trình chờ được tiếp xúc.
+
+Q: Phần nào của socket do người phát triển ứng dụng điều khiển?
++ Phía tầng ứng dụng, bên trên socket
+- Tầng giao vận và tầng mạng
+- Tầng liên kết
+- Toàn bộ chồng giao thức
+= Phía dưới socket do hệ điều hành điều khiển.
+
+Q: Một giao thức tầng ứng dụng KHÔNG cần định nghĩa thứ nào?
++ Đường đi của gói qua các router
+- Các loại thông điệp trao đổi
+- Cú pháp và ngữ nghĩa của thông điệp
+- Quy tắc về thời điểm và cách gửi, đáp ứng
+= Định tuyến là việc của tầng mạng.
+
+Q: Skype, Zoom là ví dụ về loại giao thức nào?
++ Giao thức độc quyền
+- Giao thức mở định nghĩa trong RFC
+- Giao thức tầng mạng
+- Giao thức tầng liên kết
+= Slide tr.12.
+
+Q: Lợi ích của giao thức mở (định nghĩa trong RFC) là gì?
++ Cho phép các cài đặt khác nhau tương tác được với nhau
+- Luôn nhanh hơn giao thức độc quyền
+- Không cần socket
+- Không cần tầng giao vận
+= Ví dụ HTTP, SMTP.
+
+Q: Để gửi thông điệp HTTP tới gaia.cs.umass.edu, cần những thông tin định danh nào?
++ Địa chỉ IP 128.119.245.12 và số hiệu cổng 80
+- Chỉ địa chỉ IP
+- Chỉ tên miền
+- Địa chỉ MAC của server
+= IP + cổng.
+
+## c2-sau-req | chuong 2 v1.pdf tr.13–17
+Q: Ứng dụng nào yêu cầu truyền tin cậy 100%?
++ Truyền file, web
+- Audio thời gian thực
+- Trò chơi tương tác chịu lỗi
+- Video trực tiếp chịu lỗi
+= Toàn vẹn dữ liệu.
+
+Q: Theo slide, ứng dụng lưu trữ (streaming) audio/video có yêu cầu thời gian như thế nào?
++ Có, khoảng vài giây
+- Có, 100 ms
+- Không yêu cầu
+- Có, 1 ms
+= Bảng tr.14; thời gian thực 100 ms.
+
+Q: Tin nhắn nhanh có yêu cầu gì về mất dữ liệu?
++ Không được mất dữ liệu
+- Chịu lỗi
+- Không quan tâm
+- Chỉ cần mã hóa
+= Bảng tr.14.
+
+Q: Vì sao một ứng dụng chọn UDP dù UDP không tin cậy?
++ Không bắt tay, không bị điều khiển tắc nghẽn ghìm tốc độ, header nhỏ; có thể tự làm tin cậy ở tầng ứng dụng
+- Vì UDP đảm bảo băng thông
+- Vì UDP mã hóa dữ liệu
+- Vì UDP đảm bảo thời gian
+= Hỏi ở tr.15: "Dùng UDP để làm gì?".
+
+Q: SSL/TLS nằm ở đâu trong chồng giao thức theo slide?
++ Ở tầng ứng dụng, ứng dụng dùng thư viện TLS để gọi xuống TCP
+- Là tầng giao vận thay thế TCP
+- Ở tầng mạng
+- Ở tầng liên kết
+= Slide tr.17.
+
+Q: Không dùng TLS, mật khẩu gửi vào TCP socket được truyền thế nào?
++ Dạng bản rõ (không mã hóa)
+- Được TCP mã hóa tự động
+- Được IP mã hóa
+- Bị hủy
+= TCP/UDP không mã hóa.
+
+Q: DNS chạy trên giao thức giao vận nào, cổng bao nhiêu (theo giáo trình)?
++ UDP, cổng 53
+- TCP, cổng 80
+- UDP, cổng 25
+- TCP, cổng 21
+= K&R §2.4.
+
+## c2-sau-http | chuong 2 v1.pdf tr.22–30
+Q: Trang gồm HTML gốc và 10 ảnh; HTTP liên tục có pipelining. Bỏ qua thời gian truyền, tổng thời gian khoảng bao nhiêu?
++ 3 RTT
+- 12 RTT
+- 22 RTT
+- 11 RTT
+= 2 RTT (TCP + HTML) + 1 RTT cho tất cả ảnh.
+
+Q: Trang gồm HTML gốc và 10 ảnh; HTTP không liên tục với 5 kết nối song song. Tổng thời gian (bỏ qua truyền)?
++ 6 RTT
+- 22 RTT
+- 4 RTT
+- 12 RTT
+= 2 RTT cho HTML + 2 đợt × 2 RTT.
+
+Q: Trang gồm HTML gốc và 5 ảnh; HTTP không liên tục, tuần tự. Tổng thời gian (bỏ qua truyền)?
++ 12 RTT
+- 7 RTT
+- 6 RTT
+- 10 RTT
+= (5 + 1) × 2 RTT.
+
+Q: Trang gồm HTML gốc và 5 ảnh; HTTP liên tục không pipelining. Tổng thời gian (bỏ qua truyền)?
++ 7 RTT
+- 12 RTT
+- 3 RTT
+- 6 RTT
+= 2 RTT + 5 × 1 RTT.
+
+Q: Nhược điểm nào thuộc HTTP không liên tục?
++ Mỗi đối tượng tốn 2 RTT và hệ điều hành tốn tài nguyên cho mỗi kết nối TCP
+- Không chuyển được ảnh
+- Không dùng TCP
+- Server phải lưu trạng thái
+= Slide tr.26.
+
+Q: Phần nào đánh dấu kết thúc các dòng tiêu đề trong thông điệp HTTP?
++ Một dòng trống (CRLF ở đầu dòng)
+- Ký tự "."
+- Dòng "END"
+- Mã 200
+= Slide tr.27.
+
+Q: Phương thức HEAD khác GET ở điểm nào?
++ Server trả đáp ứng nhưng không kèm đối tượng được yêu cầu
+- HEAD tải tệp lên server
+- HEAD xoá tệp
+- HEAD chỉ có trong HTTP/1.1
+= HEAD có từ HTTP/1.0.
+
+Q: Phương thức nào chỉ có từ HTTP/1.1?
++ PUT và DELETE
+- GET và POST
+- HEAD
+- GET
+= HTTP/1.0: GET, POST, HEAD.
+
+Q: Mã trạng thái nào trả kèm vị trí mới của đối tượng trong trường Location?
++ 301 Moved Permanently
+- 200 OK
+- 400 Bad Request
+- 505 HTTP Version Not Supported
+= Slide tr.30.
+
+Q: Mã 400 Bad Request nghĩa là gì?
++ Server không hiểu thông điệp yêu cầu
+- Không tìm thấy tài liệu
+- Phiên bản HTTP không được hỗ trợ
+- Yêu cầu thành công
+= Slide tr.30.
+
+Q: Vì sao HTTP được thiết kế không trạng thái?
++ Lưu trạng thái phức tạp: phải nhớ lịch sử và khi sự cố trạng thái hai bên có thể không nhất quán
+- Vì TCP không cho phép lưu trạng thái
+- Vì cookie đã bị cấm
+- Vì server không có bộ nhớ
+= Slide tr.21.
+
+Q: Trong ví dụ Susan, lần đầu vào Amazon, server làm gì?
++ Tạo ID duy nhất và một mục trong CSDL back-end, gửi set-cookie trong đáp ứng
+- Yêu cầu Susan đăng ký email
+- Gửi cookie trong thông điệp yêu cầu
+- Không làm gì
+= Slide tr.31–32.
+
+Q: Mối lo ngại chính khi dùng cookie là gì?
++ Quyền riêng tư: site biết nhiều thông tin về người dùng
+- Làm chậm TCP
+- Làm hỏng DNS
+- Tăng trễ lan truyền
+= Slide tr.33.
+
+## c2-sau-cache | K&R §2.2.5
+Q: Liên kết truy nhập 15 Mbps, 15 yêu cầu/s, mỗi đối tượng 1 Mbit, không có cache. Cường độ lưu lượng trên liên kết truy nhập là?
++ 1, trễ hàng đợi rất lớn
+- 0,15
+- 0,6
+- 15
+= 15 × 1 / 15.
+
+Q: Cùng tình huống trên, lắp cache với tỉ lệ trúng 0,4. Cường độ lưu lượng mới?
++ 0,6
+- 0,4
+- 1
+- 0,15
+= Chỉ 60% yêu cầu ra Internet.
+
+Q: Vì sao lắp cache thường tốt hơn nâng cấp liên kết truy nhập?
++ Đạt trễ trung bình thấp hơn với chi phí rẻ hơn
+- Vì cache tăng băng thông liên kết
+- Vì cache loại bỏ DNS
+- Vì cache mã hóa dữ liệu
+= Ví dụ K&R: trễ TB ~1,2 s so với ~2 s.
+
+Q: Conditional GET dùng dòng tiêu đề nào?
++ If-Modified-Since
+- Set-Cookie
+- Location
+- Connection: close
+= K&R §2.2.5.
+
+Q: Đối tượng trong cache chưa thay đổi ở server. Server trả gì cho conditional GET?
++ 304 Not Modified, không kèm đối tượng
+- 200 OK kèm đối tượng
+- 404 Not Found
+- 301 Moved Permanently
+= Tiết kiệm băng thông.
+
+Q: Slide nêu: nếu Internet có nhiều cache thì cả nhà cung cấp nội dung "nghèo" (ít hạ tầng) cũng phân phối được nhiều nội dung. Vì sao?
++ Cache cho phép nhà cung cấp nhỏ phân phối nội dung hiệu quả mà không cần hạ tầng lớn
+- Vì cache xoá nội dung
+- Vì cache chặn server nguồn
+- Vì cache dùng UDP
+= Slide tr.35, giống chia sẻ file P2P.
+
+Q: HTTP/2 giảm HOL blocking bằng cách nào?
++ Chia thông điệp thành frame và xen kẽ nhiều đối tượng trên một kết nối TCP
+- Mở một kết nối TCP cho mỗi đối tượng
+- Chuyển sang dùng FTP
+- Bỏ header HTTP
+= K&R §2.2.5.
+
+Q: HTTP/3 chạy trên giao thức nào?
++ QUIC trên UDP
+- TCP thuần
+- SCTP
+- ICMP
+= K&R §2.2.5.
+
+## c2-sau-ftp | chuong 2 v1.pdf tr.37–39
+Q: Trong một phiên FTP, người dùng tải 3 file. Có tổng cộng bao nhiêu kết nối TCP?
++ 4 (1 điều khiển + 3 dữ liệu)
+- 1
+- 3
+- 6
+= Mỗi file một kết nối dữ liệu mới.
+
+Q: Vì sao điều khiển của FTP được gọi là "out-of-band"?
++ Lệnh đi trên kết nối riêng, tách khỏi kết nối dữ liệu
+- Vì dùng UDP
+- Vì lệnh mã hóa
+- Vì lệnh không có phản hồi
+= HTTP gửi header và dữ liệu chung một kết nối (in-band).
+
+Q: Ai mở kết nối dữ liệu FTP theo slide?
++ Server mở kết nối TCP thứ hai tới client khi nhận lệnh truyền file
+- Client luôn mở
+- DNS server
+- Router
+= Slide tr.38.
+
+Q: Mã FTP 425 nghĩa là gì?
++ Không mở được kết nối dữ liệu
+- Username OK, cần mật khẩu
+- Kết nối dữ liệu đã mở, bắt đầu truyền
+- Lỗi ghi file
+= Slide tr.39.
+
+## c2-sau-mail | chuong 2 v1.pdf tr.41–49
+Q: Khi mail server của Alice chưa gửi được thư cho server của Bob, thư được giữ ở đâu?
++ Hàng đợi thông điệp của mail server Alice, sẽ thử gửi lại
+- Hộp thư của Bob
+- User agent của Bob
+- Server DNS
+= Message queue.
+
+Q: SMTP có chuyển thư qua mail server trung gian không?
++ Không, truyền trực tiếp từ server gửi tới server nhận
+- Có, luôn qua 2 server trung gian
+- Có, qua server DNS
+- Có, qua router
+= Slide tr.43.
+
+Q: Khi kết nối telnet tới SMTP server cổng 25, server trả mã nào đầu tiên?
++ 220
+- 200
+- 331
+- +OK
+= Slide tr.44.
+
+Q: Vì sao Bob không dùng SMTP để lấy thư từ mail server về máy?
++ SMTP là giao thức đẩy, còn lấy thư là thao tác kéo
+- SMTP không dùng TCP
+- SMTP chỉ dùng cho server DNS
+- SMTP chỉ gửi được một thư
+= Cần POP3/IMAP/HTTP.
+
+Q: SMTP gửi ảnh nhị phân thế nào khi chỉ cho phép ASCII 7-bit?
++ Mã hóa dữ liệu nhị phân thành ASCII (MIME) trước khi gửi
+- Gửi nguyên bản nhị phân
+- Gửi qua FTP thay thế
+- Không thể gửi ảnh
+= K&R §2.3.
+
+Q: Trong POP3, server trả lời thành công bằng gì?
++ +OK
+- 200 OK
+- 250
+- ACK
+= Đáp ứng +OK / -ERR.
+
+Q: Lệnh POP3 nào xoá thư trên server?
++ dele
+- retr
+- list
+- quit
+= Slide tr.48.
+
+Q: Bob đọc thư bằng POP3 chế độ "tải và giữ". Điều gì xảy ra khi đổi sang máy khác?
++ Vẫn tải lại được thư vì thư được giữ trên server
+- Không đọc lại được thư
+- Thư bị chuyển sang IMAP
+- Thư bị xoá
+= Tải và giữ: sao chép lên nhiều client.
+
+## c2-sau-dns | chuong 2 v1.pdf tr.51–64
+Q: Host hỏi DNS cục bộ; DNS cục bộ đã cache địa chỉ server TLD .edu. Truy vấn lặp tới server có thẩm quyền cần bao nhiêu thông điệp?
++ 6
+- 8
+- 4
+- 2
+= Bỏ qua 2 thông điệp với server gốc.
+
+Q: Server DNS cục bộ đã cache sẵn bản ghi A cần tìm. Cần bao nhiêu thông điệp DNS?
++ 2
+- 4
+- 6
+- 8
+= Host hỏi, cục bộ trả lời ngay.
+
+Q: Trường identification 16 bit trong thông điệp DNS dùng để làm gì?
++ Ghép thông điệp trả lời với truy vấn tương ứng
+- Lưu TTL của bản ghi
+- Lưu địa chỉ IP
+- Đếm số câu hỏi
+= Slide tr.61.
+
+Q: Phần nào của thông điệp trả lời DNS có thể chứa bản ghi A của mail server khi truy vấn MX?
++ Additional
+- Questions
+- Authority
+- Flags
+= Thông tin "hữu ích" bổ sung.
+
+Q: Khi đăng ký networkutopia.com, registrar chèn những bản ghi nào vào TLD .com?
++ Một bản ghi NS và một bản ghi A của server có thẩm quyền
+- Một bản ghi MX và một bản ghi CNAME
+- Chỉ bản ghi A của www
+- Bản ghi A của mọi host trong công ty
+= Slide tr.63.
+
+Q: Tấn công khuếch đại DNS hoạt động thế nào?
++ Gửi truy vấn nhỏ với địa chỉ nguồn giả là IP nạn nhân để trả lời lớn dồn về nạn nhân
+- Xoá các server gốc
+- Đổi TTL của bản ghi
+- Gửi thư rác qua SMTP
+= Slide tr.64.
+
+Q: Vì sao tấn công DDoS vào server gốc chưa thành công theo slide?
++ Có lọc lưu lượng và server cục bộ cache IP server TLD nên bỏ qua được server gốc
+- Server gốc không có địa chỉ IP
+- Server gốc dùng TCP
+- Chỉ có một server gốc
+= Slide tr.64.
+
+Q: Đầu độc DNS (DNS poisoning) là gì?
++ Gửi trả lời giả tới DNS server để nó cache bản ghi sai
+- Làm ngập server gốc
+- Đổi tên miền tại registrar
+- Tắt server TLD
+= Slide tr.64.
+
+Q: Có bao nhiêu tên server DNS gốc logic (a đến m)?
++ 13
+- 1
+- 4
+- 255
+= Mỗi tên được nhân bản ở nhiều nơi.
+
+## c2-sau-p2p | K&R §2.5
+Q: Với kiến trúc client-server, thời gian phân phối file cho N client tăng thế nào khi N lớn?
++ Tăng tuyến tính theo N
+- Gần như không đổi
+- Giảm dần
+- Tăng theo hàm mũ 2^N
+= D_cs ≥ N·F/u_s.
+
+Q: F = 1 Gbit, u_s = 10 Mbps, d_min = 20 Mbps, N = 100. Cận dưới thời gian phân phối client-server là?
++ 10 000 s
+- 50 s
+- 100 s
+- 909 s
+= max(N·F/u_s, F/d_min) = max(10 000, 50).
+
+Q: Cùng dữ liệu trên, mỗi peer upload 1 Mbps. Cận dưới thời gian phân phối P2P xấp xỉ?
++ 909 s
+- 10 000 s
+- 50 s
+- 100 s
+= max(F/u_s, F/d_min, N·F/(u_s + Σu_i)) = max(100, 50, 909).
+
+Q: Trong công thức P2P, thành phần F/d_min thể hiện điều gì?
++ Peer có tốc độ tải xuống nhỏ nhất không thể nhận file nhanh hơn F/d_min
+- Server phải gửi ít nhất một bản sao
+- Tổng năng lực upload của hệ thống
+- Thời gian gửi tới N peer
+= Ràng buộc tải xuống.
+
+Q: Vì sao BitTorrent yêu cầu chunk hiếm nhất trước?
++ Để chunk hiếm được nhân bản nhanh, tránh mất khi peer giữ nó rời đi
+- Để tải nhanh chunk lớn nhất
+- Để tiết kiệm bộ nhớ tracker
+- Vì chunk hiếm là chunk đầu file
+= Rarest first.
+
+Q: Mục đích của "optimistically unchoke" mỗi 30 giây là gì?
++ Cho peer mới cơ hội nhận chunk và tìm đối tác trao đổi tốt hơn
+- Chặn peer chậm vĩnh viễn
+- Gửi file cho tracker
+- Tăng kích thước chunk
+= Peer được chọn có thể vào top 4.
+
+Q: DHT trong P2P là gì?
++ Cơ sở dữ liệu khoá–giá trị phân tán trên các peer
+- Một loại web cache
+- Một server DNS gốc
+- Một giao thức thư
+= Nêu trong tổng kết chương 2.
+
+## c2-sau-sock | K&R §2.7
+Q: Trong TCP server, lệnh accept() trả về gì?
++ Một socket kết nối mới dành riêng cho client vừa tới
+- Socket cửa đón cũ
+- Địa chỉ DNS của client
+- Dữ liệu đầu tiên của client
+= Socket cửa đón tiếp tục chờ client khác.
+
+Q: Vì sao UDP server chỉ cần một socket để phục vụ nhiều client?
++ Mỗi gói nhận được mang địa chỉ IP và cổng nguồn, server trả lời bằng sendto tới địa chỉ đó
+- Vì UDP mở kết nối riêng cho từng client
+- Vì UDP chỉ cho một client
+- Vì DNS định tuyến hộ
+= Không có kết nối.
+
+Q: Trong TCP, gọi connect() ở client sẽ kích hoạt việc gì?
++ Bắt tay 3 bước với server
+- Gửi dữ liệu ngay không bắt tay
+- Truy vấn DNS gốc
+- Đóng kết nối
+= Thiết lập kết nối.
+
+## c2-sau-cdn | K&R §2.6
+Q: Trong DASH, ai chọn tốc độ mã hóa cho đoạn video tiếp theo?
++ Client, dựa trên băng thông đo được
+- Server luôn chọn
+- Router lõi
+- DNS gốc
+= Manifest liệt kê các phiên bản.
+
+Q: Chiến lược CDN "enter deep" là gì?
++ Đặt cụm server sâu trong các mạng truy nhập của ISP, gần người dùng
+- Đặt vài cụm lớn tại IXP
+- Chỉ dùng một data center
+- Đặt server trong router lõi
+= Akamai; "bring home" là đặt ở IXP.
+
+Q: CDN thường chuyển hướng client tới cụm server phù hợp bằng cách nào?
++ Dùng DNS của CDN để trả về địa chỉ cụm phù hợp
+- Dùng SMTP
+- Dùng FTP
+- Dùng ICMP
+= K&R §2.6.3.

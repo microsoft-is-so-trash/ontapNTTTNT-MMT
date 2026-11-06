@@ -1,0 +1,110 @@
+<div class="note"><span class="tag">Slide</span> = giảng giải sâu <code>chuong 3 Tang giao van.pdf</code> · <span class="tag multi">K&amp;R §</span> = mở rộng từ giáo trình Kurose &amp; Ross bản 8.</div>
+
+<h3 id="c3-sau-role">1. Tầng giao vận làm gì mà tầng mạng không làm</h3>
+<p><span class="tag">Slide tr.4–6</span> Tầng mạng: truyền thông logic <b>giữa các host</b>, best effort (có thể mất, sai thứ tự, hỏng). Tầng giao vận <b>dựa vào và nâng cao</b> dịch vụ đó: logic <b>giữa các tiến trình</b> (ghép/phân kênh), và với TCP thêm tin cậy, đúng thứ tự, điều khiển luồng, tắc nghẽn, thiết lập kết nối. Ví dụ Ann–Bill: host = nhà, tiến trình = em bé, thông điệp = thư trong phong bì, giao thức giao vận = quy ước giữa hai anh chị gom/phát thư, giao thức tầng mạng = bưu điện. <b>Giới hạn</b>: giao vận không thể đảm bảo <b>trễ hay băng thông</b> nếu tầng mạng không đảm bảo.</p>
+
+<h3 id="c3-sau-demux">2. Ghép/phân kênh — ví dụ có số</h3>
+<p><span class="tag">Slide tr.8–14</span> Header giao vận có cổng nguồn + cổng đích 16 bit (0–65535; 0–1023 là cổng phổ biến <span class="tag multi">K&amp;R</span>).</p>
+<div class="tw"><table><tr><th>Tình huống</th><th>UDP</th><th>TCP</th></tr>
+<tr><td>Socket được xác định bởi</td><td>(IP đích, cổng đích)</td><td>(IP nguồn, cổng nguồn, IP đích, cổng đích)</td></tr>
+<tr><td>A (cổng 9157) và C (cổng 5775) cùng gửi tới B:6428</td><td>vào <b>cùng một</b> socket</td><td>hai socket <b>khác nhau</b></td></tr>
+<tr><td>Bên nhận trả lời về đâu?</td><td>lấy IP/cổng nguồn trong segment làm “địa chỉ trả về”</td><td>theo kết nối</td></tr>
+<tr><td>Web server cổng 80, 3 client</td><td>—</td><td>3 socket (HTTP không bền: mỗi yêu cầu một socket mới)</td></tr></table></div>
+<p>Ghép kênh ở bên gửi: gom dữ liệu từ nhiều socket, thêm header. Phân kênh ở bên nhận: dùng <b>IP (từ header tầng mạng) + cổng (từ header giao vận)</b>. Server “phân luồng” (tr.14): một tiến trình, nhiều luồng, mỗi luồng một socket kết nối.</p>
+
+<h3 id="c3-sau-udp">3. UDP và checksum làm tay</h3>
+<p><span class="tag">Slide tr.16–19</span> Header 8 byte: cổng nguồn, cổng đích, length (cả header + dữ liệu), checksum. Vì sao dùng UDP: không thiết lập kết nối (không trễ bắt tay), không giữ trạng thái kết nối (server phục vụ nhiều client hơn), header 8 byte (TCP 20 byte), không bị điều khiển tắc nghẽn.</p>
+<p><b>Quy trình checksum:</b> chia thành từ 16 bit → cộng → bit nhớ tràn ra ngoài thì <b>cộng vòng</b> vào bit thấp nhất → <b>đảo bit</b> (bù 1). Bên nhận cộng tất cả các từ <b>kể cả checksum</b>: kết quả toàn bit 1 (1111…1) → không phát hiện lỗi; có bit 0 → có lỗi. <span class="tag multi">K&amp;R §3.3.2</span>: phát hiện được mọi lỗi 1 bit nhưng <b>không</b> phát hiện được mọi lỗi 2 bit (vd hai bit cùng vị trí ở hai từ đổi ngược chiều nhau); UDP chỉ <b>phát hiện</b>, không sửa — segment lỗi bị bỏ hoặc chuyển lên kèm cảnh báo. Lý do vẫn kiểm lỗi ở giao vận dù tầng liên kết đã kiểm: không phải liên kết nào cũng kiểm, lỗi có thể xảy ra trong bộ nhớ router → nguyên lý <b>end-end</b>.</p>
+<pre data-lang="text">  0110011001100000
++ 0101010101010101
+= 1011101110110101
++ 1000111100001100
+=1 0100101011000001   (tràn 1 bit)
+→ cộng vòng: 0100101011000010
+→ checksum (đảo): 1011010100111101</pre>
+
+<h3 id="c3-sau-rdt">4. rdt1.0 → 3.0: mỗi bước sửa một lỗ hổng</h3>
+<div class="tw"><table><tr><th>Lỗ hổng</th><th>Ví dụ</th><th>Sửa bằng</th><th>Phiên bản</th></tr>
+<tr><td>bit lỗi</td><td>gói đến nhưng hỏng</td><td>checksum + ACK/NAK + gửi lại (ARQ), <b>dừng và chờ</b></td><td>2.0</td></tr>
+<tr><td>ACK/NAK hỏng</td><td>bên gửi không biết → gửi lại → bên nhận có thể nhận <b>trùng</b></td><td>số thứ tự 0/1, bên nhận bỏ gói trùng (vẫn gửi ACK)</td><td>2.1</td></tr>
+<tr><td>Dư NAK</td><td>—</td><td>ACK mang số thứ tự gói nhận tốt cuối; <b>ACK trùng = NAK</b></td><td>2.2</td></tr>
+<tr><td>Mất gói (dữ liệu hoặc ACK)</td><td>bên gửi chờ mãi</td><td><b>bộ định thời</b>; gói chỉ trễ → trùng → số thứ tự xử lý</td><td>3.0 (alternating-bit)</td></tr></table></div>
+<p>Vì sao <b>chỉ cần 2 số thứ tự</b> (tr.35): dừng-và-chờ chỉ có tối đa 1 gói chưa xác nhận; bên nhận chỉ cần phân biệt “gói mới” với “gói vừa nhận lại”. Số trạng thái FSM tăng gấp đôi vì phải nhớ đang chờ 0 hay 1. Bên nhận <b>không biết</b> ACK/NAK cuối có tới bên gửi tốt không.</p>
+
+<h3 id="c3-sau-util">5. Hiệu suất: từ dừng-và-chờ tới pipeline</h3>
+<p><span class="tag">Slide tr.42–45</span> U<sub>sender</sub> = (L/R) / (RTT + L/R). Ví dụ slide: 1 Gbps, d<sub>prop</sub> 15 ms (RTT 30 ms), L = 8000 bit → L/R = 8 µs → U = 0,008/30,008 = <b>0,00027</b>; thông lượng chỉ ~1 KB/30 ms = <b>33 kB/s</b>: “giao thức giới hạn việc dùng tài nguyên vật lý”. Pipeline 3 gói → U = 3 × 0,00027 = 0,00081.</p>
+<p><b>Cửa sổ cần để kênh bận liên tục</b>: N ≥ (RTT + L/R)/(L/R). Ví dụ trên: 30,008/0,008 ≈ <b>3 751 gói</b>. U = min(1, N·(L/R)/(RTT+L/R)).</p>
+
+<h3 id="c3-sau-win">6. Go-Back-N vs Selective Repeat — chi tiết thi</h3>
+<div class="tw"><table><tr><th>Tiêu chí</th><th>GBN</th><th>SR</th></tr>
+<tr><td>ACK</td><td>tích luỹ ACK(n): đã nhận đúng tới n</td><td>riêng từng gói</td></tr>
+<tr><td>Gói đến sai thứ tự</td><td><b>huỷ</b>, gửi lại ACK của gói đúng thứ tự cuối (ACK trùng); không cần đệm</td><td><b>đệm</b>, gửi ACK cho gói đó</td></tr>
+<tr><td>Bộ định thời</td><td>một (cho gói cũ nhất chưa ACK)</td><td>một cho <b>mỗi</b> gói chưa ACK</td></tr>
+<tr><td>Timeout(n)</td><td>gửi lại n và <b>mọi</b> gói sau n trong cửa sổ</td><td>chỉ gửi lại n</td></tr>
+<tr><td>Cửa sổ bên nhận</td><td>1</td><td>N</td></tr>
+<tr><td>Ràng buộc với k bit số thứ tự <span class="tag multi">K&amp;R §3.4.4</span></td><td>N ≤ 2<sup>k</sup> − 1</td><td><b>N ≤ 2<sup>k−1</sup></b> (≤ nửa không gian số thứ tự)</td></tr>
+<tr><td>Bên nhận ACK gói trong [rcvbase−N, rcvbase−1]?</td><td>—</td><td>có, gửi lại ACK (dù đã nhận) để bên gửi tiến cửa sổ</td></tr></table></div>
+<p>Kịch bản tr.55: số thứ tự 0–3, cửa sổ 3 → bên nhận không phân biệt “pkt0 mới” với “pkt0 gửi lại” (ACK bị mất) → nhận trùng như dữ liệu mới. Cửa sổ 2 thì an toàn.</p>
+<p><b>Đếm số gói gửi lại</b> (dạng bài): GBN N = 4, pkt2 mất, đã gửi 2,3,4,5 → timeout gửi lại 4 gói (2,3,4,5). SR cùng tình huống → gửi lại 1 gói (pkt2).</p>
+
+<h3 id="c3-sau-tcpseq">7. TCP: số thứ tự, ACK, sinh ACK</h3>
+<p><span class="tag">Slide tr.57–60, 70</span> Số thứ tự đếm <b>byte</b>, không đếm segment: file 500 000 byte, MSS 1 000 → segment thứ nhất Seq = 0, thứ hai Seq = 1000… (K&amp;R: số thứ tự đầu tiên thực tế chọn <b>ngẫu nhiên</b>). ACK = byte kế tiếp mong đợi, tích luỹ. TCP song công → ACK được <b>“cõng” (piggyback)</b> trên segment dữ liệu chiều ngược lại (ví dụ Telnet).</p>
+<div class="tw"><table><tr><th>Sự kiện ở bên nhận (tr.70)</th><th>Hành động</th></tr>
+<tr><td>Segment đúng thứ tự, mọi thứ trước đã ACK</td><td><b>ACK trễ</b>: chờ tối đa 500 ms segment kế; không có thì gửi ACK</td></tr>
+<tr><td>Segment đúng thứ tự, một segment khác đang chờ ACK trễ</td><td>gửi ngay <b>một</b> ACK tích luỹ cho cả hai</td></tr>
+<tr><td>Segment sai thứ tự (Seq lớn hơn mong đợi) → có khoảng trống</td><td>gửi ngay <b>ACK trùng</b> chỉ byte mong đợi</td></tr>
+<tr><td>Segment lấp (một phần) khoảng trống</td><td>gửi ngay ACK (nếu segment bắt đầu đúng ở đầu khoảng trống)</td></tr></table></div>
+<p>Cờ header (tr.58): URG, PSH (thường không dùng), <b>ACK</b> (trường ACK hợp lệ), <b>RST, SYN, FIN</b> (thiết lập/huỷ kết nối); receive window = số byte bên nhận còn nhận được; checksum như UDP. Header tối thiểu <b>20 byte</b>.</p>
+<p><b>TCP là GBN hay SR?</b> <span class="tag multi">K&amp;R §3.5.4</span>: lai — ACK tích luỹ và chỉ gửi lại segment cũ nhất chưa ACK khi timeout (giống GBN) nhưng bên nhận <b>đệm</b> segment sai thứ tự (giống SR); tuỳ chọn SACK cho phép báo nhận chọn lọc.</p>
+
+<h3 id="c3-sau-rtt">8. Ước lượng RTT — làm bài tính</h3>
+<p><span class="tag">Slide tr.61–63</span> Timeout quá ngắn → gửi lại thừa; quá dài → phản ứng chậm với mất gói. SampleRTT chỉ đo cho segment <b>không bị gửi lại</b> (K&amp;R) và đo khoảng một lần mỗi RTT.</p>
+<div class="card small">Cho EstimatedRTT = 100 ms, DevRTT = 5 ms, SampleRTT mới = 120 ms, α = 0,125, β = 0,25:<br>
+EstimatedRTT = 0,875·100 + 0,125·120 = <b>102,5 ms</b><br>
+DevRTT = 0,75·5 + 0,25·|120 − 102,5| = 3,75 + 4,375 = <b>8,125 ms</b><br>
+TimeoutInterval = 102,5 + 4·8,125 = <b>135 ms</b><br>
+<i>Lưu ý:</i> slide/K&amp;R tính DevRTT bằng EstimatedRTT <b>sau khi cập nhật</b>; nếu đề cho thứ tự khác thì làm theo đề.</div>
+<p><span class="tag multi">K&amp;R §3.5.3–3.5.4</span>: giá trị khởi tạo TimeoutInterval = 1 s; mỗi lần timeout thì <b>nhân đôi</b> khoảng timeout (một dạng điều khiển tắc nghẽn), nhận được ACK/dữ liệu mới thì tính lại theo công thức.</p>
+
+<h3 id="c3-sau-fr">9. Các tình huống truyền lại của TCP</h3>
+<p><span class="tag">Slide tr.66–72</span> Bên gửi có 3 sự kiện: ① dữ liệu từ ứng dụng → tạo segment, khởi động timer nếu chưa chạy ② timeout → gửi lại segment gây timeout, khởi động lại timer ③ ACK mới → cập nhật SendBase, còn segment chưa ACK thì khởi động lại timer.</p>
+<ul><li><b>Mất ACK</b>: Seq = 92 (8 byte), ACK 100 mất → timeout → gửi lại 92.</li>
+<li><b>Timeout sớm</b>: gửi 92 (8 B) và 100 (20 B), cả hai ACK tới trễ → gửi lại 92; bên nhận gửi ACK 120; segment 100 <b>không</b> bị gửi lại.</li>
+<li><b>ACK tích luỹ cứu</b>: ACK 100 mất nhưng ACK 120 tới trước timeout → không gửi lại gì.</li>
+<li><b>Fast retransmit</b>: 3 ACK trùng (tức 4 ACK giống nhau) → gửi lại ngay segment có Seq nhỏ nhất chưa ACK. Lý do chọn “3”: tránh nhầm với việc đổi thứ tự nhẹ trong mạng.</li></ul>
+
+<h3 id="c3-sau-flow">10. Điều khiển luồng</h3>
+<p><span class="tag">Slide tr.74–75</span> Nguy cơ: ứng dụng đọc khỏi bộ đệm chậm hơn tốc độ dữ liệu tới. rwnd = RcvBuffer − (LastByteRcvd − LastByteRead) (<span class="tag multi">K&amp;R</span>); bên gửi giữ LastByteSent − LastByteAcked ≤ rwnd. Ví dụ: RcvBuffer 4096, đã nhận tới byte 3000, ứng dụng đọc tới 1000 → rwnd = 4096 − 2000 = <b>2096 byte</b>.</p>
+<p><span class="tag multi">K&amp;R §3.5.5</span> rwnd = 0 thì sao? Bên gửi tiếp tục gửi <b>segment 1 byte</b> (thăm dò) để nhận được ACK báo rwnd mới khi bộ đệm trống — tránh bị “kẹt” vĩnh viễn. UDP không có điều khiển luồng: bộ đệm socket tràn thì segment bị bỏ.</p>
+
+<h3 id="c3-sau-conn">11. Quản lý kết nối: bắt tay, đóng, tấn công</h3>
+<p><span class="tag">Slide tr.77–83</span> Bắt tay 2 bước hỏng khi có trễ thay đổi, gửi lại, đổi thứ tự, không thấy bên kia: <b>kết nối mở nửa</b> (server mở kết nối mà client đã quên) hoặc <b>nhận trùng dữ liệu cũ</b> như mới.</p>
+<div class="tw"><table><tr><th>Bước</th><th>Segment</th><th>Trạng thái</th></tr>
+<tr><td>1</td><td>client → <b>SYN</b>=1, Seq = x (không dữ liệu)</td><td>client: SYN_SENT · server: LISTEN</td></tr>
+<tr><td>2</td><td>server → <b>SYN</b>=1, <b>ACK</b>=1, Seq = y, ACKnum = x+1</td><td>server: SYN_RCVD (cấp bộ đệm, biến)</td></tr>
+<tr><td>3</td><td>client → ACK=1, ACKnum = y+1 (<b>có thể mang dữ liệu</b>)</td><td>cả hai: ESTAB</td></tr></table></div>
+<p>Đóng: mỗi bên gửi <b>FIN</b>, bên kia trả ACK (có thể gộp FIN+ACK). Client: FIN_WAIT_1 → FIN_WAIT_2 → <b>TIME_WAIT</b> (chờ khoảng <b>2·MSL</b> để gửi lại ACK cuối nếu nó mất) → CLOSED. Server: CLOSE_WAIT → LAST_ACK → CLOSED.</p>
+<p><span class="tag multi">K&amp;R §3.5.6</span> <b>SYN flood</b>: kẻ tấn công gửi nhiều SYN với IP giả, không gửi ACK bước 3 → server cạn tài nguyên. <b>SYN cookie</b>: server không cấp tài nguyên ở bước 2, mã hoá thông tin kết nối vào số thứ tự y; chỉ cấp khi ACK hợp lệ (y+1) quay về. Segment tới cổng không có socket: TCP trả <b>RST</b>; UDP thì host trả ICMP port unreachable (dùng trong traceroute, quét cổng).</p>
+
+<h3 id="c3-sau-cost">12. Ba tình huống “chi phí” của tắc nghẽn</h3>
+<p><span class="tag">Slide tr.85–94</span></p>
+<div class="tw"><table><tr><th>Tình huống</th><th>Giả thiết</th><th>Chi phí rút ra</th></tr>
+<tr><td>1</td><td>2 bên gửi, 1 router đệm vô hạn, không gửi lại, liên kết ra R</td><td>thông lượng tối đa mỗi kết nối <b>R/2</b>; tốc độ đến tiến gần R/2 → <b>trễ tăng vô hạn</b></td></tr>
+<tr><td>2</td><td>đệm hữu hạn, có gửi lại (λ'<sub>in</sub> ≥ λ<sub>in</sub>)</td><td>phải gửi lại gói mất; timeout sớm → <b>gửi lại bản sao không cần thiết</b>, chiếm băng thông → thông lượng hữu ích &lt; R/2</td></tr>
+<tr><td>3</td><td>4 bên gửi, nhiều hop, timeout/gửi lại</td><td>λ'<sub>in</sub> tăng → luồng qua nhiều hop bị bỏ ở hop sau → thông lượng tiến về <b>0</b>; gói bị bỏ thì mọi băng thông đã dùng ở các hop trước là <b>lãng phí</b></td></tr></table></div>
+<p>Hai cách tiếp cận (tr.95): <b>end-end</b> (TCP suy ra từ mất gói/trễ) và <b>có hỗ trợ từ mạng</b> (bit chỉ thị: SNA, DECbit, TCP/IP <b>ECN</b>, ATM; hoặc router báo tốc độ gửi cụ thể).</p>
+
+<h3 id="c3-sau-cc">13. Điều khiển tắc nghẽn TCP — luyện vết cwnd</h3>
+<p><span class="tag">Slide tr.97–104</span> Tốc độ ≈ cwnd/RTT. Khởi động chậm: cwnd = 1 MSS, +1 MSS mỗi ACK → <b>gấp đôi mỗi RTT</b>; khi cwnd ≥ ssthresh → tránh tắc nghẽn +1 MSS mỗi RTT (K&amp;R: +MSS·MSS/cwnd mỗi ACK). Mất gói: ssthresh = cwnd/2.</p>
+<div class="tw"><table><tr><th>Vòng (RTT)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr>
+<tr><td>cwnd (MSS), ssthresh = 8</td><td>1</td><td>2</td><td>4</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td colspan="2">sau vòng 8: 3 ACK trùng</td></tr>
+<tr><td>Reno (ssthresh = 6)</td><td colspan="8"></td><td>6</td><td>7</td></tr>
+<tr><td>Tahoe (ssthresh = 6)</td><td colspan="8"></td><td>1</td><td>2</td></tr></table></div>
+<p>Nếu thay 3 ACK trùng bằng <b>timeout</b>: cả Reno và Tahoe → cwnd = 1, khởi động chậm tới ssthresh = 6 rồi tăng tuyến tính. Vì sao 3 ACK trùng bị phạt nhẹ hơn: ACK trùng cho thấy mạng <b>vẫn chuyển được segment</b>, còn timeout báo hiệu tắc nghẽn nặng.</p>
+<p><b>Fast recovery</b> (FSM tr.103): khi 3 ACK trùng, cwnd = ssthresh + 3 MSS; mỗi ACK trùng thêm +1 MSS; ACK mới → cwnd = ssthresh, sang tránh tắc nghẽn.</p>
+<p><b>Thông lượng</b> TB ≈ (3/4)·W/RTT (cwnd dao động W/2 ↔ W). Ví dụ W = 20 segment × 1500 B, RTT = 100 ms → 0,75 × 30 000 / 0,1 = <b>225 kB/s = 1,8 Mbps</b>. “Đường rộng và dài” (tr.105): 10 Gbps, MSS 1500 B, RTT 100 ms → cần W ≈ 83 333 segment và tỷ lệ mất L ≈ 2·10<sup>−10</sup> theo công thức 1,22·MSS/(RTT·√L).</p>
+<p><b>Công bằng</b> (tr.106–108): AIMD làm hai luồng hội tụ về chia đều (tăng cộng đi song song đường 45°, giảm nhân kéo về gốc toạ độ). Ngoại lệ: <b>UDP</b> không tự giảm tốc; ứng dụng mở <b>nhiều kết nối song song</b> (R có 9 kết nối: thêm 1 → R/10; thêm 11 → 11/20 ≈ R/2).</p>
+<p><span class="tag multi">K&amp;R §3.7</span> Mở rộng: <b>TCP CUBIC</b> (mặc định Linux; tăng theo hàm bậc ba quanh W<sub>max</sub>, nhanh khi xa, chậm khi gần điểm mất trước đó) · <b>ECN</b> (router đánh dấu 2 bit trong header IP; bên nhận đặt cờ ECE trong ACK; bên gửi giảm cwnd như khi mất gói và đặt CWR) · điều khiển dựa trên <b>trễ</b> (Vegas, <b>BBR</b> của Google: đo RTT nhỏ nhất và băng thông, giữ “ống” vừa đầy, không đợi mất gói).</p>
+
+<h3 id="c3-sau-quic">14. QUIC <span class="tag multi">K&amp;R §3.8</span> (mở rộng)</h3>
+<p>Giao thức tầng ứng dụng trên <b>UDP</b>, dùng cho HTTP/3: gộp bắt tay kết nối + TLS trong <b>1 RTT</b> (0-RTT khi kết nối lại), nhiều <b>luồng</b> độc lập trong một kết nối (mất gói một luồng không chặn luồng khác — sửa HOL blocking của TCP), tự làm tin cậy và điều khiển tắc nghẽn kiểu TCP. Ý nghĩa: tầng giao vận “truyền thống” có thể được dựng lại ở tầng ứng dụng.</p>

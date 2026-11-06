@@ -1,0 +1,699 @@
+## c3-sau-role | chuong 3 Tang giao van.pdf tr.4–6
+Q: Trong ví dụ nhà Ann – nhà Bill, "dịch vụ bưu điện" tương ứng với gì?
++ Giao thức tầng mạng
+- Giao thức tầng giao vận
+- Tiến trình ứng dụng
+- Host
+= Giao vận = quy ước giữa các em bé hai nhà.
+
+Q: Trong ví dụ nhà Ann – nhà Bill, "các em bé" tương ứng với gì?
++ Các tiến trình
+- Các host
+- Các router
+- Các segment
+= Ngôi nhà = host.
+
+Q: Tầng giao vận có thể đảm bảo trễ tối đa khi tầng mạng là best effort không?
++ Không, giao vận bị giới hạn bởi dịch vụ của tầng mạng về trễ và băng thông
+- Có, TCP luôn đảm bảo trễ
+- Có, UDP đảm bảo trễ
+- Có, nếu dùng cổng 80
+= TCP/UDP không đảm bảo trễ hay băng thông.
+
+Q: Dịch vụ nào TCP có thể cung cấp dù tầng mạng không tin cậy?
++ Truyền tin cậy, đúng thứ tự
+- Đảm bảo trễ
+- Đảm bảo băng thông tối thiểu
+- Mã hóa tự động
+= Dựa vào và nâng cao dịch vụ tầng mạng.
+
+## c3-sau-demux | chuong 3 Tang giao van.pdf tr.8–14
+Q: Host A (cổng nguồn 9157) và host C (cổng nguồn 5775) cùng gửi UDP segment tới B cổng 6428. Ở B, các segment được đưa tới đâu?
++ Cùng một socket UDP
+- Hai socket khác nhau
+- Bị bỏ vì trùng cổng
+- Socket cửa đón TCP
+= UDP socket xác định bởi (IP đích, cổng đích).
+
+Q: Cùng tình huống trên nhưng dùng TCP. Ở B, các segment được đưa tới đâu?
++ Hai socket khác nhau vì bộ 4 giá trị khác nhau
+- Cùng một socket
+- Socket UDP
+- Không được nhận
+= TCP dùng IP/cổng nguồn và đích.
+
+Q: Khi nhận UDP segment, server dùng thông tin nào để trả lời đúng client?
++ IP nguồn và cổng nguồn trong segment nhận được
+- Chỉ cổng đích
+- Địa chỉ MAC
+- Số thứ tự
+= Đóng vai "địa chỉ trả về".
+
+Q: Phạm vi số hiệu cổng là bao nhiêu bit?
++ 16 bit (0–65535)
+- 8 bit
+- 32 bit
+- 48 bit
+= Cổng 0–1023 là cổng phổ biến (K&R).
+
+Q: Phân kênh dùng những thông tin từ đâu?
++ IP từ header tầng mạng và số cổng từ header tầng giao vận
+- Chỉ header tầng ứng dụng
+- Chỉ địa chỉ MAC
+- Bảng định tuyến
+= Slide tr.9.
+
+Q: Web server cổng 80 dùng HTTP không bền vững, 1 client gửi 5 yêu cầu lần lượt. Server tạo bao nhiêu socket kết nối?
++ 5
+- 1
+- 2
+- 0
+= Mỗi yêu cầu một kết nối TCP mới → một socket mới.
+
+## c3-sau-udp | chuong 3 Tang giao van.pdf tr.16–19
+Q: Header UDP dài bao nhiêu byte?
++ 8
+- 20
+- 16
+- 40
+= 4 trường × 16 bit.
+
+Q: Ứng dụng gửi 500 byte dữ liệu qua UDP. Trường length bằng bao nhiêu?
++ 508
+- 500
+- 520
+- 492
+= Tính cả 8 byte header.
+
+Q: Ưu điểm nào của UDP giúp server phục vụ nhiều client hơn TCP?
++ Không giữ trạng thái kết nối
+- Có điều khiển tắc nghẽn
+- Có truyền tin cậy
+- Có bắt tay 3 bước
+= Không có bộ đệm, biến kết nối.
+
+Q: Ứng dụng nào được slide nêu là dùng UDP?
++ DNS, SNMP, streaming multimedia
+- Email SMTP
+- Truyền file FTP
+- Web HTTP/1.1
+= Slide tr.16.
+
+Q: Bên nhận cộng tất cả các từ 16 bit kể cả checksum. Kết quả bằng 1111111111111111 có ý nghĩa gì?
++ Không phát hiện lỗi (vẫn có thể có lỗi)
+- Chắc chắn có lỗi
+- Chắc chắn không có lỗi
+- Cần gửi NAK
+= Tổng + checksum = toàn bit 1 nếu không lỗi.
+
+Q: Checksum Internet có phát hiện được mọi lỗi 2 bit không?
++ Không, ví dụ hai bit cùng vị trí ở hai từ đảo ngược chiều nhau
+- Có, luôn phát hiện
+- Chỉ khi dùng TCP
+- Chỉ khi dùng IPv6
+= K&R §3.3.2.
+
+Q: Tính tổng có cộng vòng của 1111111111111111 + 0000000000000001?
++ 0000000000000001
+- 0000000000000000
+- 1000000000000000
+- 1111111111111110
+= Tổng 1 0000000000000000, cộng vòng bit tràn → 0000000000000001.
+
+Q: Tổng có cộng vòng của các từ là 1011101110111100. Checksum là?
++ 0100010001000011
+- 1011101110111100
+- 1011101110111101
+- 0000000000000000
+= Đảo bit.
+
+Q: Vì sao UDP vẫn kiểm lỗi dù tầng liên kết đã kiểm lỗi?
++ Không phải liên kết nào cũng kiểm lỗi và lỗi có thể xảy ra trong bộ nhớ router (nguyên lý end-end)
+- Vì tầng liên kết không bao giờ kiểm lỗi
+- Vì UDP sửa được lỗi
+- Vì IP không có header
+= K&R §3.3.2.
+
+Q: Khi UDP phát hiện segment lỗi, nó làm gì?
++ Bỏ segment hoặc chuyển lên kèm cảnh báo; không sửa lỗi, không gửi lại
+- Yêu cầu gửi lại
+- Tự sửa lỗi
+- Gửi NAK
+= UDP chỉ phát hiện.
+
+## c3-sau-rdt | chuong 3 Tang giao van.pdf tr.26–41
+Q: rdt2.0 gặp lỗ hổng gì?
++ ACK/NAK có thể bị hỏng, bên gửi không biết bên nhận đã nhận đúng chưa
+- Không có checksum
+- Không có số thứ tự nên luôn nhận đúng
+- Không dùng dừng và chờ
+= Slide tr.32.
+
+Q: Khi ACK/NAK hỏng, rdt2.1 xử lý thế nào ở bên gửi?
++ Gửi lại gói hiện tại; số thứ tự giúp bên nhận bỏ gói trùng
+- Bỏ qua và gửi gói tiếp
+- Đợi vô hạn
+- Gửi NAK
+= Slide tr.33–35.
+
+Q: Trong rdt2.1, bên nhận nhận được gói trùng (đã nhận trước đó). Nó làm gì?
++ Bỏ dữ liệu trùng nhưng vẫn gửi ACK
+- Chuyển dữ liệu lên tầng trên lần nữa
+- Không gửi gì
+- Gửi NAK
+= Để bên gửi tiến tới gói kế tiếp.
+
+Q: Vì sao số trạng thái của FSM rdt2.1 tăng gấp đôi so với rdt2.0?
++ Phải nhớ gói đang chờ (hoặc vừa gửi) có số thứ tự 0 hay 1
+- Vì có thêm bộ định thời
+- Vì có thêm NAK
+- Vì có hai kênh truyền
+= Slide tr.35.
+
+Q: Trong rdt2.2, bên gửi nhận được ACK trùng (ACK cho gói trước). Nó hiểu thế nào?
++ Như NAK: gửi lại gói hiện tại
+- Gói hiện tại đã được nhận
+- Kết nối bị đóng
+- Cần tăng cửa sổ
+= Slide tr.36.
+
+Q: rdt3.0 thêm cơ chế nào để xử lý mất gói?
++ Bộ định thời đếm ngược, hết giờ thì gửi lại
+- NAK
+- Checksum
+- Cửa sổ trượt N gói
+= Slide tr.38.
+
+Q: Trong rdt3.0, gói chỉ bị trễ (không mất) nên bên gửi gửi lại. Hậu quả và cách xử lý?
++ Bên nhận có thể nhận trùng; số thứ tự giúp phát hiện và bỏ
+- Mất dữ liệu vĩnh viễn
+- Kết nối phải thiết lập lại
+- Không có vấn đề gì vì gói luôn mới
+= Slide tr.38.
+
+Q: rdt3.0 còn được gọi là gì (theo giáo trình)?
++ Giao thức bit luân phiên (alternating-bit protocol)
+- Go-Back-N
+- Selective Repeat
+- TCP Reno
+= Số thứ tự luân phiên 0/1.
+
+## c3-sau-util | chuong 3 Tang giao van.pdf tr.42–45
+Q: Liên kết 1 Gbps, RTT 30 ms, gói 8000 bit. Muốn độ khả dụng gần 1 cần cửa sổ pipeline khoảng bao nhiêu gói?
++ Khoảng 3751 gói
+- 3 gói
+- 30 gói
+- 8000 gói
+= N ≥ (RTT + L/R)/(L/R) = 30,008/0,008.
+
+Q: Liên kết 1 Mbps, RTT 20 ms, gói 1000 bit, dừng và chờ. Độ khả dụng U xấp xỉ?
++ 0,048
+- 0,5
+- 0,0005
+- 1
+= L/R = 1 ms; U = 1/(20 + 1).
+
+Q: Cùng liên kết trên (L/R = 1 ms, RTT = 20 ms) dùng pipeline 7 gói. U xấp xỉ?
++ 0,33
+- 0,048
+- 1
+- 0,7
+= 7/21.
+
+Q: Trong công thức U = N·(L/R)/(RTT + L/R), điều gì xảy ra khi N rất lớn?
++ U bị chặn ở 1 vì kênh không thể bận quá 100%
+- U vượt 1
+- U về 0
+- U âm
+= U = min(1, ...).
+
+Q: Thông lượng hiệu dụng của dừng và chờ trong ví dụ slide (1 Gbps, RTT 30 ms, gói 1 KB) là bao nhiêu?
++ Khoảng 33 kB/s
+- 1 Gbps
+- 125 MB/s
+- 8 Mbps
+= Mỗi 30 ms gửi được 1 KB.
+
+## c3-sau-win | chuong 3 Tang giao van.pdf tr.46–55
+Q: Dùng số thứ tự 3 bit. Kích thước cửa sổ tối đa của Selective Repeat là?
++ 4
+- 7
+- 8
+- 3
+= N ≤ 2^(k−1).
+
+Q: Dùng số thứ tự 3 bit. Kích thước cửa sổ tối đa của Go-Back-N là?
++ 7
+- 4
+- 8
+- 3
+= N ≤ 2^k − 1.
+
+Q: Không gian số thứ tự là 0–3. Cửa sổ SR an toàn tối đa là bao nhiêu?
++ 2
+- 3
+- 4
+- 1
+= Cửa sổ 3 gây nhầm gói 0 mới và cũ (tr.55).
+
+Q: GBN, N = 4. Bên gửi đã gửi pkt0–pkt5; pkt2 bị mất, các gói khác tới nơi. Bên nhận gửi ACK nào khi nhận pkt3, pkt4, pkt5?
++ ACK1 (ACK trùng) mỗi lần
+- ACK3, ACK4, ACK5
+- ACK2
+- Không gửi ACK
+= GBN huỷ gói sai thứ tự, ACK gói đúng thứ tự cuối.
+
+Q: Cùng tình huống, dùng SR. Bên nhận làm gì với pkt3, pkt4, pkt5?
++ Đệm lại và gửi ACK3, ACK4, ACK5
+- Huỷ và gửi ACK1
+- Chuyển ngay lên tầng trên
+- Không gửi ACK
+= SR ACK riêng từng gói.
+
+Q: SR: bên nhận nhận lại một gói nằm trong khoảng [rcvbase−N, rcvbase−1]. Nó làm gì?
++ Gửi lại ACK cho gói đó dù đã nhận trước
+- Bỏ qua, không gửi gì
+- Đệm lại lần nữa
+- Gửi NAK
+= Để bên gửi tiến cửa sổ khi ACK trước bị mất.
+
+Q: Trong GBN, bên nhận cần bộ đệm cho gói sai thứ tự không?
++ Không, chỉ cần nhớ số thứ tự mong đợi tiếp theo
+- Có, đệm N gói
+- Có, đệm toàn bộ file
+- Có, đệm 2 gói
+= Đơn giản bên nhận.
+
+Q: Ưu điểm của SR so với GBN là gì?
++ Tránh gửi lại không cần thiết, chỉ gửi lại gói thực sự bị mất hoặc lỗi
+- Không cần bộ định thời
+- Bên nhận không cần bộ đệm
+- Dùng được cửa sổ lớn hơn không gian số thứ tự
+= GBN có thể gửi lại rất nhiều gói đã nhận tốt.
+
+## c3-sau-tcpseq | chuong 3 Tang giao van.pdf tr.57–60, 70
+Q: File 500 000 byte, MSS = 1000 byte, số thứ tự byte đầu là 0. Segment thứ ba có Seq bằng bao nhiêu?
++ 2000
+- 3
+- 3000
+- 1000
+= Seq đếm byte: 0, 1000, 2000.
+
+Q: Host A gửi segment Seq = 38, mang 4 byte dữ liệu. ACK mà B gửi lại (nếu đúng thứ tự) bằng?
++ 42
+- 38
+- 41
+- 39
+= Byte kế tiếp mong đợi.
+
+Q: Vì sao TCP được gọi là "dòng byte", không có "ranh giới thông điệp"?
++ TCP đánh số và truyền theo byte; ứng dụng có thể nhận dữ liệu cắt khác với cách đã ghi
+- Vì TCP gửi từng bit
+- Vì TCP không có header
+- Vì TCP chỉ gửi một thông điệp
+= Slide tr.57.
+
+Q: Piggyback ACK là gì?
++ ACK được gửi kèm trên segment mang dữ liệu theo chiều ngược lại
+- ACK gửi riêng mỗi byte
+- ACK gửi qua UDP
+- ACK gửi bởi router
+= TCP song công (ví dụ Telnet).
+
+Q: Segment đúng thứ tự đến, mọi dữ liệu trước đã được ACK. Bên nhận TCP làm gì?
++ Chờ tối đa 500 ms; nếu không có segment tiếp thì gửi ACK (ACK trễ)
+- Gửi ngay 3 ACK
+- Gửi NAK
+- Không bao giờ gửi ACK
+= Bảng sinh ACK tr.70.
+
+Q: Segment đến với Seq lớn hơn mong đợi (có khoảng trống). Bên nhận TCP làm gì?
++ Gửi ngay ACK trùng chỉ ra byte mong đợi tiếp theo
+- Chờ 500 ms rồi ACK
+- Bỏ và không ACK
+- Gửi RST
+= Tạo điều kiện fast retransmit.
+
+Q: Hai segment đúng thứ tự đến liên tiếp (một đang chờ ACK trễ). Bên nhận làm gì?
++ Gửi ngay một ACK tích luỹ cho cả hai
+- Gửi hai ACK riêng
+- Chờ thêm 500 ms
+- Gửi ACK trùng
+= Bảng sinh ACK tr.70.
+
+Q: Header TCP tối thiểu (không options) dài bao nhiêu byte?
++ 20
+- 8
+- 40
+- 32
+= UDP 8 byte.
+
+Q: Những cờ nào dùng để thiết lập và huỷ kết nối TCP?
++ SYN, FIN, RST
+- URG, PSH
+- ACK, URG
+- PSH, ECE
+= Slide tr.58.
+
+Q: TCP giống Go-Back-N hay Selective Repeat?
++ Lai: ACK tích luỹ và chỉ gửi lại segment cũ nhất chưa ACK như GBN, nhưng bên nhận đệm segment sai thứ tự như SR
+- Hoàn toàn GBN
+- Hoàn toàn SR
+- Không giống cả hai
+= K&R §3.5.4.
+
+## c3-sau-rtt | chuong 3 Tang giao van.pdf tr.61–63
+Q: EstimatedRTT = 100 ms, SampleRTT mới = 120 ms, α = 0,125. EstimatedRTT mới?
++ 102,5 ms
+- 120 ms
+- 110 ms
+- 97,5 ms
+= 0,875·100 + 0,125·120.
+
+Q: EstimatedRTT = 102,5 ms, DevRTT cũ = 5 ms, SampleRTT = 120 ms, β = 0,25. DevRTT mới?
++ 8,125 ms
+- 5 ms
+- 17,5 ms
+- 4,375 ms
+= 0,75·5 + 0,25·17,5.
+
+Q: EstimatedRTT = 102,5 ms, DevRTT = 8,125 ms. TimeoutInterval bằng?
++ 135 ms
+- 110,6 ms
+- 102,5 ms
+- 143,1 ms
+= 102,5 + 4·8,125.
+
+Q: Timeout đặt quá ngắn gây hậu quả gì?
++ Timeout sớm, gửi lại không cần thiết
+- Phản ứng chậm với mất gói
+- Mất kết nối ngay
+- Không ảnh hưởng gì
+= Slide tr.61.
+
+Q: Vì sao SampleRTT không được đo cho segment đã bị gửi lại?
++ Không biết ACK nhận được ứng với lần gửi nào, nên mẫu đo không tin cậy
+- Vì segment gửi lại không có ACK
+- Vì TCP cấm đo RTT
+- Vì RTT luôn bằng 0
+= K&R §3.5.3.
+
+Q: Theo giáo trình, sau mỗi lần timeout TCP làm gì với khoảng timeout?
++ Nhân đôi khoảng timeout
+- Giảm một nửa
+- Đặt về 0
+- Giữ nguyên
+= Một dạng điều khiển tắc nghẽn hạn chế.
+
+Q: Ý nghĩa của hệ số 4·DevRTT trong TimeoutInterval là gì?
++ Biên an toàn, lớn khi RTT biến thiên nhiều
+- Số lần gửi lại tối đa
+- Kích thước cửa sổ
+- Số byte trong segment
+= "Hệ số dự trữ an toàn".
+
+## c3-sau-fr | chuong 3 Tang giao van.pdf tr.66–72
+Q: A gửi Seq = 92 (8 byte) và Seq = 100 (20 byte). ACK 100 bị mất nhưng ACK 120 tới trước timeout. A gửi lại gì?
++ Không gửi lại gì
+- Gửi lại Seq = 92
+- Gửi lại Seq = 100
+- Gửi lại cả hai
+= ACK tích luỹ.
+
+Q: A gửi Seq = 92 (8 byte) và Seq = 100 (20 byte). Cả hai ACK tới trễ sau timeout của 92. A gửi lại gì?
++ Chỉ Seq = 92
+- Cả 92 và 100
+- Chỉ 100
+- Không gửi gì
+= Timeout sớm chỉ gửi lại segment cũ nhất chưa ACK.
+
+Q: Fast retransmit được kích hoạt khi bên gửi nhận được gì?
++ 3 ACK trùng cho cùng dữ liệu
+- 1 ACK trùng
+- Timeout
+- Một segment SYN
+= Gửi lại ngay, không chờ timeout.
+
+Q: Vì sao fast retransmit chờ 3 ACK trùng chứ không phải 1?
++ Để tránh nhầm việc segment chỉ bị đổi thứ tự nhẹ với việc bị mất
+- Vì TCP cần 3 bắt tay
+- Vì cửa sổ luôn bằng 3
+- Vì RTT gồm 3 phần
+= Đổi thứ tự sinh 1–2 ACK trùng.
+
+Q: Khi TCP bên gửi nhận được ACK mới và vẫn còn segment chưa ACK, nó làm gì với bộ định thời?
++ Khởi động lại bộ định thời
+- Tắt hẳn bộ định thời
+- Nhân đôi timeout
+- Gửi lại mọi segment
+= Sự kiện ACK của bên gửi.
+
+## c3-sau-flow | chuong 3 Tang giao van.pdf tr.74–75
+Q: RcvBuffer = 4096 byte, LastByteRcvd = 3000, LastByteRead = 1000. rwnd bằng?
++ 2096 byte
+- 1096 byte
+- 4096 byte
+- 3000 byte
+= rwnd = RcvBuffer − (LastByteRcvd − LastByteRead).
+
+Q: Bên nhận quảng bá rwnd = 0. TCP bên gửi làm gì theo giáo trình?
++ Tiếp tục gửi segment 1 byte để thăm dò và nhận rwnd mới
+- Dừng vĩnh viễn
+- Đóng kết nối
+- Gửi toàn bộ dữ liệu còn lại
+= Tránh kẹt khi bộ đệm trống trở lại.
+
+Q: Điều khiển luồng bảo vệ đối tượng nào?
++ Bộ đệm bên nhận
+- Router trên đường đi
+- DNS server
+- Liên kết nút cổ chai
+= Điều khiển tắc nghẽn bảo vệ mạng.
+
+Q: Ràng buộc bên gửi phải thỏa mãn với điều khiển luồng là gì?
++ LastByteSent − LastByteAcked ≤ rwnd
+- cwnd ≥ rwnd
+- LastByteRead ≥ LastByteRcvd
+- rwnd = 0 luôn
+= Dữ liệu chưa ACK không vượt rwnd.
+
+## c3-sau-conn | chuong 3 Tang giao van.pdf tr.77–83; K&R §3.5.6
+Q: Bắt tay 2 bước có thể dẫn tới tình huống nào?
++ Kết nối mở nửa ở server và nhận lại dữ liệu cũ như dữ liệu mới
+- Không thể gửi dữ liệu
+- Luôn mất SYN
+- Không có vấn đề
+= Do trễ, gửi lại, đổi thứ tự.
+
+Q: Client chọn Seq = x gửi SYN. Server trả SYNACK với ACKnum bằng?
++ x + 1
+- x
+- y + 1
+- 0
+= Server chọn Seq = y riêng.
+
+Q: Segment thứ ba của bắt tay 3 bước có thể mang dữ liệu không?
++ Có
+- Không bao giờ
+- Chỉ khi dùng UDP
+- Chỉ khi có cờ FIN
+= SYN và SYNACK không mang dữ liệu.
+
+Q: Sau khi nhận SYNACK, client ở trạng thái nào?
++ ESTAB
+- LISTEN
+- SYN_RCVD
+- TIME_WAIT
+= Client gửi ACK và vào ESTAB.
+
+Q: Vì sao client ở trạng thái TIME_WAIT một thời gian (khoảng 2·MSL) trước khi đóng hẳn?
++ Để gửi lại ACK cuối nếu ACK đó bị mất
+- Để chờ dữ liệu mới
+- Để bắt tay lại
+- Để tăng cwnd
+= K&R §3.5.6.
+
+Q: Tấn công SYN flood hoạt động thế nào?
++ Gửi nhiều SYN (thường IP giả) mà không hoàn tất bước 3, làm server cạn tài nguyên
+- Gửi nhiều FIN
+- Gửi gói UDP lớn
+- Đầu độc DNS
+= Kết nối nửa mở.
+
+Q: SYN cookie chống SYN flood bằng cách nào?
++ Server không cấp tài nguyên khi nhận SYN, mã hóa thông tin vào số thứ tự trả về; chỉ cấp khi ACK hợp lệ quay lại
+- Chặn mọi SYN
+- Tăng bộ đệm vô hạn
+- Dùng UDP thay TCP
+= K&R §3.5.6.
+
+Q: Gửi TCP SYN tới một cổng không có socket nào lắng nghe. Host đích phản hồi gì?
++ Segment có cờ RST
+- SYNACK
+- ICMP TTL expired
+- Không phản hồi
+= K&R §3.5.6.
+
+## c3-sau-cost | chuong 3 Tang giao van.pdf tr.85–95
+Q: Trong tình huống 1 (đệm vô hạn, 2 bên gửi, liên kết R), thông lượng tối đa mỗi kết nối là?
++ R/2
+- R
+- R/4
+- 2R
+= Slide tr.86.
+
+Q: Chi phí của tắc nghẽn trong tình huống 1 là gì?
++ Trễ tăng rất lớn khi tốc độ đến tiến gần thông lượng tối đa
+- Mất gói do đệm đầy
+- Gửi lại không cần thiết
+- Băng thông upstream bị lãng phí
+= Đệm vô hạn nên không mất gói.
+
+Q: Chi phí nào xuất hiện ở tình huống 2 (đệm hữu hạn, có gửi lại)?
++ Phải gửi lại gói bị mất và có thể gửi bản sao không cần thiết khi timeout sớm
+- Không có chi phí
+- Thông lượng vượt R/2
+- Trễ bằng 0
+= Slide tr.87–92.
+
+Q: Chi phí đặc trưng của tình huống 3 (nhiều hop) là gì?
++ Gói bị bỏ ở hop sau thì băng thông đã dùng ở các hop trước bị lãng phí
+- Không có mất gói
+- Trễ giảm khi tải tăng
+- Thông lượng luôn bằng R
+= Slide tr.94.
+
+Q: Cách điều khiển tắc nghẽn nào được TCP sử dụng?
++ End-end: suy ra tắc nghẽn từ mất gói hoặc trễ ở hệ thống đầu cuối
+- Router gửi tốc độ cụ thể cho nguồn
+- Dùng ATM ABR
+- Không điều khiển
+= Slide tr.95.
+
+Q: ECN thuộc cách tiếp cận nào?
++ Điều khiển tắc nghẽn có hỗ trợ từ mạng (router đánh dấu bit chỉ thị)
+- End-end thuần túy
+- Điều khiển luồng
+- Định tuyến
+= Slide tr.95.
+
+## c3-sau-cc | chuong 3 Tang giao van.pdf tr.97–108
+Q: ssthresh = 8 MSS, bắt đầu khởi động chậm với cwnd = 1. cwnd ở vòng RTT thứ 5 bằng?
++ 9 MSS
+- 16 MSS
+- 8 MSS
+- 5 MSS
+= 1, 2, 4, 8, rồi tăng tuyến tính: 9.
+
+Q: TCP Reno có cwnd = 12 MSS thì nhận 3 ACK trùng. ssthresh và cwnd mới (bỏ qua +3 MSS)?
++ ssthresh = 6, cwnd = 6
+- ssthresh = 6, cwnd = 1
+- ssthresh = 12, cwnd = 6
+- ssthresh = 3, cwnd = 3
+= Giảm một nửa rồi tăng tuyến tính.
+
+Q: TCP Tahoe có cwnd = 12 MSS thì nhận 3 ACK trùng. ssthresh và cwnd mới?
++ ssthresh = 6, cwnd = 1
+- ssthresh = 6, cwnd = 6
+- ssthresh = 12, cwnd = 1
+- ssthresh = 1, cwnd = 1
+= Tahoe luôn về 1 MSS.
+
+Q: TCP Reno có cwnd = 20 MSS và bị timeout. cwnd và ssthresh mới?
++ cwnd = 1, ssthresh = 10
+- cwnd = 10, ssthresh = 10
+- cwnd = 1, ssthresh = 20
+- cwnd = 20, ssthresh = 10
+= Timeout: cả Reno và Tahoe về 1 MSS.
+
+Q: Vì sao Reno phạt 3 ACK trùng nhẹ hơn timeout?
++ ACK trùng cho thấy mạng vẫn chuyển được segment, tắc nghẽn chưa nặng
+- Vì 3 ACK trùng hiếm khi xảy ra
+- Vì timeout không do tắc nghẽn
+- Vì ACK trùng làm tăng băng thông
+= Slide tr.100.
+
+Q: Trong pha khôi phục nhanh (FSM), mỗi ACK trùng tiếp theo làm cwnd thay đổi thế nào?
++ Tăng thêm 1 MSS
+- Giảm một nửa
+- Về 1 MSS
+- Không đổi
+= Khi có ACK mới: cwnd = ssthresh.
+
+Q: Khi nào TCP chuyển từ khởi động chậm sang tránh tắc nghẽn?
++ Khi cwnd đạt ssthresh (bằng 1/2 cwnd trước lần mất gói gần nhất)
+- Khi cwnd = 1
+- Sau đúng 10 RTT
+- Khi rwnd = 0
+= Slide tr.101.
+
+Q: Tốc độ gửi của TCP xấp xỉ bằng?
++ cwnd / RTT byte/s
+- RTT / cwnd
+- cwnd × RTT
+- rwnd × MSS
+= Slide tr.98.
+
+Q: W = 20 segment × 1500 byte khi mất gói, RTT = 100 ms. Thông lượng trung bình TCP xấp xỉ?
++ 1,8 Mbps
+- 2,4 Mbps
+- 1,2 Mbps
+- 0,3 Mbps
+= 0,75 × 30 000 byte / 0,1 s = 225 kB/s.
+
+Q: Để đạt 10 Gbps với segment 1500 byte, RTT 100 ms, cần cửa sổ khoảng bao nhiêu segment?
++ 83 333
+- 8 333
+- 833
+- 1 500
+= Slide tr.105.
+
+Q: Liên kết R đang có 9 kết nối TCP. Một ứng dụng mở thêm 11 kết nối thì được khoảng bao nhiêu băng thông?
++ R/2
+- R/10
+- R/20
+- R
+= 11/20 ≈ R/2.
+
+Q: Vì sao AIMD giúp hai kết nối TCP hội tụ về chia đều băng thông?
++ Tăng cộng cùng mức cho hai bên, giảm nhân làm bên lớn giảm nhiều hơn, dần về đường chia đều
+- Vì router chia đều cho mọi kết nối
+- Vì UDP nhường băng thông
+- Vì cwnd luôn bằng nhau từ đầu
+= Slide tr.107.
+
+Q: TCP CUBIC (theo giáo trình) khác Reno ở điểm nào?
++ Tăng cwnd theo hàm bậc ba: nhanh khi xa W_max, chậm khi gần điểm mất gói trước đó
+- Không dùng ACK
+- Luôn giữ cwnd = 1
+- Chạy trên UDP
+= K&R §3.7.
+
+Q: Khi nhận ACK có cờ ECE (ECN), TCP bên gửi làm gì?
++ Giảm cwnd như khi phát hiện mất gói
+- Tăng gấp đôi cwnd
+- Đóng kết nối
+- Bỏ qua
+= K&R §3.7.2.
+
+Q: BBR của Google điều khiển tắc nghẽn dựa trên gì?
++ Ước lượng băng thông nút cổ chai và RTT nhỏ nhất, không chờ mất gói
+- Chỉ dựa vào timeout
+- Chỉ dựa vào rwnd
+- Chỉ dựa vào 3 ACK trùng
+= Điều khiển dựa trên trễ (K&R §3.7.3).
+
+## c3-sau-quic | K&R §3.8
+Q: QUIC chạy trên giao thức giao vận nào?
++ UDP
+- TCP
+- ICMP
+- IP trực tiếp
+= Giao thức tầng ứng dụng trên UDP.
+
+Q: Lợi ích nào của QUIC so với TCP + TLS?
++ Gộp bắt tay kết nối và mã hóa trong 1 RTT, nhiều luồng độc lập không chặn nhau
+- Không cần mã hóa
+- Không cần điều khiển tắc nghẽn
+- Dùng ít cổng hơn
+= Sửa HOL blocking giữa các luồng.

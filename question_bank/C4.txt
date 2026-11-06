@@ -1,0 +1,676 @@
+## c4-sau-planes | chuong 4 v1.pdf tr.4–8
+Q: Trong ví dụ chuyến đi, "đi qua một giao điểm" tương ứng với chức năng nào?
++ Chuyển tiếp (forwarding)
+- Định tuyến (routing)
+- Phân giải tên
+- Điều khiển luồng
+= Định tuyến = lập kế hoạch cả chuyến đi.
+
+Q: Ai xác định nội dung bảng chuyển tiếp của router?
++ Thuật toán định tuyến (mặt phẳng điều khiển)
+- Host nguồn
+- Server DNS
+- Tầng giao vận
+= Slide tr.5.
+
+Q: Mặt phẳng dữ liệu thường được thực hiện bằng gì và ở tốc độ nào?
++ Phần cứng, cỡ nano giây
+- Phần mềm, cỡ giây
+- Phần mềm, cỡ mili giây
+- Con người, cỡ phút
+= Mặt phẳng điều khiển: phần mềm, mili giây.
+
+Q: Trong SDN, bảng chuyển tiếp được tính ở đâu?
++ Ở bộ điều khiển từ xa (logic tập trung), rồi cài xuống router
+- Trong từng router riêng lẻ
+- Ở host nguồn
+- Ở DNS gốc
+= Router chỉ có tác nhân điều khiển cục bộ.
+
+Q: Chuyển tiếp tổng quát (OpenFlow) dùng mô hình bảng nào?
++ Match + action trên nhiều trường header
+- Chỉ khớp IP đích và chuyển tiếp
+- Chỉ khớp địa chỉ MAC
+- Bảng DNS
+= K&R §4.4.
+
+Q: Hành động nào KHÔNG phải ví dụ của "action" trong chuyển tiếp tổng quát?
++ Phân giải tên miền
+- Chuyển tiếp ra một cổng
+- Bỏ gói
+- Sửa trường header
+= K&R §4.4.
+
+## c4-sau-svc | chuong 4 v1.pdf tr.9
+Q: Mô hình dịch vụ nào đảm bảo tốc độ ổn định, không mất mát, đúng thứ tự và thời gian?
++ ATM CBR
+- Internet best effort
+- ATM ABR
+- Internet Diffserv
+= Bảng tr.9.
+
+Q: ATM ABR đảm bảo gì?
++ Băng thông tối thiểu và đúng thứ tự
+- Không mất mát và thời gian thực
+- Không đảm bảo gì
+- Mọi thứ như CBR
+= Bảng tr.9.
+
+Q: Internet Diffserv (RFC 2475) đảm bảo thời gian thực không?
++ Không
+- Có
+- Chỉ với TCP
+- Chỉ với IPv6
+= Băng thông "khả thi", mất mát và thứ tự "có thể".
+
+Q: Theo giáo trình, vì sao mô hình best effort vẫn thành công?
++ Đơn giản nên dễ triển khai; cấp đủ băng thông, CDN và ứng dụng thích nghi bù lại
+- Vì nó đảm bảo băng thông
+- Vì nó không mất gói
+- Vì router lưu trạng thái
+= K&R §4.1.2.
+
+## c4-sau-lpm | chuong 4 v1.pdf tr.11–12; K&R §4.2.1
+Q: Vì sao mỗi cổng vào giữ một bản sao bảng chuyển tiếp?
++ Để quyết định chuyển tiếp cục bộ theo tốc độ dòng, không phải hỏi bộ xử lý trung tâm
+- Để tiết kiệm bộ nhớ
+- Để chạy thuật toán Dijkstra
+- Để lưu thư điện tử
+= Chuyển mạch không tập trung.
+
+Q: Bảng chuyển tiếp có mục 200.23.16.0/20 → cổng 0 và 200.23.24.0/24 → cổng 1. Gói tới 200.23.24.170 đi cổng nào nếu cả hai khớp?
++ Cổng 1, vì /24 là tiền tố dài hơn
+- Cổng 0
+- Bị bỏ
+- Ngẫu nhiên
+= Longest prefix match.
+
+Q: Bảng chuyển tiếp: 11001000 00010111 00010*** ******** → 0; 11001000 00010111 00011000 ******** → 1; 11001000 00010111 00011*** ******** → 2; còn lại → 3. Đích 11001000 00010111 00011000 10101010 đi cổng nào?
++ 1
+- 2
+- 0
+- 3
+= Khớp cả mục 1 (24 bit) và 2 (21 bit), chọn dài hơn.
+
+Q: Với bảng ở câu trên, đích 11001000 00010111 00010110 10100001 đi cổng nào?
++ 0
+- 1
+- 2
+- 3
+= Chỉ khớp mục 0.
+
+Q: Với bảng ở câu trên, đích 11001000 00010111 00011001 00000001 đi cổng nào?
++ 2
+- 1
+- 0
+- 3
+= Không khớp mục 1 (byte 3 khác), khớp mục 2.
+
+Q: Vì sao bảng chuyển tiếp lưu tiền tố thay vì từng địa chỉ IP?
++ Có hàng tỷ địa chỉ; dùng dải địa chỉ (tiền tố) giúp bảng nhỏ
+- Vì IP chỉ dài 8 bit
+- Vì router không đọc được địa chỉ đầy đủ
+- Vì DNS yêu cầu
+= K&R §4.2.1.
+
+## c4-sau-fabric | chuong 4 v1.pdf tr.13–17; K&R §4.2.4–4.2.6
+Q: Vì sao chuyển mạch qua memory bị giới hạn?
++ Mỗi gói qua bus bộ nhớ hai lần và chỉ một gói được chuyển mỗi lúc
+- Vì không dùng CPU
+- Vì nhiều gói đi song song
+- Vì dùng cáp quang
+= Router thế hệ đầu.
+
+Q: Loại fabric nào cho phép chuyển nhiều gói song song (khác cổng vào và khác cổng ra)?
++ Crossbar / mạng kết nối
+- Memory
+- Bus
+- Không loại nào
+= Bus chỉ một gói mỗi lúc.
+
+Q: Router có 8 cổng vào, mỗi cổng 10 Gbps. Tốc độ fabric lý tưởng để không xếp hàng ở cổng vào là?
++ 80 Gbps
+- 10 Gbps
+- 8 Gbps
+- 1,25 Gbps
+= N lần tốc độ dòng.
+
+Q: HOL blocking xảy ra ở đâu?
++ Hàng đợi cổng vào: gói đầu hàng chờ cổng ra bận chặn các gói phía sau
+- Hàng đợi cổng ra
+- Server DNS
+- Tầng ứng dụng
+= K&R §4.2.4.
+
+Q: Hàng đợi ở cổng ra hình thành khi nào?
++ Khi gói từ fabric tới cổng ra nhanh hơn tốc độ truyền của liên kết ra
+- Khi fabric chậm hơn cổng vào
+- Khi không có gói
+- Khi TTL = 0
+= Slide tr.17.
+
+Q: Quy tắc kích thước đệm khi có N luồng TCP lớn theo giáo trình là?
++ B = RTT·C / √N
+- B = RTT·C
+- B = C/N
+- B = N·RTT
+= Quy tắc cũ B = RTT·C.
+
+Q: Bufferbloat là gì?
++ Bộ đệm quá lớn làm hàng đợi dài, trễ cao kéo dài
+- Bộ đệm quá nhỏ làm mất gói
+- Header quá lớn
+- DNS cache quá lớn
+= K&R §4.2.5.
+
+Q: Lập lịch WFQ có 3 lớp trọng số 1, 2, 2 trên liên kết 10 Mbps. Lớp trọng số 2 được đảm bảo ít nhất?
++ 4 Mbps
+- 2 Mbps
+- 5 Mbps
+- 10 Mbps
+= R·w_i/Σw_j = 10 × 2/5.
+
+Q: Lập lịch ưu tiên (priority) hoạt động thế nào?
++ Luôn phục vụ hàng ưu tiên cao trước khi phục vụ hàng thấp
+- Phục vụ luân phiên đều mọi hàng
+- Phục vụ ngẫu nhiên
+- Chỉ phục vụ gói lớn
+= K&R §4.2.6.
+
+## c4-sau-ipv4 | chuong 4 v1.pdf tr.20; K&R §4.3
+Q: Trường "upper layer" trong header IPv4 bằng 6 nghĩa là gì?
++ Phần dữ liệu là TCP segment
+- Phần dữ liệu là UDP
+- Phiên bản IPv6
+- TTL bằng 6
+= 6 = TCP, 17 = UDP.
+
+Q: Vì sao router phải tính lại header checksum IPv4 ở mỗi hop?
++ Vì TTL (và có thể options) thay đổi ở mỗi router
+- Vì địa chỉ đích thay đổi
+- Vì dữ liệu TCP thay đổi
+- Vì checksum bị xoá
+= Checksum chỉ kiểm header.
+
+Q: Header checksum IPv4 kiểm tra phần nào?
++ Chỉ phần header IP
+- Cả header và dữ liệu
+- Chỉ dữ liệu
+- Chỉ địa chỉ nguồn
+= Dữ liệu do giao vận kiểm.
+
+Q: Datagram 4000 byte (20 byte header) qua liên kết MTU 1500 byte. Số mảnh là?
++ 3
+- 2
+- 4
+- 1
+= 3980 byte dữ liệu chia 1480, 1480, 1020.
+
+Q: Ở ví dụ trên, offset của mảnh thứ hai bằng bao nhiêu?
++ 185
+- 1480
+- 1500
+- 370
+= Offset tính theo đơn vị 8 byte: 1480/8.
+
+Q: Ở ví dụ trên, mảnh cuối có cờ MF và tổng độ dài bao nhiêu?
++ MF = 0, 1040 byte
+- MF = 1, 1040 byte
+- MF = 0, 1020 byte
+- MF = 1, 1500 byte
+= 1020 dữ liệu + 20 header.
+
+Q: Các mảnh IPv4 được tập hợp lại ở đâu?
++ Chỉ ở host đích
+- Ở router kế tiếp
+- Ở mọi router
+- Ở DNS
+= K&R §4.3.2.
+
+Q: Các mảnh của cùng một datagram được nhận diện bằng trường nào?
++ 16-bit identifier
+- TTL
+- Header checksum
+- Type of service
+= Cùng identifier.
+
+Q: Vì sao dữ liệu mỗi mảnh (trừ mảnh cuối) phải là bội số của 8 byte?
++ Vì offset tính theo đơn vị 8 byte
+- Vì header dài 8 byte
+- Vì MTU luôn chia hết cho 8
+- Vì TCP yêu cầu
+= Fragment offset 13 bit.
+
+## c4-sau-addr | chuong 4 v1.pdf tr.21–27
+Q: Địa chỉ 10.1.5.200/22 thuộc mạng nào?
++ 10.1.4.0
+- 10.1.5.0
+- 10.1.0.0
+- 10.1.6.0
+= Byte 3: 5 = 000001|01 → giữ 6 bit đầu → 4.
+
+Q: Địa chỉ broadcast của mạng chứa 10.1.5.200/22 là?
++ 10.1.7.255
+- 10.1.5.255
+- 10.1.4.255
+- 10.1.255.255
+= Bit host = 1.
+
+Q: Mặt nạ /22 viết dạng thập phân là?
++ 255.255.252.0
+- 255.255.255.0
+- 255.255.248.0
+- 255.255.254.0
+= 22 bit 1.
+
+Q: Mặt nạ 255.255.255.224 tương ứng với độ dài tiền tố nào?
++ /27
+- /24
+- /28
+- /26
+= 224 = 11100000.
+
+Q: Hai địa chỉ 192.168.1.70/26 và 192.168.1.130/26 có cùng subnet không?
++ Không, chúng thuộc mạng .64 và .128
+- Có, cùng mạng 192.168.1.0
+- Có, cùng mạng .64
+- Không xác định được
+= Khối /26 = 64 địa chỉ.
+
+Q: Chia khối 200.23.16.0/20 thành 8 mạng con bằng nhau. Mỗi mạng con có tiền tố bao nhiêu?
++ /23
+- /21
+- /24
+- /28
+= Mượn 3 bit.
+
+Q: Ở câu trên, mạng con thứ ba (đánh số từ 1) có địa chỉ mạng nào?
++ 200.23.20.0/23
+- 200.23.18.0/23
+- 200.23.19.0/23
+- 200.23.24.0/23
+= 16.0, 18.0, 20.0, ...
+
+Q: Một tổ chức cần 2000 địa chỉ. Với phân lớp, nó phải nhận lớp nào và hậu quả là gì?
++ Lớp B (khoảng 65 534 host), lãng phí rất nhiều địa chỉ
+- Lớp C, vừa đủ
+- Lớp A, vừa đủ
+- Lớp D, vừa đủ
+= Lớp C chỉ 254 host → lý do có CIDR.
+
+Q: Route aggregation (tổng hợp tuyến) mang lại lợi ích gì?
++ ISP quảng bá một tiền tố chung thay vì nhiều tiền tố con, giảm kích thước bảng định tuyến
+- Tăng số địa chỉ IP
+- Bỏ được DNS
+- Mã hóa gói tin
+= K&R §4.3.3.
+
+Q: Tổ chức 1 chuyển từ ISP A (quảng bá 200.23.16.0/20) sang ISP B nhưng giữ khối 200.23.18.0/23. Lưu lượng tới tổ chức 1 đi về đâu?
++ Về ISP B, vì ISP B quảng bá tiền tố /23 dài hơn và router chọn longest prefix match
+- Về ISP A vì /20 xuất hiện trước
+- Bị bỏ
+- Chia đều hai ISP
+= K&R §4.3.3.
+
+Q: Địa chỉ 127.0.0.1 dùng để làm gì?
++ Loopback, chỉ chính máy mình
+- Broadcast toàn mạng
+- Địa chỉ của DNS gốc
+- Địa chỉ gateway mặc định
+= Địa chỉ đặc biệt.
+
+Q: Khối nào là địa chỉ riêng (private) dùng sau NAT?
++ 192.168.0.0/16
+- 8.8.8.0/24
+- 128.119.0.0/16
+- 223.1.1.0/24
+= Cùng với 10/8 và 172.16/12.
+
+Q: Mạng có 3 router nối nhau từng cặp và mỗi router có một LAN riêng. Có bao nhiêu subnet?
++ 6
+- 3
+- 4
+- 9
+= 3 LAN + 3 liên kết điểm-điểm.
+
+## c4-sau-dhcp | chuong 4 v1.pdf tr.28–30; K&R §4.3.3–4.3.4
+Q: Thông điệp DHCP DISCOVER được gửi tới địa chỉ nào?
++ 255.255.255.255 cổng 67 (quảng bá)
+- Địa chỉ IP của DNS server
+- 127.0.0.1
+- Gateway mặc định
+= Client chưa có IP.
+
+Q: Thứ tự 4 thông điệp DHCP là?
++ DISCOVER → OFFER → REQUEST → ACK
+- REQUEST → OFFER → DISCOVER → ACK
+- OFFER → DISCOVER → ACK → REQUEST
+- DISCOVER → ACK → OFFER → REQUEST
+= K&R §4.3.3.
+
+Q: Ngoài địa chỉ IP, DHCP còn cung cấp gì cho host?
++ Gateway mặc định, địa chỉ DNS server, mặt nạ mạng
+- Mật khẩu WiFi
+- Bảng định tuyến BGP
+- Khoá TLS
+= K&R §4.3.3.
+
+Q: DHCP chạy trên giao thức giao vận nào?
++ UDP (server cổng 67, client cổng 68)
+- TCP cổng 80
+- TCP cổng 25
+- ICMP
+= K&R §4.3.3.
+
+Q: Bảng NAT có mục 138.76.29.7:5001 ↔ 10.0.0.1:3345. Router nhận datagram đích 138.76.29.7:5001. Nó làm gì?
++ Đổi đích thành 10.0.0.1:3345 rồi chuyển vào mạng nhà
+- Bỏ gói
+- Gửi lại ra Internet
+- Đổi nguồn thành 10.0.0.1
+= Dịch ngược theo bảng NAT.
+
+Q: Một IP công khai sau NAT hỗ trợ tối đa khoảng bao nhiêu kết nối đồng thời?
++ Khoảng 60 000, do trường cổng 16 bit
+- 256
+- 4 tỷ
+- 1
+= K&R §4.3.4.
+
+Q: Vì sao NAT bị phê phán theo giáo trình?
++ Router can thiệp tới tầng giao vận (sửa số cổng), trái nguyên lý phân tầng; server sau NAT khó được tiếp xúc
+- Vì NAT tăng địa chỉ IPv4
+- Vì NAT mã hóa gói
+- Vì NAT không dùng bảng
+= Cần NAT traversal.
+
+Q: Lợi ích nào là của NAT?
++ Thay đổi ISP không cần đổi địa chỉ các thiết bị trong mạng nhà
+- Mỗi thiết bị có IP công khai riêng
+- Không cần router
+- Tăng băng thông
+= K&R §4.3.4.
+
+## c4-sau-icmp | chuong 4 v1.pdf tr.31–32
+Q: ICMP được mang trong gì?
++ Trong IP datagram
+- Trong TCP segment
+- Trong UDP segment
+- Trong frame Ethernet trực tiếp, không qua IP
+= ICMP "nằm trên" IP.
+
+Q: Thông điệp ICMP báo lỗi chứa những gì?
++ Type, code và header cùng 8 byte đầu của datagram gây lỗi
+- Toàn bộ datagram gây lỗi
+- Chỉ địa chỉ đích
+- Chỉ TTL
+= Để nguồn biết gói nào gây lỗi.
+
+Q: ICMP type 3 code 1 nghĩa là gì?
++ Host đích không tới được
+- Mạng đích không tới được
+- Cổng đích không tới được
+- TTL hết hạn
+= 3/0 network, 3/1 host, 3/2 protocol, 3/3 port.
+
+Q: ICMP type 0 code 0 là gì?
++ Echo reply (trả lời ping)
+- Echo request
+- TTL expired
+- Bad IP header
+= 8/0 là echo request.
+
+Q: Vì sao traceroute gửi UDP tới số cổng khó có trên đích?
++ Để đích trả ICMP port unreachable (3/3), báo cho nguồn biết đã tới đích
+- Để đích trả SYNACK
+- Để router không bỏ gói
+- Để tránh DNS
+= Slide tr.32.
+
+## c4-sau-v6 | chuong 4 v1.pdf tr.33–38
+Q: Rút gọn địa chỉ 2001:0db8:0000:0000:0000:ff00:0042:8329 thế nào?
++ 2001:db8::ff00:42:8329
+- 2001:db8:0:ff00:42:8329
+- 2001:db8::ff00::42:8329
+- 2001:0db8::ff:42:8329
+= Bỏ 0 đầu nhóm; :: thay chuỗi nhóm 0 một lần duy nhất.
+
+Q: Vì sao IPv6 bỏ header checksum?
++ Để giảm thời gian xử lý ở mỗi hop; giao vận và liên kết đã kiểm lỗi
+- Vì IPv6 không có lỗi
+- Vì checksum chuyển vào DNS
+- Vì router IPv6 không đọc header
+= Slide tr.35.
+
+Q: Router IPv6 nhận gói lớn hơn MTU liên kết ra. Nó làm gì?
++ Bỏ gói và gửi ICMPv6 "Packet Too Big" về nguồn
+- Phân mảnh gói
+- Chuyển nguyên gói
+- Gửi lại cho DNS
+= Không phân mảnh tại router.
+
+Q: Trường "next header" trong IPv6 dùng để làm gì?
++ Xác định giao thức tầng trên hoặc header mở rộng kế tiếp
+- Lưu địa chỉ router kế tiếp
+- Đếm số hop
+- Lưu checksum
+= Thay cho options/protocol của IPv4.
+
+Q: Trường "hop limit" của IPv6 tương đương trường nào của IPv4?
++ TTL
+- Identifier
+- Type of service
+- Header length
+= Giảm 1 ở mỗi hop.
+
+Q: Trong tunneling, router IPv4 ở giữa đường hầm thấy gì?
++ Một IPv4 datagram bình thường (nguồn và đích là hai đầu đường hầm), payload là datagram IPv6
+- Một IPv6 datagram
+- Một frame Ethernet không có IP
+- Không thấy gì
+= Slide tr.37–38.
+
+Q: "Dual stack" (giáo trình) là gì?
++ Nút chạy cả IPv4 và IPv6, dịch header khi cần (có thể mất trường riêng như flow label)
+- Hai router cùng địa chỉ
+- Hai đường hầm song song
+- Hai DNS server
+= Cách chuyển đổi khác tunneling.
+
+## c4-sau-ls | chuong 4 v1.pdf tr.45–51; K&R §5.2.1
+Q: Độ phức tạp tính toán của Dijkstra cơ bản với n nút là?
++ O(n²)
+- O(n)
+- O(log n)
+- O(2^n)
+= n(n+1)/2 phép so sánh.
+
+Q: Hiện tượng dao động trong định tuyến link state xảy ra khi nào?
++ Chi phí liên kết phụ thuộc lượng tải và các router chạy thuật toán đồng thời
+- Khi mọi chi phí bằng 1
+- Khi mạng chỉ có 2 nút
+- Khi dùng RIP
+= Giải pháp: ngẫu nhiên hoá thời điểm chạy.
+
+Q: Từ kết quả Dijkstra, cách xác định hop kế tiếp tới đích z trong bảng chuyển tiếp của u là?
++ Lần ngược p(·) từ z cho tới nút kề với u; nút đó là hop kế tiếp
+- Chọn nút có D nhỏ nhất
+- Chọn nút cuối cùng thêm vào N'
+- Chọn nút có nhiều hàng xóm nhất
+= Ví dụ slide: tới z đi qua w.
+
+Q: Trong link state, mỗi nút có được thông tin gì trước khi chạy Dijkstra?
++ Toàn bộ cấu trúc mạng và chi phí mọi liên kết (nhờ quảng bá trạng thái liên kết)
+- Chỉ chi phí tới hàng xóm
+- Chỉ DV của hàng xóm
+- Không có thông tin
+= Slide tr.49.
+
+## c4-sau-dv | chuong 4 v1.pdf tr.53–54, 62–63; K&R §5.2.2
+Q: c(x,y) = 2, c(x,z) = 7; d_y(w) = 4, d_z(w) = 1. d_x(w) và hop kế tiếp?
++ 6, qua y
+- 8, qua z
+- 4, qua y
+- 1, qua z
+= min{2 + 4, 7 + 1}.
+
+Q: Hiện tượng "đếm tới vô cùng" xảy ra khi nào?
++ Chi phí liên kết tăng, các nút DV tin vào đường đi vòng qua nhau và cập nhật chậm dần
+- Chi phí liên kết giảm
+- Mạng dùng link state
+- Mọi chi phí bằng 1
+= "Tin xấu lan chậm".
+
+Q: Ví dụ giáo trình: x–y = 4, y–z = 1, x–z = 50; liên kết x–y tăng lên 60. Cần khoảng bao nhiêu vòng lặp để hội tụ?
++ 44
+- 1
+- 4
+- 60
+= K&R §5.2.2.
+
+Q: Poisoned reverse hoạt động thế nào?
++ Nếu z đi tới x qua y thì z báo cho y rằng khoảng cách của z tới x là vô cùng
+- z báo cho mọi nút khoảng cách thật
+- y xoá bảng định tuyến
+- x ngừng quảng bá
+= Ngăn y đi vòng qua z.
+
+Q: Poisoned reverse có giải quyết được mọi vòng lặp không?
++ Không, chỉ vòng lặp giữa 2 nút; vòng từ 3 nút trở lên vẫn có thể xảy ra
+- Có, mọi vòng lặp
+- Chỉ trong OSPF
+- Chỉ trong BGP
+= K&R §5.2.2.
+
+Q: So với LS, nhược điểm về độ bền vững của DV là gì?
++ Một router quảng bá chi phí sai có thể làm sai đường đi của toàn mạng
+- Mỗi router tính bảng riêng nên lỗi chỉ cục bộ
+- DV không trao đổi thông tin
+- DV cần biết toàn bộ cấu trúc mạng
+= Lỗi lan truyền.
+
+Q: Thuật toán DV có những đặc điểm nào?
++ Lặp, không đồng bộ, phân tán
+- Tập trung, đồng bộ, một lần
+- Tập trung, cần toàn bộ bản đồ
+- Chỉ chạy trên SDN controller
+= K&R §5.2.2.
+
+## c4-sau-as | chuong 4 v1.pdf tr.56–74
+Q: Vì sao Internet phải dùng định tuyến phân cấp?
++ Quy mô quá lớn và mỗi tổ chức muốn tự chủ quản trị mạng của mình
+- Vì router không đủ băng thông
+- Vì IPv6 yêu cầu
+- Vì DNS phân cấp
+= Slide tr.56.
+
+Q: RIP chạy trên giao thức nào (theo giáo trình)?
++ UDP, cổng 520
+- TCP, cổng 179
+- Trực tiếp trên IP
+- ICMP
+= OSPF chạy trực tiếp trên IP; BGP trên TCP.
+
+Q: BGP chạy trên giao thức giao vận nào?
++ TCP (cổng 179)
+- UDP
+- Trực tiếp trên IP
+- ICMP
+= Kết nối TCP bán bền vững.
+
+Q: Một thông báo RIP chứa tối đa bao nhiêu subnet đích?
++ 25
+- 15
+- 16
+- 30
+= Trao đổi mỗi 30 s.
+
+Q: Trong RIP, lân cận bị coi là chết sau bao lâu không nhận được thông báo?
++ 180 s
+- 30 s
+- 15 s
+- 60 s
+= Slide tr.63.
+
+Q: Hot potato routing trong BGP nghĩa là gì?
++ Chọn gateway ra khỏi AS có chi phí intra-AS thấp nhất, đẩy gói ra khỏi AS mình nhanh nhất
+- Chọn AS-PATH dài nhất
+- Chọn đường rẻ nhất toàn cục tới đích
+- Chọn ngẫu nhiên
+= Tiêu chí ③ chọn tuyến BGP.
+
+Q: Tiêu chí ưu tiên đầu tiên khi BGP chọn tuyến là gì?
++ Local preference (quyết định chính sách)
+- AS-PATH ngắn nhất
+- NEXT-HOP gần nhất
+- Số router ít nhất
+= Slide tr.72.
+
+Q: Khi AS3 quảng bá một tiền tố cho AS1, điều đó có ý nghĩa gì?
++ AS3 hứa sẽ chuyển tiếp các datagram hướng tới tiền tố đó
+- AS3 yêu cầu AS1 chuyển tiếp hộ
+- AS3 xoá tiền tố đó
+- AS3 đổi địa chỉ IP
+= Slide tr.69.
+
+Q: Thông điệp BGP nào thông báo đường đi mới hoặc rút đường cũ?
++ UPDATE
+- OPEN
+- KEEPALIVE
+- NOTIFICATION
+= Slide tr.73.
+
+Q: Thông điệp BGP nào báo lỗi và cũng dùng để đóng kết nối?
++ NOTIFICATION
+- UPDATE
+- OPEN
+- KEEPALIVE
+= Slide tr.73.
+
+Q: Mạng khách hàng X nối với hai ISP B và C (dual-homed). Theo chính sách BGP, X có quảng bá đường từ B tới C không?
++ Không, để lưu lượng giữa B và C không đi nhờ qua X
+- Có, luôn luôn
+- Chỉ khi dùng RIP
+- Chỉ khi dùng OSPF
+= K&R §5.4.5.
+
+Q: Trong OSPF phân cấp, router nào tổng hợp khoảng cách tới mạng trong vùng và quảng bá sang vùng khác?
++ Router biên vùng
+- Router nội vùng
+- Router biên AS
+- Host
+= Slide tr.67.
+
+Q: Lưu lượng giữa hai vùng OSPF khác nhau đi như thế nào?
++ Router nội vùng → router biên vùng → vùng xương sống → router biên vùng đích
+- Đi thẳng giữa hai vùng
+- Qua router biên AS sang AS khác
+- Qua DNS server
+= OSPF phân cấp 2 mức.
+
+Q: Đặc tính nào của OSPF mà RIP không có?
++ Cho phép nhiều đường cùng chi phí
+- Dùng số hop làm độ đo
+- Trao đổi mỗi 30 s
+- Giới hạn 15 hop
+= Slide tr.65.
+
+Q: Vì sao inter-AS đặt chính sách lên trên hiệu năng?
++ Nhà quản trị muốn kiểm soát lưu lượng nào được đi qua mạng của họ
+- Vì inter-AS không có chi phí
+- Vì BGP chạy chậm
+- Vì AS chỉ có một router
+= Slide tr.74.
+
+Q: Bảng chuyển tiếp của router trong AS được cấu hình bởi gì?
++ Cả thuật toán intra-AS (đích trong AS) và inter-AS (đích ngoài AS)
+- Chỉ intra-AS
+- Chỉ inter-AS
+- Chỉ DNS
+= Slide tr.58.
+
+Q: IGRP là gì theo slide?
++ Giao thức định tuyến intra-AS độc quyền của Cisco
+- Giao thức inter-AS
+- Giao thức DNS
+- Giao thức thư
+= Slide tr.61.
